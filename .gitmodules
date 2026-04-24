@@ -1,3 +1,6 @@
 [submodule "config"]
 	path = config
 	url = https://github.com/BBangBat/server-config.git
+[submodule "infra"]
+	path = infra
+	url = https://github.com/BBangBat/server-config.git
