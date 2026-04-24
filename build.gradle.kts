@@ -11,6 +11,8 @@ allprojects {
     version = "0.0.1-SNAPSHOT"
 }
 
+val springBootVersion = project.property("springBootVersion") as String
+
 subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "io.spring.dependency-management")
@@ -21,11 +23,11 @@ subprojects {
 
     extensions.configure<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension> {
         imports {
-            mavenBom("org.springframework.boot:spring-boot-dependencies:${libs.versions.springBoot.get()}")
+            mavenBom("org.springframework.boot:spring-boot-dependencies:$springBootVersion")
         }
     }
 
-    kotlin {
+    configure<org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension> {
         jvmToolchain(25)
         compilerOptions {
             freeCompilerArgs.addAll("-Xjsr305=strict")
