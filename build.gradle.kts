@@ -17,6 +17,10 @@ subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "io.spring.dependency-management")
 
+    configurations.all {
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+    }
+
     repositories {
         mavenCentral()
     }

@@ -1,0 +1,32 @@
+Configuration:
+  status: warn
+
+  Appenders:
+    Console:
+      name: CONSOLE
+      target: SYSTEM_OUT
+      PatternLayout:
+        disableAnsi: "false"
+        pattern: "%d{HH:mm:ss.SSS} %highlight{%level}{FATAL=red blink, ERROR=red bold, WARN=yellow bold, INFO=green bold, DEBUG=cyan, TRACE=white} [%style{%t}{dim}] %style{%c{1.}}{cyan} : %msg%n%throwable"
+
+  Loggers:
+    Logger:
+      - name: com.bbangbat
+        level: DEBUG
+        additivity: false
+        AppenderRef:
+          ref: CONSOLE
+      - name: org.hibernate.SQL
+        level: DEBUG
+        additivity: false
+        AppenderRef:
+          ref: CONSOLE
+      - name: org.hibernate.orm.jdbc.bind
+        level: TRACE
+        additivity: false
+        AppenderRef:
+          ref: CONSOLE
+    Root:
+      level: INFO
+      AppenderRef:
+        ref: CONSOLE

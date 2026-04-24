@@ -9,6 +9,8 @@ dependencies {
     implementation(project(":member-api"))
 
     implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.log4j2)
+    runtimeOnly(libs.jackson.dataformat.yaml)
 
     runtimeOnly(libs.mysql.connector)
     implementation(libs.flyway.core)
