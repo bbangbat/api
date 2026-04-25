@@ -12,12 +12,17 @@ allprojects {
     version = "0.0.1-SNAPSHOT"
 }
 
-val springBootVersion = project.property("springBootVersion") as String
+val springBootVersion: String by project
+val ktlintVersion: String by project
 
 subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "io.spring.dependency-management")
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
+
+    configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+        version.set(ktlintVersion)
+    }
 
     configurations.all {
         exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
