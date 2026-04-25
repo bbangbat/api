@@ -3,10 +3,12 @@ kotlin = "2.3.10"
 spring-boot = "4.0.5"
 spring-dependency-management = "1.1.7"
 jdsl = "3.8.2"
+testcontainers = "1.21.0"
 jjwt = "0.12.6"
 mysql = "9.2.0"
 flyway = "11.8.0"
 ktlint-gradle = "12.1.2"
+tsid-creator = "5.2.6"
 
 [libraries]
 # Spring Boot Starters (version managed by BOM)
@@ -18,6 +20,7 @@ spring-boot-starter-oauth2-client = { module = "org.springframework.boot:spring-
 spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
 spring-boot-starter-log4j2 = { module = "org.springframework.boot:spring-boot-starter-log4j2" }
 slf4j-api = { module = "org.slf4j:slf4j-api" }
+tsid-creator = { module = "com.github.f4b6a3:tsid-creator", version.ref = "tsid-creator" }
 jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-security-test = { module = "org.springframework.security:spring-security-test" }
@@ -36,6 +39,12 @@ jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
 mysql-connector = { module = "com.mysql:mysql-connector-j", version.ref = "mysql" }
 flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
 flyway-mysql = { module = "org.flywaydb:flyway-mysql", version.ref = "flyway" }
+
+# Test
+spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-testcontainers" }
+spring-boot-starter-data-jpa-test = { module = "org.springframework.boot:spring-boot-starter-data-jpa-test" }
+testcontainers-mysql = { module = "org.testcontainers:mysql", version.ref = "testcontainers" }
+testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
