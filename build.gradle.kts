@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.jpa) apply false
     alias(libs.plugins.spring.boot) apply false
     alias(libs.plugins.spring.dependency.management) apply false
+    alias(libs.plugins.ktlint) apply false
 }
 
 allprojects {
@@ -16,6 +17,7 @@ val springBootVersion = project.property("springBootVersion") as String
 subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "io.spring.dependency-management")
+    apply(plugin = "org.jlleitschuh.gradle.ktlint")
 
     configurations.all {
         exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
