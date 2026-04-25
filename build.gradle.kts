@@ -45,6 +45,11 @@ subprojects {
         }
     }
 
+    dependencies {
+        "implementation"("org.jetbrains.kotlin:kotlin-reflect")
+        "testRuntimeOnly"("org.junit.platform:junit-platform-launcher")
+    }
+
     tasks.withType<Test> {
         useJUnitPlatform()
     }

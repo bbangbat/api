@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class MemberTest {
-
     @Test
     fun `유효한 회원을 생성할 수 있다`() {
         // when
