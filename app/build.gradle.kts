@@ -9,6 +9,7 @@ dependencies {
     implementation(project(":member-api"))
 
     implementation(libs.spring.boot.starter.web)
+    implementation(libs.springdoc.openapi.webmvc.ui)
     implementation(libs.spring.boot.starter.log4j2)
     runtimeOnly(libs.jackson.dataformat.yaml)
 

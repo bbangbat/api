@@ -9,6 +9,7 @@ mysql = "9.2.0"
 flyway = "11.8.0"
 ktlint-gradle = "12.1.2"
 tsid-creator = "5.2.6"
+springdoc-openapi = "3.0.3"
 
 [libraries]
 # Spring Boot Starters (version managed by BOM)
@@ -24,6 +25,7 @@ tsid-creator = { module = "com.github.f4b6a3:tsid-creator", version.ref = "tsid-
 jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-security-test = { module = "org.springframework.security:spring-security-test" }
+springdoc-openapi-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc-openapi" }
 
 # JDSL (Boot 4 전용 아티팩트)
 jdsl-jpql-dsl = { module = "com.linecorp.kotlin-jdsl:jpql-dsl", version.ref = "jdsl" }
