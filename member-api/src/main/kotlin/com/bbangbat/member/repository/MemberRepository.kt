@@ -21,5 +21,11 @@ class MemberRepository(
             .orElseThrow { BbangbatException(MEMBER_NOT_FOUND) }
             .toDomain()
 
+    fun findByEmailOrNull(email: String): Member? =
+        memberJpaRepository
+            .findByEmail(email)
+            .orElse(null)
+            ?.toDomain()
+
     fun save(member: Member): Member = memberJpaRepository.save(MemberJpaEntity.from(member)).toDomain()
 }
