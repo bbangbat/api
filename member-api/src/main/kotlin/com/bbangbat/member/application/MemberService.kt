@@ -12,5 +12,7 @@ class MemberService(
 
     fun findByEmail(email: String): Member = memberRepository.findByEmail(email)
 
+    fun findByEmailOrNull(email: String): Member? = memberRepository.findByEmailOrNull(email)
+
     fun save(member: Member): Member = memberRepository.save(member)
 }

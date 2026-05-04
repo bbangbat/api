@@ -13,6 +13,8 @@ dependencies {
 //    implementation(libs.jdsl.jpql.render)
 //    implementation(libs.jdsl.spring.data.jpa.support)
 
+    compileOnly(libs.springdoc.openapi.webmvc.ui)
+
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.spring.boot.starter.data.jpa.test)
     testImplementation(libs.spring.boot.testcontainers)
