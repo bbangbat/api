@@ -10,7 +10,7 @@ interface StoreJpaRepository : JpaRepository<StoreJpaEntity, Long> {
         value = """
             SELECT * FROM stores
             WHERE ST_Distance_Sphere(POINT(longitude, latitude), POINT(:lng, :lat)) <= :radiusMeters
-            ORDER BY name ASC
+            ORDER BY ST_Distance_Sphere(POINT(longitude, latitude), POINT(:lng, :lat)) ASC
         """,
         nativeQuery = true,
     )

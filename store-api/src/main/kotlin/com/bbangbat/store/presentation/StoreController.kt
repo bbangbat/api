@@ -1,6 +1,7 @@
 package com.bbangbat.store.presentation
 
 import com.bbangbat.store.application.StoreService
+import com.bbangbat.store.domain.SortType
 import com.bbangbat.store.presentation.dto.StoreResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 class StoreController(
     private val storeService: StoreService,
 ) {
-    @Operation(summary = "반경 내 가게 리스트 조회", description = "지도 중심 좌표 기준 반경 3km 내 가게를 가나다순으로 조회합니다.")
+    @Operation(summary = "반경 내 가게 리스트 조회", description = "지도 중심 좌표 기준 반경 3km 내 가게를 조회합니다.")
     @ApiResponses(
         ApiResponse(responseCode = "200", description = "조회 성공"),
         ApiResponse(responseCode = "400", description = "잘못된 좌표 요청"),
@@ -30,8 +31,9 @@ class StoreController(
     fun getStores(
         @RequestParam lat: Double,
         @RequestParam lng: Double,
+        @RequestParam(defaultValue = "DISTANCE") sort: SortType,
     ): List<StoreResponse> =
         storeService
-            .findStoresWithin3km(lat, lng)
+            .findStores(lat, lng, sort)
             .map { (store, congestion) -> StoreResponse.from(store, congestion) }
 }

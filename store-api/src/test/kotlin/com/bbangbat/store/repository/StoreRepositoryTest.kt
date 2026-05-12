@@ -16,14 +16,14 @@ class StoreRepositoryTest : AbstractContainerBaseTest() {
     }
 
     @Test
-    fun `반경 내 가게를 가나다순으로 조회한다`() {
+    fun `반경 내 가게를 거리순으로 조회한다`() {
         // given
         val centerLat = 37.5665
         val centerLng = 126.9780
         storeJpaRepository.saveAll(
             listOf(
-                storeEntity("나 베이커리", latitude = 37.5700, longitude = 126.9800),
-                storeEntity("가 베이커리", latitude = 37.5650, longitude = 126.9750),
+                storeEntity("먼 베이커리", latitude = 37.5700, longitude = 126.9780),   // 약 390m
+                storeEntity("가까운 베이커리", latitude = 37.5670, longitude = 126.9780), // 약 55m
             ),
         )
 
@@ -32,8 +32,8 @@ class StoreRepositoryTest : AbstractContainerBaseTest() {
 
         // then
         assertThat(result).hasSize(2)
-        assertThat(result[0].name).isEqualTo("가 베이커리")
-        assertThat(result[1].name).isEqualTo("나 베이커리")
+        assertThat(result[0].name).isEqualTo("가까운 베이커리")
+        assertThat(result[1].name).isEqualTo("먼 베이커리")
     }
 
     @Test
