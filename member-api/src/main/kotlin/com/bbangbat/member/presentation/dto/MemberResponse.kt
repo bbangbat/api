@@ -8,6 +8,8 @@ data class MemberResponse(
     @field:Schema(description = "회원 ID", example = "1234567890") val id: Long,
     @field:Schema(description = "이메일", example = "user@example.com") val email: String,
     @field:Schema(description = "이름", example = "홍길동") val name: String,
+    @field:Schema(description = "닉네임", example = "빵괴물") val nickname: String,
+    @field:Schema(description = "프로필 이미지 URL") val profileImageUrl: String?,
 ) {
     companion object {
         fun from(member: Member): MemberResponse =
@@ -15,6 +17,8 @@ data class MemberResponse(
                 id = member.id,
                 email = member.email,
                 name = member.name,
+                nickname = member.nickname,
+                profileImageUrl = member.profileImageUrl,
             )
     }
 }

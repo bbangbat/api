@@ -17,12 +17,18 @@ class MemberJpaEntity(
     var email: String,
     @Column(name = "name", nullable = false, length = 30)
     var name: String,
+    @Column(name = "nickname", nullable = false, length = 20)
+    var nickname: String,
+    @Column(name = "profile_image_url", nullable = true, length = 500)
+    var profileImageUrl: String? = null,
 ) {
     fun toDomain(): Member =
         Member(
             id = id,
             email = email,
             name = name,
+            nickname = nickname,
+            profileImageUrl = profileImageUrl,
         )
 
     companion object {
@@ -31,6 +37,8 @@ class MemberJpaEntity(
                 id = member.id,
                 email = member.email,
                 name = member.name,
+                nickname = member.nickname,
+                profileImageUrl = member.profileImageUrl,
             )
     }
 }
