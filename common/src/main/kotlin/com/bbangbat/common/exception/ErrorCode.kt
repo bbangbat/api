@@ -18,4 +18,7 @@ enum class ErrorCode(
 
     // Member
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다."),
+
+    // Store
+    CONGESTION_UNAVAILABLE(HttpStatus.NOT_FOUND, "혼잡도 정보를 조회할 수 없습니다."),
 }
