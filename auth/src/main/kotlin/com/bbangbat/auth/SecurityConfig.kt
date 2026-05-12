@@ -9,7 +9,8 @@ import com.bbangbat.auth.oauth2.OAuth2AuthenticationSuccessHandler
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.http.HttpMethod
+import org.springframework.http.HttpMethod.GET
+import org.springframework.http.HttpMethod.POST
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
@@ -32,7 +33,8 @@ class SecurityConfig(
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests {
                 it.requestMatchers("/auth/**", "/oauth2/**", "/login/**").permitAll()
-                it.requestMatchers(HttpMethod.GET, "/api/stores/**").permitAll()
+                it.requestMatchers(POST, "/api/members/signup").permitAll()
+                it.requestMatchers(GET, "/api/stores/**").permitAll()
                 it.requestMatchers("/v3/api-docs/**", "/docs/**").permitAll()
                 it.anyRequest().authenticated()
             }.oauth2Login {

@@ -1,7 +1,9 @@
 package com.bbangbat.auth.oauth2
 
 import com.bbangbat.auth.jwt.JwtProvider
+import com.bbangbat.auth.oauth2.SocialProvider
 import com.bbangbat.auth.token.RefreshTokenCookieProvider
+import com.bbangbat.auth.token.TempTokenProvider
 import com.bbangbat.auth.token.TokenService
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -16,27 +18,33 @@ class OAuth2AuthenticationSuccessHandler(
     private val jwtProvider: JwtProvider,
     private val tokenService: TokenService,
     private val refreshTokenCookieProvider: RefreshTokenCookieProvider,
-    @Value("\${app.frontend-url}") private val frontendUrl: String,
+    private val tempTokenProvider: TempTokenProvider,
+    @param:Value("\${app.frontend-url}") private val frontendUrl: String,
 ) : AuthenticationSuccessHandler {
     override fun onAuthenticationSuccess(
         request: HttpServletRequest,
         response: HttpServletResponse,
         authentication: Authentication,
     ) {
-        // Authentication에서 memberId 추출
-        val memberId = (authentication.principal as DefaultOAuth2User).getAttribute<Long>("memberId")!!
+        val principal = authentication.principal as DefaultOAuth2User
+        val memberId = principal.getAttribute<Long?>("memberId")
 
-        // AT, RT 생성
-        val accessToken = jwtProvider.createAccessToken(memberId)
-        val refreshToken = jwtProvider.createRefreshToken(memberId)
-
-        // Redis에 RT 저장
-        tokenService.saveRefreshToken(memberId, refreshToken)
-
-        // RT는 쿠키에 담아서 응답
-        refreshTokenCookieProvider.addCookie(response, refreshToken)
-
-        // 프론트엔드 url로 리다이렉트
-        response.sendRedirect("$frontendUrl/oauth2/callback?access_token=$accessToken")
+        if (memberId != null) {
+            val accessToken = jwtProvider.createAccessToken(memberId)
+            val refreshToken = jwtProvider.createRefreshToken(memberId)
+            tokenService.saveRefreshToken(memberId, refreshToken)
+            refreshTokenCookieProvider.addCookie(response, refreshToken)
+            response.sendRedirect("$frontendUrl/oauth2/callback?access_token=$accessToken")
+        } else {
+            val email = principal.getAttribute<String>("email")!!
+            val name = principal.getAttribute<String>("name")!!
+            val provider = principal.getAttribute<SocialProvider>("provider")!!
+            val providerId = principal.getAttribute<String>("providerId")!!
+            val existingAccount = principal.getAttribute<Boolean>("existingAccount") ?: false
+            val tempToken = tempTokenProvider.createTempToken(email, name, provider, providerId)
+            response.sendRedirect(
+                "$frontendUrl/signup?temp_token=$tempToken&existing_account=$existingAccount",
+            )
+        }
     }
 }

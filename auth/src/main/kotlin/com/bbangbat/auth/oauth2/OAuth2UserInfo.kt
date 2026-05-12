@@ -5,7 +5,8 @@ abstract class OAuth2UserInfo(
 ) {
     abstract val email: String
     abstract val name: String
-    abstract val provider: String
+    abstract val provider: SocialProvider
+    abstract val providerId: String
 }
 
 class NaverOAuth2UserInfo(
@@ -15,7 +16,8 @@ class NaverOAuth2UserInfo(
     private val response = attributes["response"] as Map<String, Any>
     override val email: String get() = response["email"] as String
     override val name: String get() = response["name"] as String
-    override val provider = "NAVER"
+    override val provider = SocialProvider.NAVER
+    override val providerId: String get() = response["id"] as String
 }
 
 class KakaoOAuth2UserInfo(
@@ -28,5 +30,6 @@ class KakaoOAuth2UserInfo(
     private val profile = kakaoAccount["profile"] as Map<String, Any>
     override val email: String get() = kakaoAccount["email"] as String
     override val name: String get() = profile["nickname"] as String
-    override val provider = "KAKAO"
+    override val provider = SocialProvider.KAKAO
+    override val providerId: String get() = attributes["id"].toString()
 }
