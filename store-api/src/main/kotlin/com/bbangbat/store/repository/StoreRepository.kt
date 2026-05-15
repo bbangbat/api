@@ -1,20 +1,35 @@
 package com.bbangbat.store.repository
 
 import com.bbangbat.store.domain.Store
+import com.linecorp.kotlinjdsl.querymodel.jpql.entity.Entities.entity
+import com.linecorp.kotlinjdsl.querymodel.jpql.expression.Expressions.function
+import com.linecorp.kotlinjdsl.querymodel.jpql.expression.Expressions.value
+import com.linecorp.kotlinjdsl.querymodel.jpql.path.Paths.path
+import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
 import org.springframework.stereotype.Repository
 
 @Repository
 class StoreRepository(
     private val storeJpaRepository: StoreJpaRepository,
+    private val jdslExecutor: KotlinJdslJpqlExecutor,
 ) {
     fun findWithinRadius(
         lat: Double,
         lng: Double,
         radiusMeters: Double,
     ): List<Store> =
-        storeJpaRepository
-            .findWithinRadius(lat, lng, radiusMeters)
-            .map { it.toDomain() }
+        jdslExecutor.findAll {
+            val distanceFn = function(
+                Double::class,
+                "ST_Distance_Sphere",
+                function(Any::class, "POINT", path(StoreJpaEntity::longitude), path(StoreJpaEntity::latitude)),
+                function(Any::class, "POINT", value(lng), value(lat)),
+            )
+            select(entity(StoreJpaEntity::class))
+                .from(entity(StoreJpaEntity::class))
+                .where(distanceFn.le(value(radiusMeters)))
+                .orderBy(distanceFn.asc())
+        }.filterNotNull().map { it.toDomain() }
 
     fun save(store: Store): Store = storeJpaRepository.save(StoreJpaEntity.from(store)).toDomain()
 }

@@ -5,8 +5,13 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Import
 
+@Import(StoreRepository::class)
 class StoreRepositoryTest : AbstractContainerBaseTest() {
+    @Autowired
+    private lateinit var storeRepository: StoreRepository
+
     @Autowired
     private lateinit var storeJpaRepository: StoreJpaRepository
 
@@ -22,13 +27,13 @@ class StoreRepositoryTest : AbstractContainerBaseTest() {
         val centerLng = 126.9780
         storeJpaRepository.saveAll(
             listOf(
-                storeEntity("먼 베이커리", latitude = 37.5700, longitude = 126.9780),   // 약 390m
-                storeEntity("가까운 베이커리", latitude = 37.5670, longitude = 126.9780), // 약 55m
+                storeEntity("먼 베이커리", latitude = 37.5700, longitude = 126.9780),
+                storeEntity("가까운 베이커리", latitude = 37.5670, longitude = 126.9780),
             ),
         )
 
         // when
-        val result = storeJpaRepository.findWithinRadius(centerLat, centerLng, 3000.0)
+        val result = storeRepository.findWithinRadius(centerLat, centerLng, 3000.0)
 
         // then
         assertThat(result).hasSize(2)
@@ -43,13 +48,13 @@ class StoreRepositoryTest : AbstractContainerBaseTest() {
         val centerLng = 126.9780
         storeJpaRepository.saveAll(
             listOf(
-                storeEntity("가까운 베이커리", latitude = 37.5700, longitude = 126.9800), // 약 0.5km
-                storeEntity("먼 베이커리", latitude = 38.0000, longitude = 127.5000),     // 약 60km
+                storeEntity("가까운 베이커리", latitude = 37.5700, longitude = 126.9800),
+                storeEntity("먼 베이커리", latitude = 38.0000, longitude = 127.5000),
             ),
         )
 
         // when
-        val result = storeJpaRepository.findWithinRadius(centerLat, centerLng, 3000.0)
+        val result = storeRepository.findWithinRadius(centerLat, centerLng, 3000.0)
 
         // then
         assertThat(result).hasSize(1)
@@ -66,7 +71,7 @@ class StoreRepositoryTest : AbstractContainerBaseTest() {
         )
 
         // when
-        val result = storeJpaRepository.findWithinRadius(centerLat, centerLng, 3000.0)
+        val result = storeRepository.findWithinRadius(centerLat, centerLng, 3000.0)
 
         // then
         assertThat(result).isEmpty()

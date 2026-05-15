@@ -7,6 +7,9 @@ dependencies {
     implementation(project(":common"))
 
     implementation(libs.spring.boot.starter.data.jpa)
+    implementation(libs.jdsl.jpql.dsl)
+    implementation(libs.jdsl.jpql.render)
+    implementation(libs.jdsl.spring.data.jpa.support)
 
     compileOnly(libs.springdoc.openapi.webmvc.ui)
 
