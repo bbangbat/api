@@ -3,6 +3,8 @@ package com.bbangbat.store.repository
 import com.bbangbat.store.domain.Store
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 
@@ -10,8 +12,8 @@ import jakarta.persistence.Table
 @Table(name = "stores")
 class StoreJpaEntity(
     @Id
-    @Tsid
-    @Column(name = "id", nullable = false, unique = true)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
     var id: Long = 0L,
     @Column(name = "name", nullable = false, length = 100)
     var name: String,
@@ -37,7 +39,6 @@ class StoreJpaEntity(
     companion object {
         fun from(store: Store): StoreJpaEntity =
             StoreJpaEntity(
-                id = store.id,
                 name = store.name,
                 latitude = store.latitude,
                 longitude = store.longitude,

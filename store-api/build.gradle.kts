@@ -7,7 +7,6 @@ dependencies {
     implementation(project(":common"))
 
     implementation(libs.spring.boot.starter.data.jpa)
-    implementation(libs.tsid.creator)
 
     compileOnly(libs.springdoc.openapi.webmvc.ui)
 
