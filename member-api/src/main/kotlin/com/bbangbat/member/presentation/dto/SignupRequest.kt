@@ -1,5 +1,7 @@
 package com.bbangbat.member.presentation.dto
 
+import com.bbangbat.member.domain.AgeGroup
+import com.bbangbat.member.domain.Gender
 import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(description = "회원가입 요청")
@@ -8,4 +10,8 @@ data class SignupRequest(
     @field:Schema(description = "닉네임 (2~20자)", example = "빵괴물") val nickname: String,
     @field:Schema(description = "프로필 이미지 URL", example = "https://example.com/image.jpg")
     val profileImageUrl: String? = null,
+    @field:Schema(description = "성별") val gender: Gender,
+    @field:Schema(description = "연령대") val ageGroup: AgeGroup,
+    @field:Schema(description = "서비스 이용약관 동의") val termsAgreed: Boolean,
+    @field:Schema(description = "개인정보처리방침 동의") val privacyAgreed: Boolean,
 )

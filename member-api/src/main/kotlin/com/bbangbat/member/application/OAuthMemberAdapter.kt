@@ -17,4 +17,6 @@ class OAuthMemberAdapter(
     ): Long? = socialRepository.findByProviderAndProviderId(SocialType.valueOf(provider.name), providerId)?.member?.id
 
     override fun existsByEmail(email: String): Boolean = memberService.findByEmailOrNull(email) != null
+
+    override fun updateLastLoginAt(memberId: Long) = memberService.updateLastLoginAt(memberId)
 }

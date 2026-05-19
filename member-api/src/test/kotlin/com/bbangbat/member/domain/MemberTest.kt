@@ -5,6 +5,26 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class MemberTest {
+    private fun validMember(
+        email: String = "test@test.com",
+        name: String = "홍길동",
+        nickname: String = "빵괴물",
+        profileImageUrl: String? = null,
+        gender: Gender = Gender.MALE,
+        ageGroup: AgeGroup = AgeGroup.TWENTIES,
+        termsAgreed: Boolean = true,
+        privacyAgreed: Boolean = true,
+    ) = Member(
+        email = email,
+        name = name,
+        nickname = nickname,
+        profileImageUrl = profileImageUrl,
+        gender = gender,
+        ageGroup = ageGroup,
+        termsAgreed = termsAgreed,
+        privacyAgreed = privacyAgreed,
+    )
+
     @Test
     fun `유효한 회원을 생성할 수 있다`() {
         // given
@@ -13,7 +33,7 @@ class MemberTest {
         val nickname = "빵괴물"
 
         // when
-        val member = Member(email = email, name = name, nickname = nickname)
+        val member = validMember(email = email, name = name, nickname = nickname)
 
         // then
         assertThat(member.email).isEqualTo("test@test.com")
@@ -28,13 +48,7 @@ class MemberTest {
         val profileImageUrl = "https://example.com/image.jpg"
 
         // when
-        val member =
-            Member(
-                email = "test@test.com",
-                name = "홍길동",
-                nickname = "빵괴물",
-                profileImageUrl = profileImageUrl,
-            )
+        val member = validMember(profileImageUrl = profileImageUrl)
 
         // then
         assertThat(member.profileImageUrl).isEqualTo("https://example.com/image.jpg")
@@ -46,7 +60,7 @@ class MemberTest {
         val email = "a".repeat(91) + "@test.com"
 
         // when
-        val member = Member(email = email, name = "홍길동", nickname = "빵괴물")
+        val member = validMember(email = email)
 
         // then
         assertThat(member.email.length).isEqualTo(100)
@@ -58,9 +72,7 @@ class MemberTest {
         val email = ""
 
         // when & then
-        assertThrows<IllegalArgumentException> {
-            Member(email = email, name = "홍길동", nickname = "빵괴물")
-        }
+        assertThrows<IllegalArgumentException> { validMember(email = email) }
     }
 
     @Test
@@ -69,9 +81,7 @@ class MemberTest {
         val email = "a".repeat(92) + "@test.com"
 
         // when & then
-        assertThrows<IllegalArgumentException> {
-            Member(email = email, name = "홍길동", nickname = "빵괴물")
-        }
+        assertThrows<IllegalArgumentException> { validMember(email = email) }
     }
 
     @Test
@@ -80,7 +90,7 @@ class MemberTest {
         val name = "가".repeat(30)
 
         // when
-        val member = Member(email = "test@test.com", name = name, nickname = "빵괴물")
+        val member = validMember(name = name)
 
         // then
         assertThat(member.name.length).isEqualTo(30)
@@ -92,9 +102,7 @@ class MemberTest {
         val name = ""
 
         // when & then
-        assertThrows<IllegalArgumentException> {
-            Member(email = "test@test.com", name = name, nickname = "빵괴물")
-        }
+        assertThrows<IllegalArgumentException> { validMember(name = name) }
     }
 
     @Test
@@ -103,9 +111,7 @@ class MemberTest {
         val name = "가".repeat(31)
 
         // when & then
-        assertThrows<IllegalArgumentException> {
-            Member(email = "test@test.com", name = name, nickname = "빵괴물")
-        }
+        assertThrows<IllegalArgumentException> { validMember(name = name) }
     }
 
     @Test
@@ -115,8 +121,8 @@ class MemberTest {
         val maxNickname = "가".repeat(20)
 
         // when
-        val memberWithMin = Member(email = "test@test.com", name = "홍길동", nickname = minNickname)
-        val memberWithMax = Member(email = "test@test.com", name = "홍길동", nickname = maxNickname)
+        val memberWithMin = validMember(nickname = minNickname)
+        val memberWithMax = validMember(nickname = maxNickname)
 
         // then
         assertThat(memberWithMin.nickname.length).isEqualTo(2)
@@ -129,9 +135,7 @@ class MemberTest {
         val nickname = "   "
 
         // when & then
-        assertThrows<IllegalArgumentException> {
-            Member(email = "test@test.com", name = "홍길동", nickname = nickname)
-        }
+        assertThrows<IllegalArgumentException> { validMember(nickname = nickname) }
     }
 
     @Test
@@ -140,9 +144,7 @@ class MemberTest {
         val nickname = "빵"
 
         // when & then
-        assertThrows<IllegalArgumentException> {
-            Member(email = "test@test.com", name = "홍길동", nickname = nickname)
-        }
+        assertThrows<IllegalArgumentException> { validMember(nickname = nickname) }
     }
 
     @Test
@@ -151,9 +153,7 @@ class MemberTest {
         val nickname = "가".repeat(21)
 
         // when & then
-        assertThrows<IllegalArgumentException> {
-            Member(email = "test@test.com", name = "홍길동", nickname = nickname)
-        }
+        assertThrows<IllegalArgumentException> { validMember(nickname = nickname) }
     }
 
     @Test
@@ -162,9 +162,7 @@ class MemberTest {
         val profileImageUrl = "http://example.com/image.jpg"
 
         // when & then
-        assertThrows<IllegalArgumentException> {
-            Member(email = "test@test.com", name = "홍길동", nickname = "빵괴물", profileImageUrl = profileImageUrl)
-        }
+        assertThrows<IllegalArgumentException> { validMember(profileImageUrl = profileImageUrl) }
     }
 
     @Test
@@ -173,8 +171,18 @@ class MemberTest {
         val profileImageUrl = "https://" + "a".repeat(493)
 
         // when & then
-        assertThrows<IllegalArgumentException> {
-            Member(email = "test@test.com", name = "홍길동", nickname = "빵괴물", profileImageUrl = profileImageUrl)
-        }
+        assertThrows<IllegalArgumentException> { validMember(profileImageUrl = profileImageUrl) }
+    }
+
+    @Test
+    fun `서비스 이용약관에 동의하지 않으면 예외가 발생한다`() {
+        // given & when & then
+        assertThrows<IllegalArgumentException> { validMember(termsAgreed = false) }
+    }
+
+    @Test
+    fun `개인정보처리방침에 동의하지 않으면 예외가 발생한다`() {
+        // given & when & then
+        assertThrows<IllegalArgumentException> { validMember(privacyAgreed = false) }
     }
 }

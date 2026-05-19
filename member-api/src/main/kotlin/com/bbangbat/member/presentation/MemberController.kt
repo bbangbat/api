@@ -52,12 +52,16 @@ class MemberController(
                 name = claims.name,
                 nickname = request.nickname,
                 profileImageUrl = request.profileImageUrl,
+                gender = request.gender,
+                ageGroup = request.ageGroup,
+                termsAgreed = request.termsAgreed,
+                privacyAgreed = request.privacyAgreed,
                 provider = SocialType.valueOf(claims.provider.name),
                 providerId = claims.providerId,
             )
-
         val accessToken = jwtProvider.createAccessToken(member.id)
         val refreshToken = jwtProvider.createRefreshToken(member.id)
+
         tokenService.saveRefreshToken(member.id, refreshToken)
         refreshTokenCookieProvider.addCookie(response, refreshToken)
 

@@ -5,9 +5,17 @@ import com.bbangbat.member.domain.SocialType.NAVER
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-
 class SocialTest {
-    private val member = Member(email = "test@test.com", name = "홍길동", nickname = "빵괴물")
+    private val member =
+        Member(
+            email = "test@test.com",
+            name = "홍길동",
+            nickname = "빵괴물",
+            gender = Gender.MALE,
+            ageGroup = AgeGroup.TWENTIES,
+            termsAgreed = true,
+            privacyAgreed = true,
+        )
 
     @Test
     fun `유효한 소셜 계정을 생성할 수 있다`() {

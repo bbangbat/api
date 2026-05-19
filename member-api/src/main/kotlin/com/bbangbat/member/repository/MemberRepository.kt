@@ -4,6 +4,7 @@ import com.bbangbat.common.exception.BbangbatException
 import com.bbangbat.common.exception.ErrorCode.MEMBER_NOT_FOUND
 import com.bbangbat.member.domain.Member
 import org.springframework.stereotype.Repository
+import java.time.LocalDateTime
 
 @Repository
 class MemberRepository(
@@ -28,4 +29,6 @@ class MemberRepository(
             ?.toDomain()
 
     fun save(member: Member): Member = memberJpaRepository.save(MemberJpaEntity.from(member)).toDomain()
+
+    fun updateLastLoginAt(id: Long) = memberJpaRepository.updateLastLoginAt(id, LocalDateTime.now())
 }

@@ -1,13 +1,23 @@
 package com.bbangbat.member.repository
 
+import com.bbangbat.member.domain.AgeGroup
+import com.bbangbat.member.domain.Gender
 import com.bbangbat.member.domain.Member
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EntityListeners
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.jpa.domain.support.AuditingEntityListener
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "members")
+@EntityListeners(AuditingEntityListener::class)
 class MemberJpaEntity(
     @Id
     @Tsid
@@ -21,6 +31,24 @@ class MemberJpaEntity(
     var nickname: String,
     @Column(name = "profile_image_url", nullable = true, length = 500)
     var profileImageUrl: String? = null,
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender", nullable = false, length = 10)
+    var gender: Gender,
+    @Enumerated(EnumType.STRING)
+    @Column(name = "age_group", nullable = false, length = 20)
+    var ageGroup: AgeGroup,
+    @Column(name = "terms_agreed", nullable = false)
+    var termsAgreed: Boolean,
+    @Column(name = "privacy_agreed", nullable = false)
+    var privacyAgreed: Boolean,
+    @Column(name = "last_login_at", nullable = true)
+    var lastLoginAt: LocalDateTime? = null,
+    @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false)
+    var createdAt: LocalDateTime? = null,
+    @LastModifiedDate
+    @Column(name = "updated_at", nullable = false)
+    var updatedAt: LocalDateTime? = null,
 ) {
     fun toDomain(): Member =
         Member(
@@ -29,6 +57,13 @@ class MemberJpaEntity(
             name = name,
             nickname = nickname,
             profileImageUrl = profileImageUrl,
+            gender = gender,
+            ageGroup = ageGroup,
+            termsAgreed = termsAgreed,
+            privacyAgreed = privacyAgreed,
+            lastLoginAt = lastLoginAt,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
         )
 
     companion object {
@@ -39,6 +74,11 @@ class MemberJpaEntity(
                 name = member.name,
                 nickname = member.nickname,
                 profileImageUrl = member.profileImageUrl,
+                gender = member.gender,
+                ageGroup = member.ageGroup,
+                termsAgreed = member.termsAgreed,
+                privacyAgreed = member.privacyAgreed,
+                lastLoginAt = member.lastLoginAt,
             )
     }
 }
