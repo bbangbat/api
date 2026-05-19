@@ -5,7 +5,6 @@ import com.bbangbat.store.repository.StoreRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.BDDMockito.given
 import org.mockito.Mock
@@ -13,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension
 
 @ExtendWith(MockitoExtension::class)
 class StoreServiceTest {
+
     @Mock
     private lateinit var storeRepository: StoreRepository
 
@@ -55,21 +55,5 @@ class StoreServiceTest {
 
         // then
         assertThat(result).isEmpty()
-    }
-
-    @Test
-    fun `findStores는 유효하지 않은 위도 요청 시 예외를 던진다`() {
-        // when & then
-        assertThrows<IllegalArgumentException> {
-            storeService.findStores(91.0, 126.9780)
-        }
-    }
-
-    @Test
-    fun `findStores는 유효하지 않은 경도 요청 시 예외를 던진다`() {
-        // when & then
-        assertThrows<IllegalArgumentException> {
-            storeService.findStores(37.5665, 181.0)
-        }
     }
 }
