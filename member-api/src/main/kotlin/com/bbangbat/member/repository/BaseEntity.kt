@@ -1,4 +1,4 @@
-package com.bbangbat.store.repository
+package com.bbangbat.member.repository
 
 import jakarta.persistence.Column
 import jakarta.persistence.EntityListeners

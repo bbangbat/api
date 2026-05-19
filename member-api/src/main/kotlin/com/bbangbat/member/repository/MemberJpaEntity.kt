@@ -5,19 +5,14 @@ import com.bbangbat.member.domain.Gender
 import com.bbangbat.member.domain.Member
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
-import jakarta.persistence.EntityListeners
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.Table
-import org.springframework.data.annotation.CreatedDate
-import org.springframework.data.annotation.LastModifiedDate
-import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.LocalDateTime
 
 @Entity
 @Table(name = "members")
-@EntityListeners(AuditingEntityListener::class)
 class MemberJpaEntity(
     @Id
     @Tsid
@@ -43,13 +38,7 @@ class MemberJpaEntity(
     var privacyAgreed: Boolean,
     @Column(name = "last_login_at", nullable = true)
     var lastLoginAt: LocalDateTime? = null,
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
-    var createdAt: LocalDateTime? = null,
-    @LastModifiedDate
-    @Column(name = "updated_at", nullable = false)
-    var updatedAt: LocalDateTime? = null,
-) {
+) : BaseEntity() {
     fun toDomain(): Member =
         Member(
             id = id,

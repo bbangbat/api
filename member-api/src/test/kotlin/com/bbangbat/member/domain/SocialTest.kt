@@ -5,6 +5,7 @@ import com.bbangbat.member.domain.SocialType.NAVER
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+
 class SocialTest {
     private val member =
         Member(

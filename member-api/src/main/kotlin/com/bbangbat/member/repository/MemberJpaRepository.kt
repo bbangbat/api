@@ -11,5 +11,8 @@ interface MemberJpaRepository : JpaRepository<MemberJpaEntity, Long> {
 
     @Modifying
     @Query("UPDATE MemberJpaEntity m SET m.lastLoginAt = :now WHERE m.id = :id")
-    fun updateLastLoginAt(id: Long, now: LocalDateTime)
+    fun updateLastLoginAt(
+        id: Long,
+        now: LocalDateTime,
+    )
 }

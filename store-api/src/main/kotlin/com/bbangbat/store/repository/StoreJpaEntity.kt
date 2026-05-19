@@ -1,12 +1,16 @@
 package com.bbangbat.store.repository
 
 import com.bbangbat.store.domain.Store
-import jakarta.persistence.*
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.Table
 
 @Entity
 @Table(name = "stores")
 class StoreJpaEntity(
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -21,9 +25,7 @@ class StoreJpaEntity(
     var address: String,
     @Column(name = "phone_number", length = 20)
     var phoneNumber: String? = null,
-
-    ) : BaseEntity() {
-
+) : BaseEntity() {
     fun toDomain(): Store =
         Store(
             id = id,
@@ -35,7 +37,6 @@ class StoreJpaEntity(
         )
 
     companion object {
-
         fun from(store: Store): StoreJpaEntity =
             StoreJpaEntity(
                 name = store.name,
@@ -44,7 +45,5 @@ class StoreJpaEntity(
                 address = store.address,
                 phoneNumber = store.phoneNumber,
             )
-
     }
-
 }

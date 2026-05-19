@@ -5,7 +5,6 @@ import com.bbangbat.member.domain.SocialType
 import jakarta.persistence.Column
 import jakarta.persistence.ConstraintMode.NO_CONSTRAINT
 import jakarta.persistence.Entity
-import jakarta.persistence.EntityListeners
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
@@ -15,17 +14,12 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
-import org.springframework.data.annotation.CreatedDate
-import org.springframework.data.annotation.LastModifiedDate
-import org.springframework.data.jpa.domain.support.AuditingEntityListener
-import java.time.LocalDateTime
 
 @Entity
 @Table(
     name = "social",
     uniqueConstraints = [UniqueConstraint(columnNames = ["provider", "provider_id"])],
 )
-@EntityListeners(AuditingEntityListener::class)
 class SocialJpaEntity(
     @Id
     @Tsid
@@ -39,13 +33,7 @@ class SocialJpaEntity(
     var provider: SocialType,
     @Column(name = "provider_id", nullable = false, length = 100)
     var providerId: String,
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
-    var createdAt: LocalDateTime? = null,
-    @LastModifiedDate
-    @Column(name = "updated_at", nullable = false)
-    var updatedAt: LocalDateTime? = null,
-) {
+) : BaseEntity() {
     fun toDomain(): Social =
         Social(
             id = id,

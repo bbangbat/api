@@ -12,7 +12,6 @@ import org.mockito.junit.jupiter.MockitoExtension
 
 @ExtendWith(MockitoExtension::class)
 class StoreServiceTest {
-
     @Mock
     private lateinit var storeRepository: StoreRepository
 
@@ -28,10 +27,11 @@ class StoreServiceTest {
         // given
         val lat = 37.5665
         val lng = 126.9780
-        val stores = listOf(
-            Store(id = 1L, name = "가까운 베이커리", latitude = 37.5670, longitude = 126.9780, address = "서울시 중구"),
-            Store(id = 2L, name = "먼 베이커리", latitude = 37.5700, longitude = 126.9780, address = "서울시 중구"),
-        )
+        val stores =
+            listOf(
+                Store(id = 1L, name = "가까운 베이커리", latitude = 37.5670, longitude = 126.9780, address = "서울시 중구"),
+                Store(id = 2L, name = "먼 베이커리", latitude = 37.5700, longitude = 126.9780, address = "서울시 중구"),
+            )
         given(storeRepository.findWithinRadius(lat, lng, 3000.0)).willReturn(stores)
 
         // when
