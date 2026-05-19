@@ -8,17 +8,23 @@ import org.springframework.stereotype.Service
 class StoreService(
     private val storeRepository: StoreRepository,
 ) {
+
     fun findStores(
         lat: Double,
         lng: Double,
     ): List<Store> {
+
         require(lat in -90.0..90.0) { "위도는 -90 ~ 90 사이여야 합니다." }
         require(lng in -180.0..180.0) { "경도는 -180 ~ 180 사이여야 합니다." }
 
         return storeRepository.findWithinRadius(lat, lng, RADIUS_METERS)
+
     }
 
     companion object {
+
         private const val RADIUS_METERS = 3000.0
+        
     }
+
 }

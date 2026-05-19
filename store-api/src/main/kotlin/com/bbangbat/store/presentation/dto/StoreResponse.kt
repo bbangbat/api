@@ -12,9 +12,12 @@ data class StoreResponse(
     @field:Schema(description = "주소", example = "서울시 강남구 테헤란로 1") val address: String,
     @field:Schema(description = "전화번호", example = "02-1234-5678") val phoneNumber: String?,
 ) {
+
     companion object {
-        fun from(store: Store): StoreResponse =
-            StoreResponse(
+
+        fun from(store: Store): StoreResponse {
+
+            return StoreResponse(
                 id = store.id,
                 name = store.name,
                 latitude = store.latitude,
@@ -22,5 +25,9 @@ data class StoreResponse(
                 address = store.address,
                 phoneNumber = store.phoneNumber,
             )
+
+        }
+
     }
+    
 }
