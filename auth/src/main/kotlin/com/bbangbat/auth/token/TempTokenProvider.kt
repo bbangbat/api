@@ -25,6 +25,7 @@ class TempTokenProvider(
         name: String,
         provider: SocialProvider,
         providerId: String,
+        ageGroup: String?,
     ): String =
         Jwts
             .builder()
@@ -32,6 +33,7 @@ class TempTokenProvider(
             .claim("name", name)
             .claim("provider", provider.name)
             .claim("providerId", providerId)
+            .apply { ageGroup?.let { claim("ageGroup", it) } }
             .issuedAt(Date())
             .expiration(Date(System.currentTimeMillis() + EXPIRY))
             .signWith(key)
@@ -51,6 +53,7 @@ class TempTokenProvider(
                 name = payload["name"] as String,
                 provider = SocialProvider.valueOf(payload["provider"] as String),
                 providerId = payload["providerId"] as String,
+                ageGroup = payload["ageGroup"] as? String,
             )
         } catch (e: JwtException) {
             throw BbangbatException(INVALID_TOKEN)
@@ -66,4 +69,5 @@ data class TempTokenClaims(
     val name: String,
     val provider: SocialProvider,
     val providerId: String,
+    val ageGroup: String?,
 )

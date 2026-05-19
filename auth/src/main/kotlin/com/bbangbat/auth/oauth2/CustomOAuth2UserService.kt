@@ -30,6 +30,7 @@ class CustomOAuth2UserService(
                 "provider" to userInfo.provider,
                 "providerId" to userInfo.providerId,
             )
+        userInfo.ageGroup?.let { attributes["ageGroup"] = it }
         if (memberId != null) {
             attributes["memberId"] = memberId
         } else {

@@ -1,7 +1,7 @@
 package com.bbangbat.auth.oauth2
 
+import com.bbangbat.auth.OAuthMemberPort
 import com.bbangbat.auth.jwt.JwtProvider
-import com.bbangbat.auth.oauth2.SocialProvider
 import com.bbangbat.auth.token.RefreshTokenCookieProvider
 import com.bbangbat.auth.token.TempTokenProvider
 import com.bbangbat.auth.token.TokenService
@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class OAuth2AuthenticationSuccessHandler(
+    private val oAuthMemberPort: OAuthMemberPort,
     private val jwtProvider: JwtProvider,
     private val tokenService: TokenService,
     private val refreshTokenCookieProvider: RefreshTokenCookieProvider,
@@ -30,6 +31,7 @@ class OAuth2AuthenticationSuccessHandler(
         val memberId = principal.getAttribute<Long?>("memberId")
 
         if (memberId != null) {
+            oAuthMemberPort.updateLastLoginAt(memberId)
             val accessToken = jwtProvider.createAccessToken(memberId)
             val refreshToken = jwtProvider.createRefreshToken(memberId)
             tokenService.saveRefreshToken(memberId, refreshToken)
@@ -40,8 +42,9 @@ class OAuth2AuthenticationSuccessHandler(
             val name = principal.getAttribute<String>("name")!!
             val provider = principal.getAttribute<SocialProvider>("provider")!!
             val providerId = principal.getAttribute<String>("providerId")!!
+            val ageGroup = principal.getAttribute<String?>("ageGroup")
             val existingAccount = principal.getAttribute<Boolean>("existingAccount") ?: false
-            val tempToken = tempTokenProvider.createTempToken(email, name, provider, providerId)
+            val tempToken = tempTokenProvider.createTempToken(email, name, provider, providerId, ageGroup)
             response.sendRedirect(
                 "$frontendUrl/signup?temp_token=$tempToken&existing_account=$existingAccount",
             )

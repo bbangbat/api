@@ -9,4 +9,6 @@ interface OAuthMemberPort {
     ): Long?
 
     fun existsByEmail(email: String): Boolean
+
+    fun updateLastLoginAt(memberId: Long)
 }
