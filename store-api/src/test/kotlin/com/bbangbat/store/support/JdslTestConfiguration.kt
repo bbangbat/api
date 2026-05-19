@@ -21,7 +21,11 @@ class JdslTestConfiguration {
 
     @Bean
     fun kotlinJdslJpqlExecutor(renderContexts: List<RenderContext>): KotlinJdslJpqlExecutor {
+
         val renderContext = renderContexts.reversed().reduce { acc, ctx -> acc + ctx }
+        
         return KotlinJdslJpqlExecutorImpl(entityManager, renderContext, null)
+
     }
+
 }

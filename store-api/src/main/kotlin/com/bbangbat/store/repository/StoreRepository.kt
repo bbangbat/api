@@ -29,6 +29,7 @@ class StoreRepository(
                 .from(entity(StoreJpaEntity::class))
                 .where(distanceFn.le(value(radiusMeters)))
                 .orderBy(distanceFn.asc())
+
         }.filterNotNull().map { it.toDomain() }
 
     }
@@ -38,5 +39,5 @@ class StoreRepository(
         return storeJpaRepository.save(StoreJpaEntity.from(store)).toDomain()
 
     }
-    
+
 }
