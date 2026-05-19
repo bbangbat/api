@@ -6,8 +6,10 @@ import com.bbangbat.common.exception.ErrorResponse
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
+import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
@@ -29,6 +31,20 @@ class GlobalExceptionHandler {
                 ?: ErrorCode.INVALID_INPUT.message
 
         return ResponseEntity.badRequest().body(ErrorResponse(code = ErrorCode.INVALID_INPUT.name, message = message))
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException::class)
+    fun handleMissingServletRequestParameterException(e: MissingServletRequestParameterException): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(code = ErrorCode.INVALID_INPUT.name, message = "${e.parameterName} 파라미터가 필요합니다.")
+
+        return ResponseEntity.badRequest().body(error)
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException::class)
+    fun handleMethodArgumentTypeMismatchException(e: MethodArgumentTypeMismatchException): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(code = ErrorCode.INVALID_INPUT.name, message = "${e.name} 파라미터의 타입이 올바르지 않습니다.")
+
+        return ResponseEntity.badRequest().body(error)
     }
 
     @ExceptionHandler(IllegalArgumentException::class)

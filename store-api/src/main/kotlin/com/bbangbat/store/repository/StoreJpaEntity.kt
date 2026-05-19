@@ -1,0 +1,50 @@
+package com.bbangbat.store.repository
+
+import com.bbangbat.store.domain.Store
+import jakarta.persistence.*
+
+@Entity
+@Table(name = "stores")
+class StoreJpaEntity(
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    var id: Long = 0L,
+    @Column(name = "name", nullable = false, length = 100)
+    var name: String,
+    @Column(name = "latitude", nullable = false)
+    var latitude: Double,
+    @Column(name = "longitude", nullable = false)
+    var longitude: Double,
+    @Column(name = "address", nullable = false, length = 255)
+    var address: String,
+    @Column(name = "phone_number", length = 20)
+    var phoneNumber: String? = null,
+
+    ) : BaseEntity() {
+
+    fun toDomain(): Store =
+        Store(
+            id = id,
+            name = name,
+            latitude = latitude,
+            longitude = longitude,
+            address = address,
+            phoneNumber = phoneNumber,
+        )
+
+    companion object {
+
+        fun from(store: Store): StoreJpaEntity =
+            StoreJpaEntity(
+                name = store.name,
+                latitude = store.latitude,
+                longitude = store.longitude,
+                address = store.address,
+                phoneNumber = store.phoneNumber,
+            )
+
+    }
+
+}

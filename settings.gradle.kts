@@ -5,4 +5,5 @@ include(
     "auth",
     "common",
     "member-api",
+    "store-api",
 )

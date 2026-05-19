@@ -7,6 +7,7 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":auth"))
     implementation(project(":member-api"))
+    implementation(project(":store-api"))
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.springdoc.openapi.webmvc.ui)
