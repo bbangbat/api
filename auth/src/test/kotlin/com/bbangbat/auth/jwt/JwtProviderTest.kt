@@ -21,7 +21,7 @@ class JwtProviderTest {
     }
 
     @Test
-    fun `createAccessToken은 memberId를 포함한 유효한 토큰을 생성한다`() {
+    fun `유효한 액세스 토큰을 생성한다`() {
         // given
         val memberId = 1L
 
@@ -34,7 +34,7 @@ class JwtProviderTest {
     }
 
     @Test
-    fun `createRefreshToken은 memberId를 포함한 유효한 토큰을 생성한다`() {
+    fun `유효한 리프레시 토큰을 생성한다`() {
         // given
         val memberId = 2L
 
@@ -47,7 +47,7 @@ class JwtProviderTest {
     }
 
     @Test
-    fun `validateToken은 잘못된 토큰에 대해 false를 반환한다`() {
+    fun `잘못된 형식의 토큰은 검증에 실패한다`() {
         // given
         val invalidToken = "invalid.token.string"
 
@@ -56,7 +56,7 @@ class JwtProviderTest {
     }
 
     @Test
-    fun `validateToken은 만료된 토큰에 대해 false를 반환한다`() {
+    fun `만료된 토큰은 검증에 실패한다`() {
         // given
         val expiredJwtProvider =
             JwtProvider(
@@ -70,7 +70,7 @@ class JwtProviderTest {
     }
 
     @Test
-    fun `getMemberId는 다른 시크릿으로 서명된 토큰에 대해 예외를 던진다`() {
+    fun `다른 시크릿으로 서명된 토큰은 파싱 시 예외가 발생한다`() {
         // given
         val otherProvider =
             JwtProvider(

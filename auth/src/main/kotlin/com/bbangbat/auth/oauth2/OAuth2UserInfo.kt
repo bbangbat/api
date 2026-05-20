@@ -25,9 +25,7 @@ class NaverOAuth2UserInfo(
                 "10-19" -> "TEENS"
                 "20-29" -> "TWENTIES"
                 "30-39" -> "THIRTIES"
-                "40-49" -> "FORTIES"
-                "50-59" -> "FIFTIES"
-                "60-" -> "SIXTIES_PLUS"
+                "40-49", "50-59", "60-" -> "FORTIES"
                 else -> null
             }
 }
@@ -50,9 +48,7 @@ class KakaoOAuth2UserInfo(
                 "10-14", "15-19" -> "TEENS"
                 "20-29" -> "TWENTIES"
                 "30-39" -> "THIRTIES"
-                "40-49" -> "FORTIES"
-                "50-59" -> "FIFTIES"
-                "60-69", "70-79", "80-89", "90-" -> "SIXTIES_PLUS"
+                "40-49", "50-59", "60-69", "70-79", "80-89", "90-" -> "FORTIES"
                 else -> null
             }
 }

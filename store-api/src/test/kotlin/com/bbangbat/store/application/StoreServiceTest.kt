@@ -23,7 +23,7 @@ class StoreServiceTest {
     }
 
     @Test
-    fun `findStores는 반경 내 가게 목록을 거리순으로 반환한다`() {
+    fun `반경 내 가게 목록을 거리순으로 반환한다`() {
         // given
         val lat = 37.5665
         val lng = 126.9780
@@ -44,7 +44,7 @@ class StoreServiceTest {
     }
 
     @Test
-    fun `findStores는 반경 내 가게가 없으면 빈 리스트를 반환한다`() {
+    fun `반경 내 가게가 없으면 빈 리스트를 반환한다`() {
         // given
         val lat = 37.5665
         val lng = 126.9780
