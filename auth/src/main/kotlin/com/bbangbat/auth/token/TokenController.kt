@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus.NO_CONTENT
+import org.springframework.http.HttpStatus.OK
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.CookieValue
 import org.springframework.web.bind.annotation.PostMapping
@@ -26,6 +27,7 @@ class TokenController(
         ApiResponse(responseCode = "401", description = "유효하지 않은 Refresh Token"),
     )
     @PostMapping("/token/refresh")
+    @ResponseStatus(OK)
     fun refresh(
         @CookieValue("refresh_token") refreshToken: String,
         response: HttpServletResponse,
@@ -46,7 +48,6 @@ class TokenController(
         response: HttpServletResponse,
     ) {
         tokenService.deleteRefreshToken(memberId)
-
         refreshTokenCookieProvider.clearCookie(response)
     }
 }

@@ -27,24 +27,27 @@ class OAuth2AuthenticationSuccessHandler(
         response: HttpServletResponse,
         authentication: Authentication,
     ) {
-        val principal = authentication.principal as DefaultOAuth2User
-        val memberId = principal.getAttribute<Long?>("memberId")
+        val oAuth2User = authentication.principal as DefaultOAuth2User
+        val memberId = oAuth2User.getAttribute<Long?>("memberId")
 
         if (memberId != null) {
-            oAuthMemberPort.updateLastLoginAt(memberId)
             val accessToken = jwtProvider.createAccessToken(memberId)
             val refreshToken = jwtProvider.createRefreshToken(memberId)
+
             tokenService.saveRefreshToken(memberId, refreshToken)
             refreshTokenCookieProvider.addCookie(response, refreshToken)
+            oAuthMemberPort.updateLastLoginAt(memberId)
+
             response.sendRedirect("$frontendUrl/oauth2/callback?access_token=$accessToken")
         } else {
-            val email = principal.getAttribute<String>("email")!!
-            val name = principal.getAttribute<String>("name")!!
-            val provider = principal.getAttribute<SocialProvider>("provider")!!
-            val providerId = principal.getAttribute<String>("providerId")!!
-            val ageGroup = principal.getAttribute<String?>("ageGroup")
-            val existingAccount = principal.getAttribute<Boolean>("existingAccount") ?: false
+            val email = oAuth2User.getAttribute<String>("email")!!
+            val name = oAuth2User.getAttribute<String>("name")!!
+            val provider = oAuth2User.getAttribute<SocialProvider>("provider")!!
+            val providerId = oAuth2User.getAttribute<String>("providerId")!!
+            val ageGroup = oAuth2User.getAttribute<String?>("ageGroup")
+            val existingAccount = oAuth2User.getAttribute<Boolean>("existingAccount") ?: false
             val tempToken = tempTokenProvider.createTempToken(email, name, provider, providerId, ageGroup)
+
             response.sendRedirect(
                 "$frontendUrl/signup?temp_token=$tempToken&existing_account=$existingAccount",
             )

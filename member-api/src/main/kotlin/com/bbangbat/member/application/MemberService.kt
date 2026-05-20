@@ -9,16 +9,13 @@ import com.bbangbat.member.repository.MemberRepository
 import com.bbangbat.member.repository.SocialRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
 class MemberService(
     private val memberRepository: MemberRepository,
     private val socialRepository: SocialRepository,
 ) {
-    fun findById(id: Long): Member = memberRepository.findById(id)
-
-    fun findByEmailOrNull(email: String): Member? = memberRepository.findByEmailOrNull(email)
-
     @Transactional
     fun signup(
         email: String,
@@ -43,6 +40,7 @@ class MemberService(
                     ageGroup = ageGroup,
                     termsAgreed = termsAgreed,
                     privacyAgreed = privacyAgreed,
+                    lastLoginAt = LocalDateTime.now(),
                 ),
             )
 
@@ -53,4 +51,8 @@ class MemberService(
 
     @Transactional
     fun updateLastLoginAt(id: Long) = memberRepository.updateLastLoginAt(id)
+
+    fun findById(id: Long): Member = memberRepository.findById(id)
+
+    fun findByEmailOrNull(email: String): Member? = memberRepository.findByEmailOrNull(email)
 }

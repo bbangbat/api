@@ -35,6 +35,7 @@ class TokenService(
 
         val newAccessToken = jwtProvider.createAccessToken(memberId)
         val newRefreshToken = jwtProvider.createRefreshToken(memberId)
+
         saveRefreshToken(memberId, newRefreshToken)
 
         return newAccessToken to newRefreshToken

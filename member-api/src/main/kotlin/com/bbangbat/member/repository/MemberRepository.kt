@@ -16,12 +16,6 @@ class MemberRepository(
             .orElseThrow { BbangbatException(MEMBER_NOT_FOUND) }
             .toDomain()
 
-    fun findByEmail(email: String): Member =
-        memberJpaRepository
-            .findByEmail(email)
-            .orElseThrow { BbangbatException(MEMBER_NOT_FOUND) }
-            .toDomain()
-
     fun findByEmailOrNull(email: String): Member? =
         memberJpaRepository
             .findByEmail(email)
@@ -30,5 +24,10 @@ class MemberRepository(
 
     fun save(member: Member): Member = memberJpaRepository.save(MemberJpaEntity.from(member)).toDomain()
 
-    fun updateLastLoginAt(id: Long) = memberJpaRepository.updateLastLoginAt(id, LocalDateTime.now())
+    fun updateLastLoginAt(id: Long) {
+        memberJpaRepository
+            .findById(id)
+            .orElseThrow { BbangbatException(MEMBER_NOT_FOUND) }
+            .also { it.lastLoginAt = LocalDateTime.now() }
+    }
 }
