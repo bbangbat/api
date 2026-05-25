@@ -48,6 +48,7 @@ class TempTokenProvider(
                     .build()
                     .parseSignedClaims(token)
                     .payload
+
             TempTokenClaims(
                 email = payload.subject,
                 name = payload["name"] as String,

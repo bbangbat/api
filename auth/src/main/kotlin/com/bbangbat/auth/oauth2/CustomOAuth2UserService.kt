@@ -20,9 +20,7 @@ class CustomOAuth2UserService(
                 "KAKAO" -> KakaoOAuth2UserInfo(oAuth2User.attributes)
                 else -> throw IllegalArgumentException("지원하지 않는 소셜 로그인입니다.")
             }
-
         val memberId = oAuthMemberPort.findByProviderAndProviderId(userInfo.provider, userInfo.providerId)
-
         val attributes =
             mutableMapOf<String, Any>(
                 "email" to userInfo.email,
@@ -30,7 +28,9 @@ class CustomOAuth2UserService(
                 "provider" to userInfo.provider,
                 "providerId" to userInfo.providerId,
             )
+
         userInfo.ageGroup?.let { attributes["ageGroup"] = it }
+
         if (memberId != null) {
             attributes["memberId"] = memberId
         } else {
