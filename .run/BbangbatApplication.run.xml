@@ -3,7 +3,7 @@
     <module name="bbangbat-server.app.main" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="com.bbangbat.BbangbatApplicationKt" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    <option name="VM_PARAMETERS" value="-Dspring.config.additional-location=./bbangbat-config/config/" />
+    <option name="VM_PARAMETERS" value="-Dspring.config.additional-location=./bbangbat-config/config/ -Dspring.profiles.active=local" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>
