@@ -1,5 +1,6 @@
 package com.bbangbat.auth.jwt
 
+import com.bbangbat.auth.token.TempTokenProvider
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -67,6 +68,26 @@ class JwtProviderTest {
 
         // when & then
         assertThat(expiredJwtProvider.validateToken(token)).isFalse()
+    }
+
+    @Test
+    fun `tempToken은 AT 검증에 실패한다`() {
+        // given
+        val tempTokenProvider =
+            TempTokenProvider(
+                JwtProperties(secret = SECRET, accessTokenExpiry = 3600000L, refreshTokenExpiry = 1209600000L),
+            )
+        val tempToken =
+            tempTokenProvider.createTempToken(
+                email = "test@test.com",
+                name = "홍길동",
+                provider = com.bbangbat.auth.oauth2.SocialProvider.NAVER,
+                providerId = "naver_123",
+                ageGroup = null,
+            )
+
+        // when & then
+        assertThat(jwtProvider.validateToken(tempToken)).isFalse()
     }
 
     @Test

@@ -30,6 +30,7 @@ class TempTokenProvider(
         Jwts
             .builder()
             .subject(email)
+            .claim("tokenType", TOKEN_TYPE)
             .claim("name", name)
             .claim("provider", provider.name)
             .claim("providerId", providerId)
@@ -49,6 +50,8 @@ class TempTokenProvider(
                     .parseSignedClaims(token)
                     .payload
 
+            if (payload["tokenType"] != TOKEN_TYPE) throw BbangbatException(INVALID_TOKEN)
+
             TempTokenClaims(
                 email = payload.subject,
                 name = payload["name"] as String,
@@ -61,6 +64,7 @@ class TempTokenProvider(
         }
 
     companion object {
+        private const val TOKEN_TYPE = "TEMP"
         private const val EXPIRY = 600_000L
     }
 }
