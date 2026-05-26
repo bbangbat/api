@@ -18,13 +18,14 @@ class StoreTest {
     @Test
     fun `전화번호가 있는 가게를 생성할 수 있다`() {
         // when
-        val store = Store(
-            name = "가 베이커리",
-            latitude = 37.5665,
-            longitude = 126.9780,
-            address = "서울시 중구",
-            phoneNumber = "02-1234-5678",
-        )
+        val store =
+            Store(
+                name = "가 베이커리",
+                latitude = 37.5665,
+                longitude = 126.9780,
+                address = "서울시 중구",
+                phoneNumber = "02-1234-5678",
+            )
 
         // then
         assertThat(store.phoneNumber).isEqualTo("02-1234-5678")

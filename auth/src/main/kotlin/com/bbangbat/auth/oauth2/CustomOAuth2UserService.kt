@@ -13,26 +13,34 @@ class CustomOAuth2UserService(
     private val oAuthMemberPort: OAuthMemberPort,
 ) : DefaultOAuth2UserService() {
     override fun loadUser(userRequest: OAuth2UserRequest): OAuth2User {
-        // 소셜 서버로부터 사용자 정보 가져오기
         val oAuth2User = super.loadUser(userRequest)
-        val provider = userRequest.clientRegistration.registrationId.uppercase()
-
-        // 회원 정보 추출
         val userInfo =
-            when (provider) {
+            when (userRequest.clientRegistration.registrationId.uppercase()) {
                 "NAVER" -> NaverOAuth2UserInfo(oAuth2User.attributes)
                 "KAKAO" -> KakaoOAuth2UserInfo(oAuth2User.attributes)
                 else -> throw IllegalArgumentException("지원하지 않는 소셜 로그인입니다.")
             }
+        val memberId = oAuthMemberPort.findByProviderAndProviderId(userInfo.provider, userInfo.providerId)
+        val attributes =
+            mutableMapOf<String, Any>(
+                "email" to userInfo.email,
+                "name" to userInfo.name,
+                "provider" to userInfo.provider,
+                "providerId" to userInfo.providerId,
+            )
 
-        // member-api 서버에서 회원 조회
-        val memberId = oAuthMemberPort.find(userInfo.email, userInfo.name)
+        userInfo.ageGroup?.let { attributes["ageGroup"] = it }
 
-        // memberId 담은 인증 객체 리턴
+        if (memberId != null) {
+            attributes["memberId"] = memberId
+        } else {
+            attributes["existingAccount"] = oAuthMemberPort.existsByEmail(userInfo.email)
+        }
+
         return DefaultOAuth2User(
             listOf(SimpleGrantedAuthority("ROLE_MEMBER")),
-            mapOf("memberId" to memberId),
-            "memberId",
+            attributes,
+            "email",
         )
     }
 }

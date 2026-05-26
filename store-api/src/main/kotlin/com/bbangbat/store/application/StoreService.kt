@@ -8,13 +8,10 @@ import org.springframework.stereotype.Service
 class StoreService(
     private val storeRepository: StoreRepository,
 ) {
-
     fun findStores(
         lat: Double,
         lng: Double,
-    ): List<Store> {
-        return storeRepository.findWithinRadius(lat, lng, RADIUS_METERS)
-    }
+    ): List<Store> = storeRepository.findWithinRadius(lat, lng, RADIUS_METERS)
 
     companion object {
         private const val RADIUS_METERS = 3000.0

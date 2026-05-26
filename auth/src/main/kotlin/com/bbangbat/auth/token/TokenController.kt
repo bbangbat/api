@@ -5,7 +5,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletResponse
-import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatus.NO_CONTENT
+import org.springframework.http.HttpStatus.OK
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.CookieValue
 import org.springframework.web.bind.annotation.PostMapping
@@ -26,6 +27,7 @@ class TokenController(
         ApiResponse(responseCode = "401", description = "유효하지 않은 Refresh Token"),
     )
     @PostMapping("/token/refresh")
+    @ResponseStatus(OK)
     fun refresh(
         @CookieValue("refresh_token") refreshToken: String,
         response: HttpServletResponse,
@@ -40,13 +42,12 @@ class TokenController(
     @Operation(summary = "로그아웃", description = "Refresh Token을 무효화하고 쿠키를 삭제합니다.")
     @ApiResponse(responseCode = "204", description = "로그아웃 성공")
     @PostMapping("/logout")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(NO_CONTENT)
     fun logout(
         @AuthenticationPrincipal memberId: Long,
         response: HttpServletResponse,
     ) {
         tokenService.deleteRefreshToken(memberId)
-
         refreshTokenCookieProvider.clearCookie(response)
     }
 }

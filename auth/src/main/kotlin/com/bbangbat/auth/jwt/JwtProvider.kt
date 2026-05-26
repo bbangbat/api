@@ -32,12 +32,14 @@ class JwtProvider(
 
     fun validateToken(token: String): Boolean =
         try {
-            Jwts
-                .parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token)
-            true
+            val claims =
+                Jwts
+                    .parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token)
+                    .payload
+            claims["tokenType"] == TOKEN_TYPE
         } catch (e: JwtException) {
             false
         }
@@ -49,8 +51,13 @@ class JwtProvider(
         Jwts
             .builder()
             .subject(memberId.toString())
+            .claim("tokenType", TOKEN_TYPE)
             .issuedAt(Date())
             .expiration(Date(System.currentTimeMillis() + expiry))
             .signWith(key)
             .compact()
+
+    companion object {
+        private const val TOKEN_TYPE = "ACCESS"
+    }
 }

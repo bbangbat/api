@@ -14,6 +14,7 @@ dependencies {
     implementation(libs.spring.boot.starter.log4j2)
     runtimeOnly(libs.jackson.dataformat.yaml)
 
+    implementation(libs.spring.boot.starter.data.jpa)
     runtimeOnly(libs.mysql.connector)
     implementation(libs.flyway.core)
     implementation(libs.flyway.mysql)

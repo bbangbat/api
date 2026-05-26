@@ -47,7 +47,7 @@ class TokenServiceTest {
     }
 
     @Test
-    fun `saveRefreshToken은 Redis에 RT를 저장한다`() {
+    fun `Redis에 RT를 저장한다`() {
         // given
         val memberId = 1L
         val refreshToken = "sample-refresh-token"
@@ -64,7 +64,7 @@ class TokenServiceTest {
     }
 
     @Test
-    fun `rotateToken은 유효한 RT로 새 AT와 RT를 반환한다`() {
+    fun `유효한 RT로 새 AT와 RT를 반환한다`() {
         // given
         val memberId = 1L
         val refreshToken = jwtProvider.createRefreshToken(memberId)
@@ -80,7 +80,7 @@ class TokenServiceTest {
     }
 
     @Test
-    fun `rotateToken은 유효하지 않은 RT면 예외를 던진다`() {
+    fun `유효하지 않은 RT면 예외를 던진다`() {
         // given
         val invalidToken = "invalid.token.string"
 
@@ -89,7 +89,7 @@ class TokenServiceTest {
     }
 
     @Test
-    fun `rotateToken은 Redis에 저장된 RT와 다르면 예외를 던진다`() {
+    fun `Redis에 저장된 RT와 다르면 예외를 던진다`() {
         // given
         val memberId = 1L
         val refreshToken = jwtProvider.createRefreshToken(memberId)
@@ -100,7 +100,7 @@ class TokenServiceTest {
     }
 
     @Test
-    fun `deleteRefreshToken은 Redis에서 RT를 삭제한다`() {
+    fun `Redis에서 RT를 삭제한다`() {
         // given
         val memberId = 1L
 

@@ -13,12 +13,10 @@ import org.testcontainers.junit.jupiter.Testcontainers
 @Import(JdslTestConfiguration::class)
 @Testcontainers
 abstract class AbstractContainerBaseTest {
-
     companion object {
         @Container
         @ServiceConnection
         @JvmField
         val mysql: MySQLContainer<*> = MySQLContainer("mysql:8.4")
     }
-    
 }
