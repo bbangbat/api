@@ -1,0 +1,164 @@
+package com.bbangbat.live.congestion.application
+
+import com.bbangbat.auth.voter.Voter
+import com.bbangbat.auth.voter.VoterType
+import com.bbangbat.common.exception.BbangbatException
+import com.bbangbat.live.congestion.domain.CongestionLevel
+import com.bbangbat.live.congestion.domain.CongestionVote
+import com.bbangbat.live.congestion.repository.CongestionVoteRepository
+import com.bbangbat.live.congestion.repository.StoreCongestionCount
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.Mock
+import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.given
+import org.mockito.kotlin.never
+import org.mockito.kotlin.then
+import org.mockito.kotlin.verifyNoInteractions
+import java.time.LocalDateTime
+
+@ExtendWith(MockitoExtension::class)
+class CongestionServiceTest {
+    @Mock
+    private lateinit var congestionVoteRepository: CongestionVoteRepository
+
+    private lateinit var congestionService: CongestionService
+
+    @BeforeEach
+    fun setUp() {
+        congestionService = CongestionService(congestionVoteRepository)
+    }
+
+    @Test
+    fun `기존 투표가 없으면 새로 저장한다`() {
+        // given
+        val storeId = 1L
+        val voter = Voter(VoterType.MEMBER, "1")
+        given(congestionVoteRepository.findByVoter(storeId, VoterType.MEMBER, "1")).willReturn(null)
+        given(congestionVoteRepository.findRecentVotes(eq(storeId), any())).willReturn(
+            listOf(recentVote(storeId, CongestionLevel.CROWDED, "1")),
+        )
+
+        // when
+        val result = congestionService.vote(storeId, CongestionLevel.CROWDED, DAEJEON_LAT, DAEJEON_LNG, voter)
+
+        // then
+        then(congestionVoteRepository).should().save(any())
+        then(congestionVoteRepository).should(never()).updateVote(any(), any(), any())
+        assertThat(result.current).isEqualTo(CongestionLevel.CROWDED)
+    }
+
+    @Test
+    fun `기존 투표가 있으면 덮어쓴다`() {
+        // given
+        val storeId = 1L
+        val voter = Voter(VoterType.MEMBER, "1")
+        val existing =
+            CongestionVote(
+                id = 5L,
+                storeId = storeId,
+                level = CongestionLevel.NORMAL,
+                voterType = VoterType.MEMBER,
+                voterKey = "1",
+                votedAt = LocalDateTime.now().minusMinutes(10),
+            )
+        given(congestionVoteRepository.findByVoter(storeId, VoterType.MEMBER, "1")).willReturn(existing)
+        given(congestionVoteRepository.findRecentVotes(eq(storeId), any())).willReturn(
+            listOf(recentVote(storeId, CongestionLevel.CROWDED, "1")),
+        )
+
+        // when
+        congestionService.vote(storeId, CongestionLevel.CROWDED, DAEJEON_LAT, DAEJEON_LNG, voter)
+
+        // then
+        then(congestionVoteRepository).should().updateVote(eq(5L), eq(CongestionLevel.CROWDED), any())
+        then(congestionVoteRepository).should(never()).save(any())
+    }
+
+    @Test
+    fun `대전 지역 밖 투표는 예외를 던지고 저장하지 않는다`() {
+        // given (서울)
+        val voter = Voter(VoterType.GUEST, "guest-1")
+
+        // when & then
+        assertThrows<BbangbatException> {
+            congestionService.vote(1L, CongestionLevel.NORMAL, 37.5665, 126.9780, voter)
+        }
+        verifyNoInteractions(congestionVoteRepository)
+    }
+
+    @Test
+    fun `혼잡도 조회는 최근 투표를 집계해 반환한다`() {
+        // given
+        val storeId = 1L
+        given(congestionVoteRepository.findRecentVotes(eq(storeId), any())).willReturn(
+            listOf(
+                recentVote(storeId, CongestionLevel.NORMAL, "a"),
+                recentVote(storeId, CongestionLevel.NORMAL, "b"),
+                recentVote(storeId, CongestionLevel.UNCROWDED, "c"),
+            ),
+        )
+
+        // when
+        val result = congestionService.getCongestion(storeId)
+
+        // then
+        assertThat(result.current).isEqualTo(CongestionLevel.NORMAL)
+        assertThat(result.totalVotes).isEqualTo(3)
+    }
+
+    @Test
+    fun `벌크 조회는 가게별 집계를 반환하고 투표 없는 가게도 빈 혼잡도로 포함한다`() {
+        // given
+        val storeIds = listOf(1L, 2L)
+        given(congestionVoteRepository.countRecentVotesByStores(eq(storeIds), any())).willReturn(
+            listOf(
+                StoreCongestionCount(storeId = 1L, level = CongestionLevel.CROWDED, count = 3),
+                StoreCongestionCount(storeId = 1L, level = CongestionLevel.NORMAL, count = 1),
+            ),
+        )
+
+        // when
+        val result = congestionService.getCongestions(storeIds)
+
+        // then
+        assertThat(result.keys).containsExactlyInAnyOrder(1L, 2L)
+        assertThat(result.getValue(1L).current).isEqualTo(CongestionLevel.CROWDED)
+        assertThat(result.getValue(1L).totalVotes).isEqualTo(4)
+        assertThat(result.getValue(2L).current).isEqualTo(CongestionLevel.UNCROWDED)
+        assertThat(result.getValue(2L).totalVotes).isEqualTo(0)
+    }
+
+    @Test
+    fun `벌크 조회에 빈 목록이 들어오면 빈 맵을 반환하고 조회하지 않는다`() {
+        // when
+        val result = congestionService.getCongestions(emptyList())
+
+        // then
+        assertThat(result).isEmpty()
+        verifyNoInteractions(congestionVoteRepository)
+    }
+
+    private fun recentVote(
+        storeId: Long,
+        level: CongestionLevel,
+        voterKey: String,
+    ): CongestionVote =
+        CongestionVote(
+            storeId = storeId,
+            level = level,
+            voterType = VoterType.GUEST,
+            voterKey = voterKey,
+            votedAt = LocalDateTime.now(),
+        )
+
+    companion object {
+        private const val DAEJEON_LAT = 36.3504
+        private const val DAEJEON_LNG = 127.3845
+    }
+}

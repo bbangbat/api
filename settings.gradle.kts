@@ -6,4 +6,5 @@ include(
     "common",
     "member-api",
     "store-api",
+    "live-api",
 )
