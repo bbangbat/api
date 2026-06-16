@@ -1,6 +1,7 @@
 package com.bbangbat.member.presentation
 
 import com.bbangbat.auth.jwt.JwtProvider
+import com.bbangbat.auth.resolver.AuthMember
 import com.bbangbat.auth.token.RefreshTokenCookieProvider
 import com.bbangbat.auth.token.TempTokenProvider
 import com.bbangbat.auth.token.TokenService
@@ -16,7 +17,6 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus.CREATED
 import org.springframework.http.HttpStatus.OK
-import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -76,6 +76,6 @@ class MemberController(
     @GetMapping("/me")
     @ResponseStatus(OK)
     fun getMe(
-        @AuthenticationPrincipal memberId: Long,
+        @AuthMember memberId: Long,
     ): MemberResponse = MemberResponse.from(memberService.findById(memberId))
 }

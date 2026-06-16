@@ -1,6 +1,5 @@
 package com.bbangbat.auth.oauth2
 
-import com.bbangbat.auth.OAuthMemberPort
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest

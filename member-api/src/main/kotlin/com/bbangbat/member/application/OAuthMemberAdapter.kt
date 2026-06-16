@@ -1,6 +1,6 @@
 package com.bbangbat.member.application
 
-import com.bbangbat.auth.OAuthMemberPort
+import com.bbangbat.auth.oauth2.OAuthMemberPort
 import com.bbangbat.auth.oauth2.SocialProvider
 import com.bbangbat.member.domain.SocialType
 import com.bbangbat.member.repository.SocialRepository
