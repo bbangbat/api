@@ -20,7 +20,7 @@ class CongestionTest {
             )
 
         // when
-        val congestion = Congestion.of(storeId = 1L, votes = votes)
+        val congestion = Congestion.summarizeVotes(storeId = 1L, votes = votes)
 
         // then
         assertThat(congestion.current).isEqualTo(CongestionLevel.CROWDED)
@@ -42,7 +42,7 @@ class CongestionTest {
             )
 
         // when
-        val congestion = Congestion.of(storeId = 1L, votes = votes)
+        val congestion = Congestion.summarizeVotes(storeId = 1L, votes = votes)
 
         // then
         assertThat(congestion.current).isEqualTo(CongestionLevel.CROWDED)
@@ -51,7 +51,7 @@ class CongestionTest {
     @Test
     fun `투표가 없으면 current는 기본값 UNCROWDED이고 모든 혼잡도 카운트는 0이다`() {
         // when
-        val congestion = Congestion.of(storeId = 1L, votes = emptyList())
+        val congestion = Congestion.summarizeVotes(storeId = 1L, votes = emptyList())
 
         // then
         assertThat(congestion.current).isEqualTo(CongestionLevel.UNCROWDED)

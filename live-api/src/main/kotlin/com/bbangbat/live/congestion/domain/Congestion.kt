@@ -15,12 +15,12 @@ data class Congestion(
             ?: CongestionLevel.UNCROWDED
 
     companion object {
-        fun of(
+        fun summarizeVotes(
             storeId: Long,
             votes: List<CongestionVote>,
-        ): Congestion = from(storeId, votes.groupingBy { it.level }.eachCount())
+        ): Congestion = summarizeCounts(storeId, votes.groupingBy { it.level }.eachCount())
 
-        fun from(
+        fun summarizeCounts(
             storeId: Long,
             counts: Map<CongestionLevel, Int>,
         ): Congestion {

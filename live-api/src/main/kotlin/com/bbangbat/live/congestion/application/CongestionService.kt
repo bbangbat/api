@@ -53,7 +53,7 @@ class CongestionService(
         val from = LocalDateTime.now().minusMinutes(WINDOW_MINUTES)
         val votes = congestionVoteRepository.findRecentVotes(storeId, from)
 
-        return Congestion.of(storeId, votes)
+        return Congestion.summarizeVotes(storeId, votes)
     }
 
     @Transactional(readOnly = true)
@@ -71,7 +71,7 @@ class CongestionService(
         return storeIds.associateWith { storeId ->
             val counts = countsByStore[storeId].orEmpty().associate { it.level to it.count.toInt() }
 
-            Congestion.from(storeId, counts)
+            Congestion.summarizeCounts(storeId, counts)
         }
     }
 
