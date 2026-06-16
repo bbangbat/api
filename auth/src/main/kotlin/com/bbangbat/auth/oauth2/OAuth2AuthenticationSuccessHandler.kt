@@ -1,6 +1,5 @@
 package com.bbangbat.auth.oauth2
 
-import com.bbangbat.auth.OAuthMemberPort
 import com.bbangbat.auth.jwt.JwtProvider
 import com.bbangbat.auth.token.RefreshTokenCookieProvider
 import com.bbangbat.auth.token.TempTokenProvider
