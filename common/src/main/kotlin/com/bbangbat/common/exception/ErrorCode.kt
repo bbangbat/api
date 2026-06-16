@@ -21,4 +21,7 @@ enum class ErrorCode(
 
     // Store
     CONGESTION_UNAVAILABLE(HttpStatus.NOT_FOUND, "혼잡도 정보를 조회할 수 없습니다."),
+
+    // Congestion
+    OUT_OF_SERVICE_AREA(HttpStatus.FORBIDDEN, "대전 지역에서만 이용할 수 있습니다."),
 }

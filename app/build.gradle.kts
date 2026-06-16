@@ -8,6 +8,7 @@ dependencies {
     implementation(project(":auth"))
     implementation(project(":member-api"))
     implementation(project(":store-api"))
+    implementation(project(":live-api"))
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.springdoc.openapi.webmvc.ui)
