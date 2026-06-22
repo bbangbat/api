@@ -7,4 +7,5 @@ include(
     "member-api",
     "store-api",
     "live-api",
+    "search-api",
 )

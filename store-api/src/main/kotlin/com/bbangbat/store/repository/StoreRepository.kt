@@ -32,4 +32,7 @@ class StoreRepository(
             .map { it.toDomain() }
 
     fun save(store: Store): Store = storeJpaRepository.save(StoreJpaEntity.from(store)).toDomain()
+
+    fun findAllByNameContaining(keyword: String): List<Store> =
+        storeJpaRepository.findAllByNameContainingIgnoreCase(keyword).map { it.toDomain() }
 }
