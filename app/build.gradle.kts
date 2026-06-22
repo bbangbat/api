@@ -10,6 +10,7 @@ dependencies {
     implementation(project(":store-api"))
     implementation(project(":live-api"))
     implementation(project(":search-api"))
+    implementation(project(":review-api"))
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.springdoc.openapi.webmvc.ui)

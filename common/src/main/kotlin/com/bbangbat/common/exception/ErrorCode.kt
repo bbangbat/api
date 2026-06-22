@@ -26,4 +26,8 @@ enum class ErrorCode(
 
     // Congestion
     OUT_OF_SERVICE_AREA(HttpStatus.FORBIDDEN, "대전 지역에서만 이용할 수 있습니다."),
+
+    // Review
+    REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "리뷰를 찾을 수 없습니다."),
+    REVIEW_FORBIDDEN(HttpStatus.FORBIDDEN, "본인의 리뷰만 삭제할 수 있습니다."),
 }

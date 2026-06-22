@@ -1,5 +1,6 @@
 [versions]
 kotlin = "2.3.10"
+aws-sdk = "2.31.0"
 spring-boot = "4.0.5"
 spring-dependency-management = "1.1.7"
 jdsl = "3.9.0"
@@ -32,6 +33,9 @@ springdoc-openapi-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starte
 jdsl-jpql-dsl = { module = "com.linecorp.kotlin-jdsl:jpql-dsl", version.ref = "jdsl" }
 jdsl-jpql-render = { module = "com.linecorp.kotlin-jdsl:jpql-render", version.ref = "jdsl" }
 jdsl-spring-data-jpa-support = { module = "com.linecorp.kotlin-jdsl:spring-data-jpa-boot4-support", version.ref = "jdsl" }
+
+# AWS
+aws-s3 = { module = "software.amazon.awssdk:s3", version.ref = "aws-sdk" }
 
 # JWT
 jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
