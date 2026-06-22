@@ -54,5 +54,7 @@ class MemberService(
 
     fun findById(id: Long): Member = memberRepository.findById(id)
 
+    fun existsByNickname(nickname: String): Boolean = memberRepository.existsByNickname(nickname)
+
     fun findByEmailOrNull(email: String): Member? = memberRepository.findByEmailOrNull(email)
 }

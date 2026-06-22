@@ -24,6 +24,8 @@ class MemberRepository(
 
     fun save(member: Member): Member = memberJpaRepository.save(MemberJpaEntity.from(member)).toDomain()
 
+    fun existsByNickname(nickname: String): Boolean = memberJpaRepository.existsByNickname(nickname)
+
     fun updateLastLoginAt(id: Long) {
         memberJpaRepository
             .findById(id)
