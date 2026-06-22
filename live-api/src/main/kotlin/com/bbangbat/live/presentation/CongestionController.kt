@@ -17,7 +17,6 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -27,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @Tag(name = "혼잡도", description = "실시간 혼잡도 API")
 @RestController
-@RequestMapping("/api/stores")
+@RequestMapping("/api/congestion")
 class CongestionController(
     private val congestionService: CongestionService,
     private val voterResolver: VoterResolver,
@@ -71,17 +70,16 @@ class CongestionController(
             ],
         ),
     )
-    @PostMapping("/{storeId}/congestion")
+    @PostMapping
     @ResponseStatus(HttpStatus.OK)
     fun vote(
-        @PathVariable storeId: Long,
         @RequestBody @Valid request: CongestionVoteRequest,
         httpRequest: HttpServletRequest,
     ): CongestionResponse {
         val voter = voterResolver.resolve(httpRequest)
         val congestion =
             congestionService.vote(
-                storeId = storeId,
+                storeId = request.storeId!!,
                 level = request.level!!,
                 latitude = request.latitude!!,
                 longitude = request.longitude!!,
@@ -91,12 +89,12 @@ class CongestionController(
         return CongestionResponse.from(congestion)
     }
 
-    @Operation(summary = "혼잡도 조회", description = "가게의 최근 15분 내 투표를 집계한 현재 혼잡도와 혼잡도별 투표 수를 조회합니다.")
+    @Operation(summary = "혼잡도 단건 조회", description = "가게의 최근 15분 내 투표를 집계한 현재 혼잡도와 혼잡도별 투표 수를 조회합니다.")
     @ApiResponse(responseCode = "200", description = "조회 성공")
-    @GetMapping("/{storeId}/congestion")
+    @GetMapping(params = ["storeId"])
     @ResponseStatus(HttpStatus.OK)
     fun getCongestion(
-        @PathVariable storeId: Long,
+        @RequestParam storeId: Long,
     ): CongestionResponse = CongestionResponse.from(congestionService.getCongestion(storeId))
 
     @Operation(
@@ -106,7 +104,7 @@ class CongestionController(
                 "요청한 모든 storeId가 응답에 포함됩니다 (투표 없는 가게는 UNCROWDED).",
     )
     @ApiResponse(responseCode = "200", description = "조회 성공 (가게별 혼잡도 배열)")
-    @GetMapping("/congestion")
+    @GetMapping(params = ["storeIds"])
     @ResponseStatus(HttpStatus.OK)
     fun getCongestions(
         @Parameter(description = "조회할 가게 ID 목록 (쉼표 구분)", example = "1,2,3")

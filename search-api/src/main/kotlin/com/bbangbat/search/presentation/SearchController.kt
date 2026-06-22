@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @Tag(name = "검색", description = "가게 검색 API")
 @RestController
-@RequestMapping("/api/stores/search")
+@RequestMapping("/api/search")
 class SearchController(
     private val searchService: SearchService,
 ) {
