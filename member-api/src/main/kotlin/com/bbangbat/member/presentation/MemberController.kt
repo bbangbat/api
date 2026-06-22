@@ -15,16 +15,22 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletResponse
+import jakarta.validation.Valid
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Size
 import org.springframework.http.HttpStatus.CREATED
 import org.springframework.http.HttpStatus.OK
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 
 @Tag(name = "회원", description = "회원 API")
+@Validated
 @RestController
 @RequestMapping("/api/members")
 class MemberController(
@@ -37,12 +43,13 @@ class MemberController(
     @Operation(summary = "소셜 회원가입")
     @ApiResponses(
         ApiResponse(responseCode = "201", description = "가입 성공"),
+        ApiResponse(responseCode = "400", description = "유효하지 않은 입력값"),
         ApiResponse(responseCode = "401", description = "임시 토큰 유효하지 않음"),
     )
     @PostMapping("/signup")
     @ResponseStatus(CREATED)
     fun signup(
-        @RequestBody request: SignupRequest,
+        @RequestBody @Valid request: SignupRequest,
         response: HttpServletResponse,
     ): SignupResponse {
         val claims = tempTokenProvider.parse(request.tempToken)
@@ -66,6 +73,24 @@ class MemberController(
         refreshTokenCookieProvider.addCookie(response, refreshToken)
 
         return SignupResponse(accessToken)
+    }
+
+    @Operation(summary = "닉네임 중복 확인", description = "닉네임 사용 가능 여부를 확인합니다. 비회원도 가능합니다.")
+    @ApiResponses(
+        ApiResponse(responseCode = "200", description = "확인 성공"),
+        ApiResponse(responseCode = "400", description = "유효하지 않은 닉네임"),
+    )
+    @GetMapping("/nickname/check")
+    @ResponseStatus(OK)
+    fun checkNickname(
+        @RequestParam
+        @NotBlank(message = "닉네임을 입력해주세요.")
+        @Size(min = 2, max = 20, message = "닉네임은 2자 이상 20자 이하여야 합니다.")
+        nickname: String,
+    ): Map<String, Boolean> {
+        val available = !memberService.existsByNickname(nickname)
+
+        return mapOf("available" to available)
     }
 
     @Operation(summary = "내 정보 조회")

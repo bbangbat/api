@@ -34,11 +34,13 @@ class SecurityConfig(
             .authorizeHttpRequests {
                 it.requestMatchers("/auth/**", "/oauth2/**", "/login/**").permitAll()
                 it.requestMatchers(POST, "/api/members/signup").permitAll()
+                it.requestMatchers(GET, "/api/members/nickname/check").permitAll()
                 it.requestMatchers(GET, "/api/stores").permitAll()
-                it.requestMatchers(GET, "/api/stores/congestion").permitAll()
-                it.requestMatchers(GET, "/api/stores/*/congestion").permitAll()
-                it.requestMatchers(POST, "/api/stores/*/congestion").permitAll()
-                it.requestMatchers(GET, "/api/stores/*/talk").permitAll()
+                it.requestMatchers(GET, "/api/search").permitAll()
+                it.requestMatchers(GET, "/api/congestion").permitAll()
+                it.requestMatchers(POST, "/api/congestion").permitAll()
+                it.requestMatchers(GET, "/api/talks").permitAll()
+                it.requestMatchers(GET, "/api/reviews").permitAll()
                 it.requestMatchers("/v3/api-docs/**", "/docs/**").permitAll()
                 it.anyRequest().authenticated()
             }.oauth2Login {

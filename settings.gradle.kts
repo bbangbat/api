@@ -8,4 +8,5 @@ include(
     "store-api",
     "live-api",
     "search-api",
+    "review-api",
 )

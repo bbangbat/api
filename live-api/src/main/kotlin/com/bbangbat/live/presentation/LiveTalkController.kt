@@ -16,7 +16,6 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -26,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @Tag(name = "실시간 톡", description = "가게별 실시간 톡 API (조회는 비회원도 가능, 작성은 회원 전용)")
 @RestController
-@RequestMapping("/api/stores")
+@RequestMapping("/api/talks")
 class LiveTalkController(
     private val liveTalkService: LiveTalkService,
 ) {
@@ -54,16 +53,15 @@ class LiveTalkController(
             ],
         ),
     )
-    @PostMapping("/{storeId}/talk")
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun sendMessage(
-        @PathVariable storeId: Long,
         @RequestBody @Valid request: LiveTalkMessageRequest,
         @AuthMember authorId: Long,
     ): LiveTalkMessageResponse =
         LiveTalkMessageResponse.from(
             liveTalkService.sendMessage(
-                storeId = storeId,
+                storeId = request.storeId!!,
                 authorId = authorId,
                 content = request.content!!,
             ),
@@ -78,10 +76,10 @@ class LiveTalkController(
     @ApiResponses(
         ApiResponse(responseCode = "200", description = "조회 성공"),
     )
-    @GetMapping("/{storeId}/talk")
+    @GetMapping
     @ResponseStatus(HttpStatus.OK)
     fun getMessages(
-        @PathVariable storeId: Long,
+        @RequestParam storeId: Long,
         @Parameter(description = "이 ID 이후 메시지만 조회 (최초 조회 시 생략)", example = "10")
         @RequestParam(required = false) afterId: Long?,
     ): List<LiveTalkMessageResponse> = liveTalkService.getMessages(storeId, afterId).map { LiveTalkMessageResponse.from(it) }
