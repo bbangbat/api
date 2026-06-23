@@ -17,6 +17,8 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(BbangbatException::class)
     fun handleBbangbatException(e: BbangbatException): ResponseEntity<ErrorResponse> {
+        log.warn("비즈니스 예외: {} - {}", e.errorCode.name, e.errorCode.message)
+
         val error = ErrorResponse(code = e.errorCode.name, message = e.errorCode.message)
 
         return ResponseEntity.status(e.errorCode.httpStatus).body(error)
@@ -30,11 +32,15 @@ class GlobalExceptionHandler {
                 ?.defaultMessage
                 ?: ErrorCode.INVALID_INPUT.message
 
+        log.warn("검증 실패: {}", message)
+
         return ResponseEntity.badRequest().body(ErrorResponse(code = ErrorCode.INVALID_INPUT.name, message = message))
     }
 
     @ExceptionHandler(MissingServletRequestParameterException::class)
     fun handleMissingServletRequestParameterException(e: MissingServletRequestParameterException): ResponseEntity<ErrorResponse> {
+        log.warn("필수 파라미터 누락: {}", e.parameterName)
+
         val error = ErrorResponse(code = ErrorCode.INVALID_INPUT.name, message = "${e.parameterName} 파라미터가 필요합니다.")
 
         return ResponseEntity.badRequest().body(error)
@@ -42,6 +48,8 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException::class)
     fun handleMethodArgumentTypeMismatchException(e: MethodArgumentTypeMismatchException): ResponseEntity<ErrorResponse> {
+        log.warn("파라미터 타입 불일치: {}", e.name)
+
         val error = ErrorResponse(code = ErrorCode.INVALID_INPUT.name, message = "${e.name} 파라미터의 타입이 올바르지 않습니다.")
 
         return ResponseEntity.badRequest().body(error)
@@ -49,6 +57,8 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException::class)
     fun handleIllegalArgumentException(e: IllegalArgumentException): ResponseEntity<ErrorResponse> {
+        log.warn("잘못된 인자: {}", e.message)
+
         val error = ErrorResponse(code = ErrorCode.INVALID_INPUT.name, message = e.message ?: ErrorCode.INVALID_INPUT.message)
 
         return ResponseEntity.badRequest().body(error)
@@ -56,7 +66,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception::class)
     fun handleException(e: Exception): ResponseEntity<ErrorResponse> {
-        log.error("Unhandled exception", e)
+        log.error("처리되지 않은 예외 발생", e)
 
         return ResponseEntity.internalServerError().body(
             ErrorResponse(
