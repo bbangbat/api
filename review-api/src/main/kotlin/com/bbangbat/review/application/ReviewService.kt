@@ -4,16 +4,16 @@ import com.bbangbat.common.exception.BbangbatException
 import com.bbangbat.common.exception.ErrorCode.REVIEW_FORBIDDEN
 import com.bbangbat.common.exception.ErrorCode.REVIEW_NOT_FOUND
 import com.bbangbat.review.domain.Review
-import com.bbangbat.review.repository.ReviewRepository
+import com.bbangbat.review.repository.ReviewPersistenceAdapter
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 class ReviewService(
-    private val reviewRepository: ReviewRepository,
+    private val reviewPersistenceAdapter: ReviewPersistenceAdapter,
     private val s3Service: S3Service,
 ) {
-    fun getReviews(storeId: Long): List<Review> = reviewRepository.findAllByStoreId(storeId)
+    fun getReviews(storeId: Long): List<Review> = reviewPersistenceAdapter.findAllByStoreId(storeId)
 
     @Transactional
     fun create(
@@ -34,7 +34,7 @@ class ReviewService(
                 imageUrls = imageKeys.map { s3Service.buildUrl(it) },
             )
 
-        return reviewRepository.save(review)
+        return reviewPersistenceAdapter.save(review)
     }
 
     @Transactional
@@ -43,14 +43,14 @@ class ReviewService(
         reviewId: Long,
     ) {
         val entity =
-            reviewRepository.findByIdOrNull(reviewId)
+            reviewPersistenceAdapter.findByIdOrNull(reviewId)
                 ?: throw BbangbatException(REVIEW_NOT_FOUND)
 
         if (entity.memberId != memberId) throw BbangbatException(REVIEW_FORBIDDEN)
 
-        val imageUrls = reviewRepository.getImageUrls(entity)
+        val imageUrls = reviewPersistenceAdapter.getImageUrls(entity)
 
-        reviewRepository.delete(entity)
+        reviewPersistenceAdapter.delete(entity)
 
         imageUrls.forEach { url ->
             val objectKey = url.substringAfter(".amazonaws.com/")

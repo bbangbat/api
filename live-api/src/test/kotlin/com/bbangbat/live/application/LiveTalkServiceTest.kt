@@ -1,7 +1,7 @@
 package com.bbangbat.live.application
 
 import com.bbangbat.live.domain.LiveTalkMessage
-import com.bbangbat.live.repository.LiveTalkMessageRepository
+import com.bbangbat.live.repository.LiveTalkMessagePersistenceAdapter
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -18,7 +18,7 @@ import java.time.LocalDateTime
 @ExtendWith(MockitoExtension::class)
 class LiveTalkServiceTest {
     @Mock
-    private lateinit var liveTalkMessageRepository: LiveTalkMessageRepository
+    private lateinit var liveTalkMessagePersistenceAdapter: LiveTalkMessagePersistenceAdapter
 
     @Mock
     private lateinit var memberPort: MemberPort
@@ -27,7 +27,7 @@ class LiveTalkServiceTest {
 
     @BeforeEach
     fun setUp() {
-        liveTalkService = LiveTalkService(liveTalkMessageRepository, memberPort)
+        liveTalkService = LiveTalkService(liveTalkMessagePersistenceAdapter, memberPort)
     }
 
     @Test
@@ -36,14 +36,14 @@ class LiveTalkServiceTest {
         val storeId = 1L
         val authorId = 10L
         given(memberPort.getNickname(authorId)).willReturn("빵순이")
-        given(liveTalkMessageRepository.save(any())).willAnswer { it.arguments[0] }
+        given(liveTalkMessagePersistenceAdapter.save(any())).willAnswer { it.arguments[0] }
 
         // when
         val result = liveTalkService.sendMessage(storeId, authorId, "지금 사람 많아요!")
 
         // then
         val captor = argumentCaptor<LiveTalkMessage>()
-        then(liveTalkMessageRepository).should().save(captor.capture())
+        then(liveTalkMessagePersistenceAdapter).should().save(captor.capture())
         assertThat(captor.firstValue.authorNickname).isEqualTo("빵순이")
         assertThat(captor.firstValue.storeId).isEqualTo(storeId)
         assertThat(captor.firstValue.authorId).isEqualTo(authorId)
@@ -54,13 +54,13 @@ class LiveTalkServiceTest {
     fun `afterId가 없으면 최근 24시간 윈도우 내 메시지를 조회한다`() {
         // given
         val storeId = 1L
-        given(liveTalkMessageRepository.findRecentMessages(eq(storeId), any(), eq(null))).willReturn(emptyList())
+        given(liveTalkMessagePersistenceAdapter.findRecentMessages(eq(storeId), any(), eq(null))).willReturn(emptyList())
 
         // when
         liveTalkService.getMessages(storeId, null)
 
         // then
-        then(liveTalkMessageRepository).should().findRecentMessages(eq(storeId), any(), eq(null))
+        then(liveTalkMessagePersistenceAdapter).should().findRecentMessages(eq(storeId), any(), eq(null))
     }
 
     @Test
@@ -68,7 +68,7 @@ class LiveTalkServiceTest {
         // given
         val storeId = 1L
         val afterId = 5L
-        given(liveTalkMessageRepository.findRecentMessages(eq(storeId), any(), eq(afterId))).willReturn(
+        given(liveTalkMessagePersistenceAdapter.findRecentMessages(eq(storeId), any(), eq(afterId))).willReturn(
             listOf(message(storeId, id = 6L)),
         )
 
@@ -76,7 +76,7 @@ class LiveTalkServiceTest {
         val result = liveTalkService.getMessages(storeId, afterId)
 
         // then
-        then(liveTalkMessageRepository).should().findRecentMessages(eq(storeId), any(), eq(afterId))
+        then(liveTalkMessagePersistenceAdapter).should().findRecentMessages(eq(storeId), any(), eq(afterId))
         assertThat(result).hasSize(1)
         assertThat(result[0].id).isEqualTo(6L)
     }

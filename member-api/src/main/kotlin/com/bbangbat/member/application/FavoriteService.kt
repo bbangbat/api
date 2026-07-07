@@ -4,24 +4,24 @@ import com.bbangbat.common.exception.BbangbatException
 import com.bbangbat.common.exception.ErrorCode.FAVORITE_ALREADY_EXISTS
 import com.bbangbat.common.exception.ErrorCode.FAVORITE_NOT_FOUND
 import com.bbangbat.member.domain.Favorite
-import com.bbangbat.member.repository.FavoriteRepository
+import com.bbangbat.member.repository.FavoritePersistenceAdapter
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 class FavoriteService(
-    private val favoriteRepository: FavoriteRepository,
+    private val favoritePersistenceAdapter: FavoritePersistenceAdapter,
 ) {
     @Transactional
     fun add(
         memberId: Long,
         storeId: Long,
     ) {
-        if (favoriteRepository.existsByMemberIdAndStoreId(memberId, storeId)) {
+        if (favoritePersistenceAdapter.existsByMemberIdAndStoreId(memberId, storeId)) {
             throw BbangbatException(FAVORITE_ALREADY_EXISTS)
         }
 
-        favoriteRepository.save(Favorite(memberId = memberId, storeId = storeId))
+        favoritePersistenceAdapter.save(Favorite(memberId = memberId, storeId = storeId))
     }
 
     @Transactional
@@ -30,12 +30,12 @@ class FavoriteService(
         storeId: Long,
     ) {
         val favorite =
-            favoriteRepository.findByMemberIdAndStoreId(memberId, storeId)
+            favoritePersistenceAdapter.findByMemberIdAndStoreId(memberId, storeId)
                 ?: throw BbangbatException(FAVORITE_NOT_FOUND)
 
-        favoriteRepository.delete(favorite)
+        favoritePersistenceAdapter.delete(favorite)
     }
 
     @Transactional(readOnly = true)
-    fun findStoreIds(memberId: Long): List<Long> = favoriteRepository.findAllStoreIdsByMemberId(memberId)
+    fun findStoreIds(memberId: Long): List<Long> = favoritePersistenceAdapter.findAllStoreIdsByMemberId(memberId)
 }

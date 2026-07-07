@@ -1,7 +1,7 @@
 package com.bbangbat.search.application
 
 import com.bbangbat.store.domain.Store
-import com.bbangbat.store.repository.StoreRepository
+import com.bbangbat.store.repository.StorePersistenceAdapter
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -13,13 +13,13 @@ import org.mockito.junit.jupiter.MockitoExtension
 @ExtendWith(MockitoExtension::class)
 class SearchServiceTest {
     @Mock
-    private lateinit var storeRepository: StoreRepository
+    private lateinit var storePersistenceAdapter: StorePersistenceAdapter
 
     private lateinit var searchService: SearchService
 
     @BeforeEach
     fun setUp() {
-        searchService = SearchService(storeRepository)
+        searchService = SearchService(storePersistenceAdapter)
     }
 
     @Test
@@ -30,7 +30,7 @@ class SearchServiceTest {
             listOf(
                 Store(id = 1L, name = "홍길동 베이커리", latitude = 37.5665, longitude = 126.9780, address = "서울시 중구"),
             )
-        given(storeRepository.findAllByNameContaining(keyword)).willReturn(stores)
+        given(storePersistenceAdapter.findAllByNameContaining(keyword)).willReturn(stores)
 
         // when
         val result = searchService.searchStores(keyword)
@@ -44,7 +44,7 @@ class SearchServiceTest {
     fun `검색 결과가 없으면 빈 리스트를 반환한다`() {
         // given
         val keyword = "존재하지않는가게"
-        given(storeRepository.findAllByNameContaining(keyword)).willReturn(emptyList())
+        given(storePersistenceAdapter.findAllByNameContaining(keyword)).willReturn(emptyList())
 
         // when
         val result = searchService.searchStores(keyword)

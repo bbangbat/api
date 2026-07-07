@@ -5,8 +5,8 @@ import com.bbangbat.member.domain.Gender
 import com.bbangbat.member.domain.Member
 import com.bbangbat.member.domain.Social
 import com.bbangbat.member.domain.SocialType
-import com.bbangbat.member.repository.MemberRepository
-import com.bbangbat.member.repository.SocialRepository
+import com.bbangbat.member.repository.MemberPersistenceAdapter
+import com.bbangbat.member.repository.SocialPersistenceAdapter
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -23,16 +23,16 @@ import java.time.LocalDateTime
 @ExtendWith(MockitoExtension::class)
 class MemberServiceTest {
     @Mock
-    private lateinit var memberRepository: MemberRepository
+    private lateinit var memberPersistenceAdapter: MemberPersistenceAdapter
 
     @Mock
-    private lateinit var socialRepository: SocialRepository
+    private lateinit var socialPersistenceAdapter: SocialPersistenceAdapter
 
     private lateinit var memberService: MemberService
 
     @BeforeEach
     fun setUp() {
-        memberService = MemberService(memberRepository, socialRepository)
+        memberService = MemberService(memberPersistenceAdapter, socialPersistenceAdapter)
     }
 
     @Test
@@ -51,7 +51,7 @@ class MemberServiceTest {
                 privacyAgreed = true,
                 lastLoginAt = LocalDateTime.now(),
             )
-        given(memberRepository.save(any())).willReturn(savedMember)
+        given(memberPersistenceAdapter.save(any())).willReturn(savedMember)
 
         // when
         val result =
@@ -71,7 +71,7 @@ class MemberServiceTest {
         // then
         assertThat(result.id).isEqualTo(1L)
         assertThat(result.email).isEqualTo("test@test.com")
-        then(socialRepository).should().save(
+        then(socialPersistenceAdapter).should().save(
             Social(member = savedMember, provider = SocialType.KAKAO, providerId = "kakao-123"),
         )
     }
@@ -93,7 +93,7 @@ class MemberServiceTest {
                 privacyAgreed = true,
                 lastLoginAt = LocalDateTime.now(),
             )
-        given(memberRepository.save(any())).willReturn(savedMember)
+        given(memberPersistenceAdapter.save(any())).willReturn(savedMember)
         val memberCaptor = argumentCaptor<Member>()
 
         // when
@@ -111,14 +111,14 @@ class MemberServiceTest {
         )
 
         // then
-        verify(memberRepository).save(memberCaptor.capture())
+        verify(memberPersistenceAdapter).save(memberCaptor.capture())
         assertThat(memberCaptor.firstValue.lastLoginAt).isNotNull().isAfterOrEqualTo(beforeSignup)
     }
 
     @Test
     fun `사용 중인 닉네임이면 true를 반환한다`() {
         // given
-        given(memberRepository.existsByNickname("빵괴물")).willReturn(true)
+        given(memberPersistenceAdapter.existsByNickname("빵괴물")).willReturn(true)
 
         // when
         val result = memberService.existsByNickname("빵괴물")
@@ -130,7 +130,7 @@ class MemberServiceTest {
     @Test
     fun `사용 가능한 닉네임이면 false를 반환한다`() {
         // given
-        given(memberRepository.existsByNickname("새닉네임")).willReturn(false)
+        given(memberPersistenceAdapter.existsByNickname("새닉네임")).willReturn(false)
 
         // when
         val result = memberService.existsByNickname("새닉네임")

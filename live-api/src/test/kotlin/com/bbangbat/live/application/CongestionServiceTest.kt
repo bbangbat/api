@@ -5,7 +5,7 @@ import com.bbangbat.auth.voter.VoterType
 import com.bbangbat.common.exception.BbangbatException
 import com.bbangbat.live.domain.CongestionLevel
 import com.bbangbat.live.domain.CongestionVote
-import com.bbangbat.live.repository.CongestionVoteRepository
+import com.bbangbat.live.repository.CongestionVotePersistenceAdapter
 import com.bbangbat.live.repository.StoreCongestionCount
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -25,13 +25,13 @@ import java.time.LocalDateTime
 @ExtendWith(MockitoExtension::class)
 class CongestionServiceTest {
     @Mock
-    private lateinit var congestionVoteRepository: CongestionVoteRepository
+    private lateinit var congestionVotePersistenceAdapter: CongestionVotePersistenceAdapter
 
     private lateinit var congestionService: CongestionService
 
     @BeforeEach
     fun setUp() {
-        congestionService = CongestionService(congestionVoteRepository)
+        congestionService = CongestionService(congestionVotePersistenceAdapter)
     }
 
     @Test
@@ -39,8 +39,8 @@ class CongestionServiceTest {
         // given
         val storeId = 1L
         val voter = Voter(VoterType.MEMBER, "1")
-        given(congestionVoteRepository.findByVoter(storeId, VoterType.MEMBER, "1")).willReturn(null)
-        given(congestionVoteRepository.findRecentVotes(eq(storeId), any())).willReturn(
+        given(congestionVotePersistenceAdapter.findByVoter(storeId, VoterType.MEMBER, "1")).willReturn(null)
+        given(congestionVotePersistenceAdapter.findRecentVotes(eq(storeId), any())).willReturn(
             listOf(recentVote(storeId, CongestionLevel.CROWDED, "1")),
         )
 
@@ -48,8 +48,8 @@ class CongestionServiceTest {
         val result = congestionService.vote(storeId, CongestionLevel.CROWDED, DAEJEON_LAT, DAEJEON_LNG, voter)
 
         // then
-        then(congestionVoteRepository).should().save(any())
-        then(congestionVoteRepository).should(never()).updateVote(any(), any(), any())
+        then(congestionVotePersistenceAdapter).should().save(any())
+        then(congestionVotePersistenceAdapter).should(never()).updateVote(any(), any(), any())
         assertThat(result.current).isEqualTo(CongestionLevel.CROWDED)
     }
 
@@ -67,8 +67,8 @@ class CongestionServiceTest {
                 voterKey = "1",
                 votedAt = LocalDateTime.now().minusMinutes(10),
             )
-        given(congestionVoteRepository.findByVoter(storeId, VoterType.MEMBER, "1")).willReturn(existing)
-        given(congestionVoteRepository.findRecentVotes(eq(storeId), any())).willReturn(
+        given(congestionVotePersistenceAdapter.findByVoter(storeId, VoterType.MEMBER, "1")).willReturn(existing)
+        given(congestionVotePersistenceAdapter.findRecentVotes(eq(storeId), any())).willReturn(
             listOf(recentVote(storeId, CongestionLevel.CROWDED, "1")),
         )
 
@@ -76,8 +76,8 @@ class CongestionServiceTest {
         congestionService.vote(storeId, CongestionLevel.CROWDED, DAEJEON_LAT, DAEJEON_LNG, voter)
 
         // then
-        then(congestionVoteRepository).should().updateVote(eq(5L), eq(CongestionLevel.CROWDED), any())
-        then(congestionVoteRepository).should(never()).save(any())
+        then(congestionVotePersistenceAdapter).should().updateVote(eq(5L), eq(CongestionLevel.CROWDED), any())
+        then(congestionVotePersistenceAdapter).should(never()).save(any())
     }
 
     @Test
@@ -89,14 +89,14 @@ class CongestionServiceTest {
         assertThrows<BbangbatException> {
             congestionService.vote(1L, CongestionLevel.NORMAL, 37.5665, 126.9780, voter)
         }
-        verifyNoInteractions(congestionVoteRepository)
+        verifyNoInteractions(congestionVotePersistenceAdapter)
     }
 
     @Test
     fun `혼잡도 조회는 최근 투표를 집계해 반환한다`() {
         // given
         val storeId = 1L
-        given(congestionVoteRepository.findRecentVotes(eq(storeId), any())).willReturn(
+        given(congestionVotePersistenceAdapter.findRecentVotes(eq(storeId), any())).willReturn(
             listOf(
                 recentVote(storeId, CongestionLevel.NORMAL, "a"),
                 recentVote(storeId, CongestionLevel.NORMAL, "b"),
@@ -116,7 +116,7 @@ class CongestionServiceTest {
     fun `벌크 조회는 가게별 집계를 반환하고 투표 없는 가게도 빈 혼잡도로 포함한다`() {
         // given
         val storeIds = listOf(1L, 2L)
-        given(congestionVoteRepository.countRecentVotesByStores(eq(storeIds), any())).willReturn(
+        given(congestionVotePersistenceAdapter.countRecentVotesByStores(eq(storeIds), any())).willReturn(
             listOf(
                 StoreCongestionCount(storeId = 1L, level = CongestionLevel.CROWDED, count = 3),
                 StoreCongestionCount(storeId = 1L, level = CongestionLevel.NORMAL, count = 1),
@@ -141,7 +141,7 @@ class CongestionServiceTest {
 
         // then
         assertThat(result).isEmpty()
-        verifyNoInteractions(congestionVoteRepository)
+        verifyNoInteractions(congestionVotePersistenceAdapter)
     }
 
     private fun recentVote(

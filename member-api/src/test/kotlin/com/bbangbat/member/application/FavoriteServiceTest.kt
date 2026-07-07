@@ -4,7 +4,7 @@ import com.bbangbat.common.exception.BbangbatException
 import com.bbangbat.common.exception.ErrorCode.FAVORITE_ALREADY_EXISTS
 import com.bbangbat.common.exception.ErrorCode.FAVORITE_NOT_FOUND
 import com.bbangbat.member.domain.Favorite
-import com.bbangbat.member.repository.FavoriteRepository
+import com.bbangbat.member.repository.FavoritePersistenceAdapter
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -18,13 +18,13 @@ import org.mockito.junit.jupiter.MockitoExtension
 @ExtendWith(MockitoExtension::class)
 class FavoriteServiceTest {
     @Mock
-    private lateinit var favoriteRepository: FavoriteRepository
+    private lateinit var favoritePersistenceAdapter: FavoritePersistenceAdapter
 
     private lateinit var favoriteService: FavoriteService
 
     @BeforeEach
     fun setUp() {
-        favoriteService = FavoriteService(favoriteRepository)
+        favoriteService = FavoriteService(favoritePersistenceAdapter)
     }
 
     @Test
@@ -32,13 +32,13 @@ class FavoriteServiceTest {
         // given
         val memberId = 1L
         val storeId = 10L
-        given(favoriteRepository.existsByMemberIdAndStoreId(memberId, storeId)).willReturn(false)
+        given(favoritePersistenceAdapter.existsByMemberIdAndStoreId(memberId, storeId)).willReturn(false)
 
         // when
         favoriteService.add(memberId, storeId)
 
         // then
-        then(favoriteRepository).should().save(Favorite(memberId = memberId, storeId = storeId))
+        then(favoritePersistenceAdapter).should().save(Favorite(memberId = memberId, storeId = storeId))
     }
 
     @Test
@@ -46,12 +46,12 @@ class FavoriteServiceTest {
         // given
         val memberId = 1L
         val storeId = 10L
-        given(favoriteRepository.existsByMemberIdAndStoreId(memberId, storeId)).willReturn(true)
+        given(favoritePersistenceAdapter.existsByMemberIdAndStoreId(memberId, storeId)).willReturn(true)
 
         // when & then
         val exception = assertThrows<BbangbatException> { favoriteService.add(memberId, storeId) }
         assertThat(exception.errorCode).isEqualTo(FAVORITE_ALREADY_EXISTS)
-        then(favoriteRepository).shouldHaveNoMoreInteractions()
+        then(favoritePersistenceAdapter).shouldHaveNoMoreInteractions()
     }
 
     @Test
@@ -60,13 +60,13 @@ class FavoriteServiceTest {
         val memberId = 1L
         val storeId = 10L
         val favorite = Favorite(id = 100L, memberId = memberId, storeId = storeId)
-        given(favoriteRepository.findByMemberIdAndStoreId(memberId, storeId)).willReturn(favorite)
+        given(favoritePersistenceAdapter.findByMemberIdAndStoreId(memberId, storeId)).willReturn(favorite)
 
         // when
         favoriteService.remove(memberId, storeId)
 
         // then
-        then(favoriteRepository).should().delete(favorite)
+        then(favoritePersistenceAdapter).should().delete(favorite)
     }
 
     @Test
@@ -74,7 +74,7 @@ class FavoriteServiceTest {
         // given
         val memberId = 1L
         val storeId = 10L
-        given(favoriteRepository.findByMemberIdAndStoreId(memberId, storeId)).willReturn(null)
+        given(favoritePersistenceAdapter.findByMemberIdAndStoreId(memberId, storeId)).willReturn(null)
 
         // when & then
         val exception = assertThrows<BbangbatException> { favoriteService.remove(memberId, storeId) }
@@ -85,7 +85,7 @@ class FavoriteServiceTest {
     fun `즐겨찾기 목록을 storeId 리스트로 반환한다`() {
         // given
         val memberId = 1L
-        given(favoriteRepository.findAllStoreIdsByMemberId(memberId)).willReturn(listOf(10L, 20L, 30L))
+        given(favoritePersistenceAdapter.findAllStoreIdsByMemberId(memberId)).willReturn(listOf(10L, 20L, 30L))
 
         // when
         val result = favoriteService.findStoreIds(memberId)
@@ -98,7 +98,7 @@ class FavoriteServiceTest {
     fun `즐겨찾기가 없으면 빈 리스트를 반환한다`() {
         // given
         val memberId = 1L
-        given(favoriteRepository.findAllStoreIdsByMemberId(memberId)).willReturn(emptyList())
+        given(favoritePersistenceAdapter.findAllStoreIdsByMemberId(memberId)).willReturn(emptyList())
 
         // when
         val result = favoriteService.findStoreIds(memberId)

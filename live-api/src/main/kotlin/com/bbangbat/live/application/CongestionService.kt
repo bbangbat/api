@@ -7,14 +7,14 @@ import com.bbangbat.live.domain.Congestion
 import com.bbangbat.live.domain.CongestionLevel
 import com.bbangbat.live.domain.CongestionVote
 import com.bbangbat.live.domain.ServiceArea
-import com.bbangbat.live.repository.CongestionVoteRepository
+import com.bbangbat.live.repository.CongestionVotePersistenceAdapter
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Service
 class CongestionService(
-    private val congestionVoteRepository: CongestionVoteRepository,
+    private val congestionVotePersistenceAdapter: CongestionVotePersistenceAdapter,
 ) {
     @Transactional
     fun vote(
@@ -29,12 +29,12 @@ class CongestionService(
         }
 
         val now = LocalDateTime.now()
-        val existing = congestionVoteRepository.findByVoter(storeId, voter.type, voter.key)
+        val existing = congestionVotePersistenceAdapter.findByVoter(storeId, voter.type, voter.key)
 
         if (existing != null) {
-            congestionVoteRepository.updateVote(existing.id, level, now)
+            congestionVotePersistenceAdapter.updateVote(existing.id, level, now)
         } else {
-            congestionVoteRepository.save(
+            congestionVotePersistenceAdapter.save(
                 CongestionVote(
                     storeId = storeId,
                     level = level,
@@ -51,7 +51,7 @@ class CongestionService(
     @Transactional(readOnly = true)
     fun getCongestion(storeId: Long): Congestion {
         val from = LocalDateTime.now().minusMinutes(WINDOW_MINUTES)
-        val votes = congestionVoteRepository.findRecentVotes(storeId, from)
+        val votes = congestionVotePersistenceAdapter.findRecentVotes(storeId, from)
 
         return Congestion.summarizeVotes(storeId, votes)
     }
@@ -64,7 +64,7 @@ class CongestionService(
 
         val from = LocalDateTime.now().minusMinutes(WINDOW_MINUTES)
         val countsByStore =
-            congestionVoteRepository
+            congestionVotePersistenceAdapter
                 .countRecentVotesByStores(storeIds, from)
                 .groupBy { it.storeId }
 

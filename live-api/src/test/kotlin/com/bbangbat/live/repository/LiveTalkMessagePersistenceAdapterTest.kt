@@ -9,17 +9,17 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager
 import org.springframework.context.annotation.Import
 import java.time.LocalDateTime
 
-@Import(LiveTalkMessageRepository::class)
-class LiveTalkMessageRepositoryTest
+@Import(LiveTalkMessagePersistenceAdapter::class)
+class LiveTalkMessagePersistenceAdapterTest
     @Autowired
     constructor(
-        private val liveTalkMessageRepository: LiveTalkMessageRepository,
+        private val liveTalkMessagePersistenceAdapter: LiveTalkMessagePersistenceAdapter,
         private val em: TestEntityManager,
     ) : AbstractContainerBaseTest() {
         @Test
         fun `메시지를 저장하면 id와 createdAt이 채워진다`() {
             // when
-            val saved = liveTalkMessageRepository.save(message(storeId = 1L))
+            val saved = liveTalkMessagePersistenceAdapter.save(message(storeId = 1L))
 
             // then
             assertThat(saved.id).isGreaterThan(0L)
@@ -29,16 +29,16 @@ class LiveTalkMessageRepositoryTest
         @Test
         fun `findRecentMessages는 윈도우 밖의 오래된 메시지를 제외한다`() {
             // given
-            val old = liveTalkMessageRepository.save(message(storeId = 1L, content = "오래된 메시지"))
+            val old = liveTalkMessagePersistenceAdapter.save(message(storeId = 1L, content = "오래된 메시지"))
             em.flush()
             val cutoff = old.createdAt.plusNanos(1_000_000)
             Thread.sleep(10)
-            liveTalkMessageRepository.save(message(storeId = 1L, content = "최근 메시지"))
+            liveTalkMessagePersistenceAdapter.save(message(storeId = 1L, content = "최근 메시지"))
             em.flush()
             em.clear()
 
             // when
-            val recent = liveTalkMessageRepository.findRecentMessages(1L, cutoff, null)
+            val recent = liveTalkMessagePersistenceAdapter.findRecentMessages(1L, cutoff, null)
 
             // then
             assertThat(recent).hasSize(1)
@@ -48,13 +48,13 @@ class LiveTalkMessageRepositoryTest
         @Test
         fun `findRecentMessages는 다른 가게의 메시지를 제외한다`() {
             // given
-            liveTalkMessageRepository.save(message(storeId = 1L, content = "가게1 메시지"))
-            liveTalkMessageRepository.save(message(storeId = 2L, content = "가게2 메시지"))
+            liveTalkMessagePersistenceAdapter.save(message(storeId = 1L, content = "가게1 메시지"))
+            liveTalkMessagePersistenceAdapter.save(message(storeId = 2L, content = "가게2 메시지"))
             em.flush()
             em.clear()
 
             // when
-            val recent = liveTalkMessageRepository.findRecentMessages(1L, LocalDateTime.now().minusMinutes(60), null)
+            val recent = liveTalkMessagePersistenceAdapter.findRecentMessages(1L, LocalDateTime.now().minusMinutes(60), null)
 
             // then
             assertThat(recent).hasSize(1)
@@ -64,14 +64,14 @@ class LiveTalkMessageRepositoryTest
         @Test
         fun `afterId를 전달하면 그 이후 메시지만 오래된 순으로 반환한다`() {
             // given
-            val first = liveTalkMessageRepository.save(message(storeId = 1L, content = "첫번째"))
-            val second = liveTalkMessageRepository.save(message(storeId = 1L, content = "두번째"))
-            val third = liveTalkMessageRepository.save(message(storeId = 1L, content = "세번째"))
+            val first = liveTalkMessagePersistenceAdapter.save(message(storeId = 1L, content = "첫번째"))
+            val second = liveTalkMessagePersistenceAdapter.save(message(storeId = 1L, content = "두번째"))
+            val third = liveTalkMessagePersistenceAdapter.save(message(storeId = 1L, content = "세번째"))
             em.flush()
             em.clear()
 
             // when
-            val messages = liveTalkMessageRepository.findRecentMessages(1L, LocalDateTime.now().minusMinutes(60), first.id)
+            val messages = liveTalkMessagePersistenceAdapter.findRecentMessages(1L, LocalDateTime.now().minusMinutes(60), first.id)
 
             // then
             assertThat(messages.map { it.id }).containsExactly(second.id, third.id)

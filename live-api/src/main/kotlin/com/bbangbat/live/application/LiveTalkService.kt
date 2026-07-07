@@ -1,14 +1,14 @@
 package com.bbangbat.live.application
 
 import com.bbangbat.live.domain.LiveTalkMessage
-import com.bbangbat.live.repository.LiveTalkMessageRepository
+import com.bbangbat.live.repository.LiveTalkMessagePersistenceAdapter
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Service
 class LiveTalkService(
-    private val liveTalkMessageRepository: LiveTalkMessageRepository,
+    private val liveTalkMessagePersistenceAdapter: LiveTalkMessagePersistenceAdapter,
     private val memberPort: MemberPort,
 ) {
     @Transactional
@@ -27,7 +27,7 @@ class LiveTalkService(
                 createdAt = LocalDateTime.now(),
             )
 
-        return liveTalkMessageRepository.save(message)
+        return liveTalkMessagePersistenceAdapter.save(message)
     }
 
     @Transactional(readOnly = true)
@@ -37,7 +37,7 @@ class LiveTalkService(
     ): List<LiveTalkMessage> {
         val from = LocalDateTime.now().minusHours(WINDOW_HOURS)
 
-        return liveTalkMessageRepository.findRecentMessages(storeId, from, afterId)
+        return liveTalkMessagePersistenceAdapter.findRecentMessages(storeId, from, afterId)
     }
 
     companion object {

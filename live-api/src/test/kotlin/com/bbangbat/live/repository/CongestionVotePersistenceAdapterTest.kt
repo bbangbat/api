@@ -11,22 +11,22 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager
 import org.springframework.context.annotation.Import
 import java.time.LocalDateTime
 
-@Import(CongestionVoteRepository::class)
-class CongestionVoteRepositoryTest
+@Import(CongestionVotePersistenceAdapter::class)
+class CongestionVotePersistenceAdapterTest
     @Autowired
     constructor(
-        private val congestionVoteRepository: CongestionVoteRepository,
+        private val congestionVotePersistenceAdapter: CongestionVotePersistenceAdapter,
         private val em: TestEntityManager,
     ) : AbstractContainerBaseTest() {
         @Test
         fun `투표자로 기존 투표를 조회한다`() {
             // given
-            congestionVoteRepository.save(vote(storeId = 1L, level = CongestionLevel.NORMAL, voterKey = "10"))
+            congestionVotePersistenceAdapter.save(vote(storeId = 1L, level = CongestionLevel.NORMAL, voterKey = "10"))
             em.flush()
             em.clear()
 
             // when
-            val found = congestionVoteRepository.findByVoter(1L, VoterType.MEMBER, "10")
+            val found = congestionVotePersistenceAdapter.findByVoter(1L, VoterType.MEMBER, "10")
 
             // then
             assertThat(found).isNotNull
@@ -36,18 +36,18 @@ class CongestionVoteRepositoryTest
         @Test
         fun `updateVote는 더티체킹으로 level과 votedAt을 갱신한다`() {
             // given
-            val saved = congestionVoteRepository.save(vote(storeId = 1L, level = CongestionLevel.NORMAL, voterKey = "10"))
+            val saved = congestionVotePersistenceAdapter.save(vote(storeId = 1L, level = CongestionLevel.NORMAL, voterKey = "10"))
             em.flush()
             em.clear()
             val newVotedAt = LocalDateTime.now()
 
             // when
-            congestionVoteRepository.updateVote(saved.id, CongestionLevel.CROWDED, newVotedAt)
+            congestionVotePersistenceAdapter.updateVote(saved.id, CongestionLevel.CROWDED, newVotedAt)
             em.flush()
             em.clear()
 
             // then
-            val updated = congestionVoteRepository.findByVoter(1L, VoterType.MEMBER, "10")!!
+            val updated = congestionVotePersistenceAdapter.findByVoter(1L, VoterType.MEMBER, "10")!!
             assertThat(updated.level).isEqualTo(CongestionLevel.CROWDED)
         }
 
@@ -55,15 +55,15 @@ class CongestionVoteRepositoryTest
         fun `findRecentVotes는 윈도우 밖의 오래된 투표를 제외한다`() {
             // given
             val now = LocalDateTime.now()
-            congestionVoteRepository.save(vote(storeId = 1L, level = CongestionLevel.CROWDED, voterKey = "recent", votedAt = now))
-            congestionVoteRepository.save(
+            congestionVotePersistenceAdapter.save(vote(storeId = 1L, level = CongestionLevel.CROWDED, voterKey = "recent", votedAt = now))
+            congestionVotePersistenceAdapter.save(
                 vote(storeId = 1L, level = CongestionLevel.UNCROWDED, voterKey = "old", votedAt = now.minusMinutes(30)),
             )
             em.flush()
             em.clear()
 
             // when
-            val recent = congestionVoteRepository.findRecentVotes(1L, now.minusMinutes(15))
+            val recent = congestionVotePersistenceAdapter.findRecentVotes(1L, now.minusMinutes(15))
 
             // then
             assertThat(recent).hasSize(1)
@@ -74,19 +74,19 @@ class CongestionVoteRepositoryTest
         fun `countRecentVotesByStores는 여러 가게의 최근 투표를 가게별 혼잡도별로 집계한다`() {
             // given
             val now = LocalDateTime.now()
-            congestionVoteRepository.save(vote(storeId = 1L, level = CongestionLevel.CROWDED, voterKey = "a", votedAt = now))
-            congestionVoteRepository.save(vote(storeId = 1L, level = CongestionLevel.CROWDED, voterKey = "b", votedAt = now))
-            congestionVoteRepository.save(vote(storeId = 1L, level = CongestionLevel.NORMAL, voterKey = "c", votedAt = now))
-            congestionVoteRepository.save(vote(storeId = 2L, level = CongestionLevel.UNCROWDED, voterKey = "d", votedAt = now))
+            congestionVotePersistenceAdapter.save(vote(storeId = 1L, level = CongestionLevel.CROWDED, voterKey = "a", votedAt = now))
+            congestionVotePersistenceAdapter.save(vote(storeId = 1L, level = CongestionLevel.CROWDED, voterKey = "b", votedAt = now))
+            congestionVotePersistenceAdapter.save(vote(storeId = 1L, level = CongestionLevel.NORMAL, voterKey = "c", votedAt = now))
+            congestionVotePersistenceAdapter.save(vote(storeId = 2L, level = CongestionLevel.UNCROWDED, voterKey = "d", votedAt = now))
             // 윈도우 밖 투표는 제외되어야 한다
-            congestionVoteRepository.save(
+            congestionVotePersistenceAdapter.save(
                 vote(storeId = 1L, level = CongestionLevel.UNCROWDED, voterKey = "old", votedAt = now.minusMinutes(30)),
             )
             em.flush()
             em.clear()
 
             // when
-            val counts = congestionVoteRepository.countRecentVotesByStores(listOf(1L, 2L), now.minusMinutes(15))
+            val counts = congestionVotePersistenceAdapter.countRecentVotesByStores(listOf(1L, 2L), now.minusMinutes(15))
 
             // then
             val store1 = counts.filter { it.storeId == 1L }.associate { it.level to it.count }

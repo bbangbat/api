@@ -5,16 +5,16 @@ import com.bbangbat.member.domain.Gender
 import com.bbangbat.member.domain.Member
 import com.bbangbat.member.domain.Social
 import com.bbangbat.member.domain.SocialType
-import com.bbangbat.member.repository.MemberRepository
-import com.bbangbat.member.repository.SocialRepository
+import com.bbangbat.member.repository.MemberPersistenceAdapter
+import com.bbangbat.member.repository.SocialPersistenceAdapter
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Service
 class MemberService(
-    private val memberRepository: MemberRepository,
-    private val socialRepository: SocialRepository,
+    private val memberPersistenceAdapter: MemberPersistenceAdapter,
+    private val socialPersistenceAdapter: SocialPersistenceAdapter,
 ) {
     @Transactional
     fun signup(
@@ -30,7 +30,7 @@ class MemberService(
         providerId: String,
     ): Member {
         val member =
-            memberRepository.save(
+            memberPersistenceAdapter.save(
                 Member(
                     email = email,
                     name = name,
@@ -44,17 +44,17 @@ class MemberService(
                 ),
             )
 
-        socialRepository.save(Social(member = member, provider = provider, providerId = providerId))
+        socialPersistenceAdapter.save(Social(member = member, provider = provider, providerId = providerId))
 
         return member
     }
 
     @Transactional
-    fun updateLastLoginAt(id: Long) = memberRepository.updateLastLoginAt(id)
+    fun updateLastLoginAt(id: Long) = memberPersistenceAdapter.updateLastLoginAt(id)
 
-    fun findById(id: Long): Member = memberRepository.findById(id)
+    fun findById(id: Long): Member = memberPersistenceAdapter.findById(id)
 
-    fun existsByNickname(nickname: String): Boolean = memberRepository.existsByNickname(nickname)
+    fun existsByNickname(nickname: String): Boolean = memberPersistenceAdapter.existsByNickname(nickname)
 
-    fun findByEmailOrNull(email: String): Member? = memberRepository.findByEmailOrNull(email)
+    fun findByEmailOrNull(email: String): Member? = memberPersistenceAdapter.findByEmailOrNull(email)
 }

@@ -5,7 +5,7 @@ import com.bbangbat.common.exception.ErrorCode.REVIEW_FORBIDDEN
 import com.bbangbat.common.exception.ErrorCode.REVIEW_NOT_FOUND
 import com.bbangbat.review.domain.Review
 import com.bbangbat.review.repository.ReviewJpaEntity
-import com.bbangbat.review.repository.ReviewRepository
+import com.bbangbat.review.repository.ReviewPersistenceAdapter
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
@@ -21,7 +21,7 @@ import org.mockito.kotlin.whenever
 @ExtendWith(MockitoExtension::class)
 class ReviewServiceTest {
     @Mock
-    private lateinit var reviewRepository: ReviewRepository
+    private lateinit var reviewPersistenceAdapter: ReviewPersistenceAdapter
 
     @Mock
     private lateinit var s3Service: S3Service
@@ -48,7 +48,7 @@ class ReviewServiceTest {
 
         whenever(s3Service.buildUrl("reviews/uuid1")).thenReturn(imageUrls[0])
         whenever(s3Service.buildUrl("reviews/uuid2")).thenReturn(imageUrls[1])
-        whenever(reviewRepository.save(any())).thenReturn(savedReview)
+        whenever(reviewPersistenceAdapter.save(any())).thenReturn(savedReview)
 
         val result =
             reviewService.create(
@@ -79,7 +79,7 @@ class ReviewServiceTest {
                 imageUrls = emptyList(),
             )
 
-        whenever(reviewRepository.save(any())).thenReturn(savedReview)
+        whenever(reviewPersistenceAdapter.save(any())).thenReturn(savedReview)
 
         val result =
             reviewService.create(
@@ -97,7 +97,7 @@ class ReviewServiceTest {
 
     @Test
     fun `존재하지 않는 리뷰 삭제 시 예외가 발생한다`() {
-        whenever(reviewRepository.findByIdOrNull(99L)).thenReturn(null)
+        whenever(reviewPersistenceAdapter.findByIdOrNull(99L)).thenReturn(null)
 
         val exception =
             assertThrows(BbangbatException::class.java) {
@@ -111,7 +111,7 @@ class ReviewServiceTest {
     fun `다른 회원의 리뷰 삭제 시 예외가 발생한다`() {
         val entity = ReviewJpaEntity(id = 1L, memberId = 1L, storeId = 2L, rating = 5, content = "맛있어요테스트용입니다")
 
-        whenever(reviewRepository.findByIdOrNull(1L)).thenReturn(entity)
+        whenever(reviewPersistenceAdapter.findByIdOrNull(1L)).thenReturn(entity)
 
         val exception =
             assertThrows(BbangbatException::class.java) {
@@ -131,12 +131,12 @@ class ReviewServiceTest {
                 "https://bucket.s3.ap-northeast-2.amazonaws.com/reviews/uuid2",
             )
 
-        whenever(reviewRepository.findByIdOrNull(1L)).thenReturn(entity)
-        whenever(reviewRepository.getImageUrls(entity)).thenReturn(imageUrls)
+        whenever(reviewPersistenceAdapter.findByIdOrNull(1L)).thenReturn(entity)
+        whenever(reviewPersistenceAdapter.getImageUrls(entity)).thenReturn(imageUrls)
 
         reviewService.delete(memberId = memberId, reviewId = 1L)
 
-        verify(reviewRepository).delete(entity)
+        verify(reviewPersistenceAdapter).delete(entity)
         verify(s3Service).delete("reviews/uuid1")
         verify(s3Service).delete("reviews/uuid2")
     }
@@ -146,12 +146,12 @@ class ReviewServiceTest {
         val memberId = 1L
         val entity = ReviewJpaEntity(id = 1L, memberId = memberId, storeId = 2L, rating = 5, content = "맛있어요테스트용입니다")
 
-        whenever(reviewRepository.findByIdOrNull(1L)).thenReturn(entity)
-        whenever(reviewRepository.getImageUrls(entity)).thenReturn(emptyList())
+        whenever(reviewPersistenceAdapter.findByIdOrNull(1L)).thenReturn(entity)
+        whenever(reviewPersistenceAdapter.getImageUrls(entity)).thenReturn(emptyList())
 
         reviewService.delete(memberId = memberId, reviewId = 1L)
 
-        verify(reviewRepository).delete(entity)
+        verify(reviewPersistenceAdapter).delete(entity)
         verify(s3Service, never()).delete(any())
     }
 }

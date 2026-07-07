@@ -1,31 +1,18 @@
 package com.bbangbat.member.repository
 
-import com.bbangbat.member.domain.Favorite
-import org.springframework.stereotype.Repository
+import org.springframework.data.jpa.repository.JpaRepository
+import java.util.Optional
 
-@Repository
-class FavoriteRepository(
-    private val favoriteJpaRepository: FavoriteJpaRepository,
-) {
+interface FavoriteRepository : JpaRepository<FavoriteJpaEntity, Long> {
     fun existsByMemberIdAndStoreId(
         memberId: Long,
         storeId: Long,
-    ): Boolean = favoriteJpaRepository.existsByMemberIdAndStoreId(memberId, storeId)
+    ): Boolean
 
     fun findByMemberIdAndStoreId(
         memberId: Long,
         storeId: Long,
-    ): Favorite? =
-        favoriteJpaRepository
-            .findByMemberIdAndStoreId(memberId, storeId)
-            .orElse(null)
-            ?.toDomain()
+    ): Optional<FavoriteJpaEntity>
 
-    fun findAllStoreIdsByMemberId(memberId: Long): List<Long> = favoriteJpaRepository.findAllByMemberId(memberId).map { it.storeId }
-
-    fun save(favorite: Favorite): Favorite = favoriteJpaRepository.save(FavoriteJpaEntity.from(favorite)).toDomain()
-
-    fun delete(favorite: Favorite) {
-        favoriteJpaRepository.deleteById(favorite.id)
-    }
+    fun findAllByMemberId(memberId: Long): List<FavoriteJpaEntity>
 }

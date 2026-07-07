@@ -1,7 +1,7 @@
 package com.bbangbat.store.application
 
 import com.bbangbat.store.domain.Store
-import com.bbangbat.store.repository.StoreRepository
+import com.bbangbat.store.repository.StorePersistenceAdapter
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -13,13 +13,13 @@ import org.mockito.junit.jupiter.MockitoExtension
 @ExtendWith(MockitoExtension::class)
 class StoreServiceTest {
     @Mock
-    private lateinit var storeRepository: StoreRepository
+    private lateinit var storePersistenceAdapter: StorePersistenceAdapter
 
     private lateinit var storeService: StoreService
 
     @BeforeEach
     fun setUp() {
-        storeService = StoreService(storeRepository)
+        storeService = StoreService(storePersistenceAdapter)
     }
 
     @Test
@@ -32,7 +32,7 @@ class StoreServiceTest {
                 Store(id = 1L, name = "가까운 베이커리", latitude = 37.5670, longitude = 126.9780, address = "서울시 중구"),
                 Store(id = 2L, name = "먼 베이커리", latitude = 37.5700, longitude = 126.9780, address = "서울시 중구"),
             )
-        given(storeRepository.findWithinRadius(lat, lng, 3000.0)).willReturn(stores)
+        given(storePersistenceAdapter.findWithinRadius(lat, lng, 3000.0)).willReturn(stores)
 
         // when
         val result = storeService.findStores(lat, lng)
@@ -48,7 +48,7 @@ class StoreServiceTest {
         // given
         val lat = 37.5665
         val lng = 126.9780
-        given(storeRepository.findWithinRadius(lat, lng, 3000.0)).willReturn(emptyList())
+        given(storePersistenceAdapter.findWithinRadius(lat, lng, 3000.0)).willReturn(emptyList())
 
         // when
         val result = storeService.findStores(lat, lng)
