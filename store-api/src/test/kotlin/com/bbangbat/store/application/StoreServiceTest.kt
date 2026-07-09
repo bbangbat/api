@@ -19,7 +19,7 @@ class StoreServiceTest {
 
     @BeforeEach
     fun setUp() {
-        storeService = StoreService(storePersistenceAdapter)
+        storeService = StoreService(storePersistenceAdapter, DEFAULT_IMAGE_URL)
     }
 
     @Test
@@ -55,5 +55,60 @@ class StoreServiceTest {
 
         // then
         assertThat(result).isEmpty()
+    }
+
+    @Test
+    fun `이미지가 없는 가게는 기본 이미지 URL로 채운다`() {
+        // given
+        val lat = 37.5665
+        val lng = 126.9780
+        val stores =
+            listOf(
+                Store(
+                    id = 1L,
+                    name = "이미지 없는 빵집",
+                    latitude = 37.5670,
+                    longitude = 126.9780,
+                    address = "서울시 중구",
+                    imageUrl = null,
+                ),
+            )
+        given(storePersistenceAdapter.findWithinRadius(lat, lng, 3000.0)).willReturn(stores)
+
+        // when
+        val result = storeService.findStores(lat, lng)
+
+        // then
+        assertThat(result[0].imageUrl).isEqualTo(DEFAULT_IMAGE_URL)
+    }
+
+    @Test
+    fun `이미지가 있는 가게는 원래 URL을 유지한다`() {
+        // given
+        val lat = 37.5665
+        val lng = 126.9780
+        val customUrl = "store-specific-image-url"
+        val stores =
+            listOf(
+                Store(
+                    id = 1L,
+                    name = "이미지 있는 빵집",
+                    latitude = 37.5670,
+                    longitude = 126.9780,
+                    address = "서울시 중구",
+                    imageUrl = customUrl,
+                ),
+            )
+        given(storePersistenceAdapter.findWithinRadius(lat, lng, 3000.0)).willReturn(stores)
+
+        // when
+        val result = storeService.findStores(lat, lng)
+
+        // then
+        assertThat(result[0].imageUrl).isEqualTo(customUrl)
+    }
+
+    companion object {
+        private const val DEFAULT_IMAGE_URL = "default-image-url"
     }
 }

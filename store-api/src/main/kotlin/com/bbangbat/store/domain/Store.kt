@@ -7,6 +7,7 @@ data class Store(
     val longitude: Double,
     val address: String,
     val phoneNumber: String? = null,
+    val imageUrl: String? = null,
 ) {
     init {
         require(name.isNotBlank()) { "가게명은 비어 있을 수 없습니다." }

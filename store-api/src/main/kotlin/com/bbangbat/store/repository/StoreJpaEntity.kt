@@ -25,6 +25,8 @@ class StoreJpaEntity(
     var address: String,
     @Column(name = "phone_number", length = 20)
     var phoneNumber: String? = null,
+    @Column(name = "image_url", length = 500)
+    var imageUrl: String? = null,
 ) : BaseEntity() {
     fun toDomain(): Store =
         Store(
@@ -34,6 +36,7 @@ class StoreJpaEntity(
             longitude = longitude,
             address = address,
             phoneNumber = phoneNumber,
+            imageUrl = imageUrl,
         )
 
     companion object {
@@ -44,6 +47,7 @@ class StoreJpaEntity(
                 longitude = store.longitude,
                 address = store.address,
                 phoneNumber = store.phoneNumber,
+                imageUrl = store.imageUrl,
             )
     }
 }

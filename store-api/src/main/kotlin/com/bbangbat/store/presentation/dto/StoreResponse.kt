@@ -11,6 +11,7 @@ data class StoreResponse(
     @field:Schema(description = "경도", example = "126.9780") val longitude: Double,
     @field:Schema(description = "주소", example = "서울시 강남구 테헤란로 1") val address: String,
     @field:Schema(description = "전화번호", example = "02-1234-5678") val phoneNumber: String?,
+    @field:Schema(description = "가게 이미지 URL", example = "https://.../stores/1.jpg") val imageUrl: String,
 ) {
     companion object {
         fun from(store: Store): StoreResponse =
@@ -21,6 +22,7 @@ data class StoreResponse(
                 longitude = store.longitude,
                 address = store.address,
                 phoneNumber = store.phoneNumber,
+                imageUrl = requireNotNull(store.imageUrl) { "가게 이미지 URL은 서비스에서 채워져야 합니다" },
             )
     }
 }
