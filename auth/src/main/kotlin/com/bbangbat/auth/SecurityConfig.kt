@@ -39,6 +39,7 @@ class SecurityConfig(
             .authorizeHttpRequests {
                 it.requestMatchers("/auth/**", "/oauth2/**", "/login/**").permitAll()
                 it.requestMatchers(POST, "/api/members/signup").permitAll()
+                it.requestMatchers(POST, "/api/members/link").permitAll()
                 it.requestMatchers(GET, "/api/members/nickname/check").permitAll()
                 it.requestMatchers(GET, "/api/stores").permitAll()
                 it.requestMatchers(GET, "/api/search").permitAll()

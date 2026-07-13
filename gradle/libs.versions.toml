@@ -34,6 +34,9 @@ jdsl-jpql-dsl = { module = "com.linecorp.kotlin-jdsl:jpql-dsl", version.ref = "j
 jdsl-jpql-render = { module = "com.linecorp.kotlin-jdsl:jpql-render", version.ref = "jdsl" }
 jdsl-spring-data-jpa-support = { module = "com.linecorp.kotlin-jdsl:spring-data-jpa-boot4-support", version.ref = "jdsl" }
 
+# Jackson (Boot 4 = Jackson 3, tools.jackson 네임스페이스)
+jackson-module-kotlin = { module = "tools.jackson.module:jackson-module-kotlin" }
+
 # AWS
 aws-s3 = { module = "software.amazon.awssdk:s3", version.ref = "aws-sdk" }
 

@@ -7,6 +7,7 @@ import com.bbangbat.auth.token.TempTokenProvider
 import com.bbangbat.auth.token.TokenService
 import com.bbangbat.member.application.MemberService
 import com.bbangbat.member.domain.SocialType
+import com.bbangbat.member.presentation.dto.LinkRequest
 import com.bbangbat.member.presentation.dto.MemberResponse
 import com.bbangbat.member.presentation.dto.SignupRequest
 import com.bbangbat.member.presentation.dto.SignupResponse
@@ -63,6 +64,35 @@ class MemberController(
                 ageGroup = request.ageGroup,
                 termsAgreed = request.termsAgreed,
                 privacyAgreed = request.privacyAgreed,
+                provider = SocialType.valueOf(claims.provider.name),
+                providerId = claims.providerId,
+            )
+        val accessToken = jwtProvider.createAccessToken(member.id)
+        val refreshToken = jwtProvider.createRefreshToken(member.id)
+
+        tokenService.saveRefreshToken(member.id, refreshToken)
+        refreshTokenCookieProvider.addCookie(response, refreshToken)
+
+        return SignupResponse(accessToken)
+    }
+
+    @Operation(summary = "소셜 계정 연동", description = "이미 가입된 이메일에 다른 소셜 계정을 연동하고 로그인 처리합니다. 연동할 소셜 로그인 후 발급된 임시 토큰이 필요합니다.")
+    @ApiResponses(
+        ApiResponse(responseCode = "200", description = "연동 및 로그인 성공"),
+        ApiResponse(responseCode = "401", description = "임시 토큰 유효하지 않음"),
+        ApiResponse(responseCode = "404", description = "연동할 회원 없음"),
+        ApiResponse(responseCode = "409", description = "이미 연동된 소셜 계정"),
+    )
+    @PostMapping("/link")
+    @ResponseStatus(OK)
+    fun link(
+        @RequestBody @Valid request: LinkRequest,
+        response: HttpServletResponse,
+    ): SignupResponse {
+        val claims = tempTokenProvider.parse(request.tempToken)
+        val member =
+            memberService.link(
+                email = claims.email,
                 provider = SocialType.valueOf(claims.provider.name),
                 providerId = claims.providerId,
             )

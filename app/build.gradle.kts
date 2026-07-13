@@ -15,6 +15,7 @@ dependencies {
     implementation(libs.spring.boot.starter.web)
     implementation(libs.springdoc.openapi.webmvc.ui)
     implementation(libs.spring.boot.starter.log4j2)
+    implementation(libs.jackson.module.kotlin)
     runtimeOnly(libs.jackson.dataformat.yaml)
 
     implementation(libs.spring.boot.starter.data.jpa)

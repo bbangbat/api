@@ -1,5 +1,9 @@
 package com.bbangbat.member.application
 
+import com.bbangbat.common.exception.BbangbatException
+import com.bbangbat.common.exception.ErrorCode.EMAIL_ALREADY_REGISTERED
+import com.bbangbat.common.exception.ErrorCode.MEMBER_NOT_FOUND
+import com.bbangbat.common.exception.ErrorCode.SOCIAL_ALREADY_LINKED
 import com.bbangbat.member.domain.AgeGroup
 import com.bbangbat.member.domain.Gender
 import com.bbangbat.member.domain.Member
@@ -10,10 +14,12 @@ import com.bbangbat.member.repository.SocialPersistenceAdapter
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.BDDMockito.given
 import org.mockito.BDDMockito.then
 import org.mockito.Mock
+import org.mockito.Mockito.never
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
@@ -137,5 +143,120 @@ class MemberServiceTest {
 
         // then
         assertThat(result).isFalse()
+    }
+
+    @Test
+    fun `이미 가입된 이메일이면 예외를 던지고 저장하지 않는다`() {
+        // given (같은 이메일로 다른 소셜 가입 시도)
+        val existing =
+            Member(
+                id = 1L,
+                email = "test@test.com",
+                name = "기존회원",
+                nickname = "기존닉네임",
+                profileImageUrl = null,
+                gender = Gender.MALE,
+                ageGroup = AgeGroup.TWENTIES,
+                termsAgreed = true,
+                privacyAgreed = true,
+                lastLoginAt = LocalDateTime.now(),
+            )
+        given(memberPersistenceAdapter.findByEmailOrNull("test@test.com")).willReturn(existing)
+
+        // when & then
+        val exception =
+            assertThrows<BbangbatException> {
+                memberService.signup(
+                    email = "test@test.com",
+                    name = "홍길동",
+                    nickname = "빵괴물",
+                    profileImageUrl = null,
+                    gender = Gender.MALE,
+                    ageGroup = AgeGroup.TWENTIES,
+                    termsAgreed = true,
+                    privacyAgreed = true,
+                    provider = SocialType.NAVER,
+                    providerId = "naver-999",
+                )
+            }
+
+        assertThat(exception.errorCode).isEqualTo(EMAIL_ALREADY_REGISTERED)
+        then(memberPersistenceAdapter).should(never()).save(any())
+        then(socialPersistenceAdapter).should(never()).save(any())
+    }
+
+    @Test
+    fun `연동 시 기존 회원에 소셜 계정을 추가한다`() {
+        // given
+        val existing =
+            Member(
+                id = 1L,
+                email = "test@test.com",
+                name = "기존회원",
+                nickname = "기존닉네임",
+                profileImageUrl = null,
+                gender = Gender.MALE,
+                ageGroup = AgeGroup.TWENTIES,
+                termsAgreed = true,
+                privacyAgreed = true,
+                lastLoginAt = LocalDateTime.now(),
+            )
+        given(memberPersistenceAdapter.findByEmailOrNull("test@test.com")).willReturn(existing)
+        given(socialPersistenceAdapter.findByProviderAndProviderId(SocialType.NAVER, "naver-123")).willReturn(null)
+
+        // when
+        val result = memberService.link("test@test.com", SocialType.NAVER, "naver-123")
+
+        // then
+        assertThat(result.id).isEqualTo(1L)
+        then(socialPersistenceAdapter).should().save(
+            Social(member = existing, provider = SocialType.NAVER, providerId = "naver-123"),
+        )
+        then(memberPersistenceAdapter).should().updateLastLoginAt(1L)
+    }
+
+    @Test
+    fun `연동할 회원이 없으면 예외를 던진다`() {
+        // given
+        given(memberPersistenceAdapter.findByEmailOrNull("none@test.com")).willReturn(null)
+
+        // when & then
+        val exception =
+            assertThrows<BbangbatException> {
+                memberService.link("none@test.com", SocialType.NAVER, "naver-123")
+            }
+
+        assertThat(exception.errorCode).isEqualTo(MEMBER_NOT_FOUND)
+        then(socialPersistenceAdapter).should(never()).save(any())
+    }
+
+    @Test
+    fun `이미 연동된 소셜 계정이면 예외를 던진다`() {
+        // given
+        val existing =
+            Member(
+                id = 1L,
+                email = "test@test.com",
+                name = "기존회원",
+                nickname = "기존닉네임",
+                profileImageUrl = null,
+                gender = Gender.MALE,
+                ageGroup = AgeGroup.TWENTIES,
+                termsAgreed = true,
+                privacyAgreed = true,
+                lastLoginAt = LocalDateTime.now(),
+            )
+        val alreadyLinked = Social(id = 5L, member = existing, provider = SocialType.NAVER, providerId = "naver-123")
+        given(memberPersistenceAdapter.findByEmailOrNull("test@test.com")).willReturn(existing)
+        given(socialPersistenceAdapter.findByProviderAndProviderId(SocialType.NAVER, "naver-123")).willReturn(alreadyLinked)
+
+        // when & then
+        val exception =
+            assertThrows<BbangbatException> {
+                memberService.link("test@test.com", SocialType.NAVER, "naver-123")
+            }
+
+        assertThat(exception.errorCode).isEqualTo(SOCIAL_ALREADY_LINKED)
+        then(socialPersistenceAdapter).should(never()).save(any())
     }
 }
