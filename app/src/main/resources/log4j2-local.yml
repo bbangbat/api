@@ -7,7 +7,7 @@ Configuration:
       target: SYSTEM_OUT
       PatternLayout:
         disableAnsi: "false"
-        pattern: "%d{HH:mm:ss.SSS} %highlight{%level}{FATAL=red blink, ERROR=red bold, WARN=yellow bold, INFO=green bold, DEBUG=cyan, TRACE=white} [%style{%t}{dim}] %style{%c{1.}}{cyan} : %msg%n%throwable"
+        pattern: "%d{HH:mm:ss.SSS} %highlight{%level}{FATAL=red blink, ERROR=red bold, WARN=yellow bold, INFO=green bold, DEBUG=cyan, TRACE=white} [%style{%t}{dim}] [%X{requestId}] %style{%c{1.}}{cyan} : %msg%n%throwable"
 
   Loggers:
     Logger:
