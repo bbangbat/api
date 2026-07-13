@@ -12,6 +12,7 @@ dependencies {
     implementation(libs.jdsl.jpql.dsl)
     implementation(libs.jdsl.jpql.render)
     implementation(libs.jdsl.spring.data.jpa.support)
+    implementation(libs.aws.sqs)
 
     compileOnly(libs.springdoc.openapi.webmvc.ui)
 

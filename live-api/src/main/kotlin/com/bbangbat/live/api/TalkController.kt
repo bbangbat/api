@@ -4,7 +4,8 @@ import com.bbangbat.auth.resolver.AuthMember
 import com.bbangbat.common.exception.ErrorResponse
 import com.bbangbat.live.api.dto.LiveTalkMessageRequest
 import com.bbangbat.live.api.dto.LiveTalkMessageResponse
-import com.bbangbat.live.application.LiveTalkService
+import com.bbangbat.live.api.dto.StoreTalkSummaryResponse
+import com.bbangbat.live.application.TalkService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
@@ -26,8 +27,8 @@ import org.springframework.web.bind.annotation.RestController
 @Tag(name = "실시간 톡", description = "가게별 실시간 톡 API (조회는 비회원도 가능, 작성은 회원 전용)")
 @RestController
 @RequestMapping("/api/talks")
-class LiveTalkController(
-    private val liveTalkService: LiveTalkService,
+class TalkController(
+    private val talkService: TalkService,
 ) {
     @Operation(summary = "실시간 톡 전송", description = "회원만 가능합니다. 메시지는 최대 100자입니다.")
     @ApiResponses(
@@ -60,7 +61,7 @@ class LiveTalkController(
         @AuthMember authorId: Long,
     ): LiveTalkMessageResponse =
         LiveTalkMessageResponse.from(
-            liveTalkService.sendMessage(
+            talkService.sendMessage(
                 storeId = request.storeId!!,
                 authorId = authorId,
                 content = request.content!!,
@@ -82,5 +83,18 @@ class LiveTalkController(
         @RequestParam storeId: Long,
         @Parameter(description = "이 ID 이후 메시지만 조회 (최초 조회 시 생략)", example = "10")
         @RequestParam(required = false) afterId: Long?,
-    ): List<LiveTalkMessageResponse> = liveTalkService.getMessages(storeId, afterId).map { LiveTalkMessageResponse.from(it) }
+    ): List<LiveTalkMessageResponse> = talkService.getMessages(storeId, afterId).map { LiveTalkMessageResponse.from(it) }
+
+    @Operation(
+        summary = "톡 요약 벌크 조회",
+        description = "여러 가게의 실시간 톡 한 줄 요약을 조회합니다. 요약이 없는 가게는 결과에서 제외됩니다. 비회원도 가능합니다.",
+    )
+    @ApiResponses(
+        ApiResponse(responseCode = "200", description = "조회 성공"),
+    )
+    @GetMapping("/summary")
+    @ResponseStatus(HttpStatus.OK)
+    fun getSummaries(
+        @RequestParam storeIds: List<Long>,
+    ): List<StoreTalkSummaryResponse> = talkService.getSummaries(storeIds).map { StoreTalkSummaryResponse.from(it) }
 }
