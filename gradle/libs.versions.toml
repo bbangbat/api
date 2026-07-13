@@ -39,6 +39,7 @@ jackson-module-kotlin = { module = "tools.jackson.module:jackson-module-kotlin" 
 
 # AWS
 aws-s3 = { module = "software.amazon.awssdk:s3", version.ref = "aws-sdk" }
+aws-sqs = { module = "software.amazon.awssdk:sqs", version.ref = "aws-sdk" }
 
 # JWT
 jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }

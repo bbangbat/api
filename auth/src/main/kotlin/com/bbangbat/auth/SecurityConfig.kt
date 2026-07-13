@@ -45,7 +45,7 @@ class SecurityConfig(
                 it.requestMatchers(GET, "/api/search").permitAll()
                 it.requestMatchers(GET, "/api/congestion").permitAll()
                 it.requestMatchers(POST, "/api/congestion").permitAll()
-                it.requestMatchers(GET, "/api/talks").permitAll()
+                it.requestMatchers(GET, "/api/talks", "/api/talks/summary").permitAll()
                 it.requestMatchers(GET, "/api/reviews").permitAll()
                 it.requestMatchers("/v3/api-docs/**", "/docs", "/docs/**").permitAll()
                 it.anyRequest().authenticated()
