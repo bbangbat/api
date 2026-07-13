@@ -1,4 +1,4 @@
-package com.bbangbat.member.presentation
+package com.bbangbat.member.api
 
 import com.bbangbat.auth.resolver.AuthMember
 import com.bbangbat.member.application.FavoriteService

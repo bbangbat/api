@@ -1,7 +1,7 @@
-package com.bbangbat.search.presentation
+package com.bbangbat.store.api
 
-import com.bbangbat.search.application.SearchService
-import com.bbangbat.search.presentation.dto.StoreSearchResponse
+import com.bbangbat.store.api.dto.StoreResponse
+import com.bbangbat.store.application.StoreService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
@@ -13,19 +13,21 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 
-@Tag(name = "검색", description = "가게 검색 API")
+@Tag(name = "가게", description = "가게 API")
 @RestController
-@RequestMapping("/api/search")
-class SearchController(
-    private val searchService: SearchService,
+@RequestMapping("/api/stores")
+class StoreController(
+    private val storeService: StoreService,
 ) {
-    @Operation(summary = "가게명 검색", description = "가게명에 검색어가 포함된 가게를 조회합니다.")
+    @Operation(summary = "반경 내 가게 리스트 조회", description = "지도 중심 좌표 기준 반경 3km 내 가게를 거리순으로 조회합니다.")
     @ApiResponses(
         ApiResponse(responseCode = "200", description = "조회 성공"),
+        ApiResponse(responseCode = "400", description = "잘못된 좌표 요청"),
     )
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    fun searchStores(
-        @RequestParam keyword: String,
-    ): List<StoreSearchResponse> = searchService.searchStores(keyword).map { StoreSearchResponse.from(it) }
+    fun getStores(
+        @RequestParam lat: Double,
+        @RequestParam lng: Double,
+    ): List<StoreResponse> = storeService.findStores(lat, lng).map { StoreResponse.from(it) }
 }

@@ -1,10 +1,10 @@
-package com.bbangbat.live.presentation
+package com.bbangbat.live.api
 
 import com.bbangbat.auth.voter.VoterResolver
 import com.bbangbat.common.exception.ErrorResponse
+import com.bbangbat.live.api.dto.CongestionResponse
+import com.bbangbat.live.api.dto.CongestionVoteRequest
 import com.bbangbat.live.application.CongestionService
-import com.bbangbat.live.presentation.dto.CongestionResponse
-import com.bbangbat.live.presentation.dto.CongestionVoteRequest
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content

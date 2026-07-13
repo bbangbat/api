@@ -1,10 +1,10 @@
-package com.bbangbat.live.presentation
+package com.bbangbat.live.api
 
 import com.bbangbat.auth.resolver.AuthMember
 import com.bbangbat.common.exception.ErrorResponse
+import com.bbangbat.live.api.dto.LiveTalkMessageRequest
+import com.bbangbat.live.api.dto.LiveTalkMessageResponse
 import com.bbangbat.live.application.LiveTalkService
-import com.bbangbat.live.presentation.dto.LiveTalkMessageRequest
-import com.bbangbat.live.presentation.dto.LiveTalkMessageResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content

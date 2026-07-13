@@ -1,16 +1,16 @@
-package com.bbangbat.member.presentation
+package com.bbangbat.member.api
 
 import com.bbangbat.auth.jwt.JwtProvider
 import com.bbangbat.auth.resolver.AuthMember
 import com.bbangbat.auth.token.RefreshTokenCookieProvider
 import com.bbangbat.auth.token.TempTokenProvider
 import com.bbangbat.auth.token.TokenService
+import com.bbangbat.member.api.dto.LinkRequest
+import com.bbangbat.member.api.dto.MemberResponse
+import com.bbangbat.member.api.dto.SignupRequest
+import com.bbangbat.member.api.dto.SignupResponse
 import com.bbangbat.member.application.MemberService
 import com.bbangbat.member.domain.SocialType
-import com.bbangbat.member.presentation.dto.LinkRequest
-import com.bbangbat.member.presentation.dto.MemberResponse
-import com.bbangbat.member.presentation.dto.SignupRequest
-import com.bbangbat.member.presentation.dto.SignupResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses

@@ -1,4 +1,4 @@
-package com.bbangbat.live.presentation.dto
+package com.bbangbat.live.api.dto
 
 import com.bbangbat.live.domain.LiveTalkMessage
 import io.swagger.v3.oas.annotations.media.Schema

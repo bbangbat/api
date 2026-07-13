@@ -1,4 +1,4 @@
-package com.bbangbat.member.presentation.dto
+package com.bbangbat.member.api.dto
 
 import com.bbangbat.member.domain.AgeGroup
 import com.bbangbat.member.domain.Gender

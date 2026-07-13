@@ -1,4 +1,4 @@
-package com.bbangbat.review.presentation.dto
+package com.bbangbat.review.api.dto
 
 import com.bbangbat.review.application.PresignedUpload
 

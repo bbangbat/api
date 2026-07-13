@@ -1,4 +1,4 @@
-package com.bbangbat.search.presentation.dto
+package com.bbangbat.search.api.dto
 
 import com.bbangbat.store.domain.Store
 import io.swagger.v3.oas.annotations.media.Schema

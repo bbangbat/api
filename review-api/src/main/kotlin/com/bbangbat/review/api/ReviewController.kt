@@ -1,11 +1,11 @@
-package com.bbangbat.review.presentation
+package com.bbangbat.review.api
 
 import com.bbangbat.auth.resolver.AuthMember
+import com.bbangbat.review.api.dto.CreateReviewRequest
+import com.bbangbat.review.api.dto.PresignedUrlRequest
+import com.bbangbat.review.api.dto.PresignedUrlResponse
+import com.bbangbat.review.api.dto.ReviewResponse
 import com.bbangbat.review.application.ReviewService
-import com.bbangbat.review.presentation.dto.CreateReviewRequest
-import com.bbangbat.review.presentation.dto.PresignedUrlRequest
-import com.bbangbat.review.presentation.dto.PresignedUrlResponse
-import com.bbangbat.review.presentation.dto.ReviewResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
