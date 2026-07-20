@@ -48,7 +48,7 @@ Thumbs.db
 *.env
 .env-*
 
-# Local-only infra (git clone https://github.com/BBangBat/server-config.git infra)
+# Local-only infra (git clone https://github.com/BBangBat/api-config.git infra)
 infra/
 
 # Spring Config (서브모듈로 관리)

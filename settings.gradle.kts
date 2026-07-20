@@ -1,4 +1,4 @@
-rootProject.name = "bbangbat-server"
+rootProject.name = "bbangbat-api"
 
 include(
     "app",

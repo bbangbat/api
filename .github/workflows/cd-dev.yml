@@ -7,7 +7,7 @@ on:
     branches: [ develop ]
 
 env:
-  IMAGE: ghcr.io/bbangbat/server:dev
+  IMAGE: ghcr.io/bbangbat/api:dev
 
 jobs:
   deploy:
