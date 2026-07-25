@@ -1,5 +1,7 @@
 package com.bbangbat.store.application
 
+import com.bbangbat.common.exception.BbangbatException
+import com.bbangbat.common.exception.ErrorCode.STORE_NOT_FOUND
 import com.bbangbat.store.domain.Store
 import com.bbangbat.store.repository.StorePersistenceAdapter
 import org.springframework.beans.factory.annotation.Value
@@ -17,6 +19,12 @@ class StoreService(
         storePersistenceAdapter
             .findWithinRadius(lat, lng, RADIUS_METERS)
             .map { store -> withDefaultImage(store) }
+
+    fun findById(storeId: Long): Store {
+        val store = storePersistenceAdapter.findByIdOrNull(storeId) ?: throw BbangbatException(STORE_NOT_FOUND)
+
+        return withDefaultImage(store)
+    }
 
     fun findByIds(storeIds: Collection<Long>): List<Store> =
         storePersistenceAdapter

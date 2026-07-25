@@ -24,6 +24,8 @@ class ReviewPersistenceAdapter(
         return toDomains(entities)
     }
 
+    fun countByMemberId(memberId: Long): Long = reviewRepository.countByMemberId(memberId)
+
     private fun toDomains(entities: List<ReviewJpaEntity>): List<Review> {
         if (entities.isEmpty()) return emptyList()
 

@@ -33,6 +33,15 @@ class ReviewServiceTest {
     private lateinit var reviewService: ReviewService
 
     @Test
+    fun `회원이 작성한 리뷰 수를 조회한다`() {
+        whenever(reviewPersistenceAdapter.countByMemberId(1L)).thenReturn(3L)
+
+        val result = reviewService.countByMemberId(1L)
+
+        assertEquals(3L, result)
+    }
+
+    @Test
     fun `내 리뷰를 가게 정보와 함께 조회한다`() {
         val memberId = 1L
         val storeId = 2L

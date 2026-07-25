@@ -15,4 +15,6 @@ interface FavoriteRepository : JpaRepository<FavoriteJpaEntity, Long> {
     ): Optional<FavoriteJpaEntity>
 
     fun findAllByMemberId(memberId: Long): List<FavoriteJpaEntity>
+
+    fun countByMemberId(memberId: Long): Long
 }
