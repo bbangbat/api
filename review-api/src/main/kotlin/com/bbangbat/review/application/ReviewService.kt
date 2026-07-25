@@ -30,6 +30,9 @@ class ReviewService(
         }
     }
 
+    @Transactional(readOnly = true)
+    fun countByMemberId(memberId: Long): Long = reviewPersistenceAdapter.countByMemberId(memberId)
+
     @Transactional
     fun create(
         memberId: Long,

@@ -14,6 +14,7 @@ import jakarta.persistence.Table
     name = "live_talk_messages",
     indexes = [
         Index(name = "idx_talk_store_created_at", columnList = "store_id, created_at"),
+        Index(name = "idx_talk_author_id", columnList = "author_id"),
     ],
 )
 class LiveTalkMessageJpaEntity(

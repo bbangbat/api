@@ -1,10 +1,13 @@
 package com.bbangbat.store.application
 
+import com.bbangbat.common.exception.BbangbatException
+import com.bbangbat.common.exception.ErrorCode.STORE_NOT_FOUND
 import com.bbangbat.store.domain.Store
 import com.bbangbat.store.repository.StorePersistenceAdapter
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.BDDMockito.given
 import org.mockito.Mock
@@ -55,6 +58,34 @@ class StoreServiceTest {
 
         // then
         assertThat(result).isEmpty()
+    }
+
+    @Test
+    fun `가게 ID로 단건 조회한다`() {
+        val store =
+            Store(
+                id = 1L,
+                name = "빵빵 베이커리",
+                latitude = 37.5670,
+                longitude = 126.9780,
+                address = "서울시 중구",
+                imageUrl = null,
+            )
+        given(storePersistenceAdapter.findByIdOrNull(1L)).willReturn(store)
+
+        val result = storeService.findById(1L)
+
+        assertThat(result.name).isEqualTo("빵빵 베이커리")
+        assertThat(result.imageUrl).isEqualTo(DEFAULT_IMAGE_URL)
+    }
+
+    @Test
+    fun `존재하지 않는 가게를 단건 조회하면 예외를 던진다`() {
+        given(storePersistenceAdapter.findByIdOrNull(99L)).willReturn(null)
+
+        val exception = assertThrows<BbangbatException> { storeService.findById(99L) }
+
+        assertThat(exception.errorCode).isEqualTo(STORE_NOT_FOUND)
     }
 
     @Test

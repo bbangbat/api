@@ -14,6 +14,8 @@ class TalkPersistenceAdapter(
     fun saveMessage(message: LiveTalkMessage): LiveTalkMessage =
         liveTalkMessageRepository.save(LiveTalkMessageJpaEntity.from(message)).toDomain()
 
+    fun countByAuthorId(authorId: Long): Long = liveTalkMessageRepository.countByAuthorId(authorId)
+
     fun findRecentMessages(
         storeId: Long,
         from: LocalDateTime,

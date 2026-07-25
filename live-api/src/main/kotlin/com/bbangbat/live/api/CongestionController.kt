@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -91,10 +92,11 @@ class CongestionController(
 
     @Operation(summary = "혼잡도 단건 조회", description = "가게의 최근 15분 내 투표를 집계한 현재 혼잡도와 혼잡도별 투표 수를 조회합니다.")
     @ApiResponse(responseCode = "200", description = "조회 성공")
-    @GetMapping(params = ["storeId"])
+    @GetMapping("/{storeId}")
     @ResponseStatus(HttpStatus.OK)
     fun getCongestion(
-        @RequestParam storeId: Long,
+        @Parameter(description = "조회할 가게 ID", example = "1")
+        @PathVariable storeId: Long,
     ): CongestionResponse = CongestionResponse.from(congestionService.getCongestion(storeId))
 
     @Operation(
@@ -104,7 +106,7 @@ class CongestionController(
                 "요청한 모든 storeId가 응답에 포함됩니다 (투표 없는 가게는 UNCROWDED).",
     )
     @ApiResponse(responseCode = "200", description = "조회 성공 (가게별 혼잡도 배열)")
-    @GetMapping(params = ["storeIds"])
+    @GetMapping
     @ResponseStatus(HttpStatus.OK)
     fun getCongestions(
         @Parameter(description = "조회할 가게 ID 목록 (쉼표 구분)", example = "1,2,3")

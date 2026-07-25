@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class OAuth2AuthenticationSuccessHandler(
-    private val oAuthMemberPort: OAuthMemberPort,
+    private val memberPort: MemberPort,
     private val jwtProvider: JwtProvider,
     private val tokenService: TokenService,
     private val refreshTokenCookieProvider: RefreshTokenCookieProvider,
@@ -35,7 +35,7 @@ class OAuth2AuthenticationSuccessHandler(
 
             tokenService.saveRefreshToken(memberId, refreshToken)
             refreshTokenCookieProvider.addCookie(response, refreshToken)
-            oAuthMemberPort.updateLastLoginAt(memberId)
+            memberPort.updateLastLoginAt(memberId)
 
             response.sendRedirect("$frontendUrl/oauth2/callback?access_token=$accessToken")
         } else {

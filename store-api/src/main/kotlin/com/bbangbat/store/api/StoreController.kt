@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
@@ -30,4 +31,15 @@ class StoreController(
         @RequestParam lat: Double,
         @RequestParam lng: Double,
     ): List<StoreResponse> = storeService.findStores(lat, lng).map { StoreResponse.from(it) }
+
+    @Operation(summary = "가게 단건 조회", description = "가게 ID로 가게 상세 정보를 조회합니다.")
+    @ApiResponses(
+        ApiResponse(responseCode = "200", description = "조회 성공"),
+        ApiResponse(responseCode = "404", description = "가게 없음"),
+    )
+    @GetMapping("/{storeId}")
+    @ResponseStatus(HttpStatus.OK)
+    fun getStore(
+        @PathVariable storeId: Long,
+    ): StoreResponse = StoreResponse.from(storeService.findById(storeId))
 }

@@ -6,4 +6,6 @@ interface ReviewRepository : JpaRepository<ReviewJpaEntity, Long> {
     fun findAllByStoreIdOrderByIdDesc(storeId: Long): List<ReviewJpaEntity>
 
     fun findAllByMemberIdOrderByIdDesc(memberId: Long): List<ReviewJpaEntity>
+
+    fun countByMemberId(memberId: Long): Long
 }
