@@ -12,19 +12,23 @@ import jakarta.persistence.Table
 @Entity
 @Table(
     name = "reviews",
-    indexes = [Index(name = "idx_reviews_store_id", columnList = "store_id")],
+    indexes = [
+        Index(name = "idx_reviews_store_id", columnList = "store_id"),
+        Index(name = "idx_reviews_member_id_id", columnList = "member_id, id"),
+    ],
 )
 class ReviewJpaEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
     val id: Long = 0L,
     @Column(name = "member_id", nullable = false)
     val memberId: Long,
     @Column(name = "store_id", nullable = false)
     val storeId: Long,
-    @Column(nullable = false)
+    @Column(name = "rating", nullable = false)
     val rating: Int,
-    @Column(nullable = false, length = 500)
+    @Column(name = "content", nullable = false, length = 500)
     val content: String,
 ) : BaseEntity() {
     fun toDomain(

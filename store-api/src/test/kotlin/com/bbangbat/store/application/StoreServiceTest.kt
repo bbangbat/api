@@ -108,6 +108,36 @@ class StoreServiceTest {
         assertThat(result[0].imageUrl).isEqualTo(customUrl)
     }
 
+    @Test
+    fun `ID로 조회한 가게에도 기본 이미지를 적용한다`() {
+        val storeIds = listOf(1L, 2L)
+        val stores =
+            listOf(
+                Store(
+                    id = 1L,
+                    name = "이미지 없는 빵집",
+                    latitude = 37.5670,
+                    longitude = 126.9780,
+                    address = "서울시 중구",
+                    imageUrl = null,
+                ),
+                Store(
+                    id = 2L,
+                    name = "이미지 있는 빵집",
+                    latitude = 37.5670,
+                    longitude = 126.9780,
+                    address = "서울시 중구",
+                    imageUrl = "custom-image-url",
+                ),
+            )
+        given(storePersistenceAdapter.findAllByIds(storeIds)).willReturn(stores)
+
+        val result = storeService.findByIds(storeIds)
+
+        assertThat(result[0].imageUrl).isEqualTo(DEFAULT_IMAGE_URL)
+        assertThat(result[1].imageUrl).isEqualTo("custom-image-url")
+    }
+
     companion object {
         private const val DEFAULT_IMAGE_URL = "default-image-url"
     }

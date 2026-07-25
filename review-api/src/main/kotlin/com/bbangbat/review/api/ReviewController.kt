@@ -2,6 +2,7 @@ package com.bbangbat.review.api
 
 import com.bbangbat.auth.resolver.AuthMember
 import com.bbangbat.review.api.dto.CreateReviewRequest
+import com.bbangbat.review.api.dto.MyReviewResponse
 import com.bbangbat.review.api.dto.PresignedUrlRequest
 import com.bbangbat.review.api.dto.PresignedUrlResponse
 import com.bbangbat.review.api.dto.ReviewResponse
@@ -62,6 +63,17 @@ class ReviewController(
 
         return reviews.map { ReviewResponse.from(it) }
     }
+
+    @Operation(summary = "내 빵명록 목록 조회", description = "로그인한 회원이 작성한 빵명록을 가게 정보와 함께 최신순으로 조회합니다.")
+    @ApiResponses(
+        ApiResponse(responseCode = "200", description = "조회 성공"),
+        ApiResponse(responseCode = "401", description = "인증 필요"),
+    )
+    @GetMapping("/me")
+    @ResponseStatus(OK)
+    fun getMyReviews(
+        @AuthMember memberId: Long,
+    ): List<MyReviewResponse> = reviewService.getMyReviews(memberId).map { MyReviewResponse.from(it) }
 
     @Operation(summary = "빵명록 작성", description = "특정 가게에 빵명록을 작성합니다. 회원 전용.")
     @ApiResponses(

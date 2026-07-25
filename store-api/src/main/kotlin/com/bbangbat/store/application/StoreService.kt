@@ -16,7 +16,14 @@ class StoreService(
     ): List<Store> =
         storePersistenceAdapter
             .findWithinRadius(lat, lng, RADIUS_METERS)
-            .map { store -> store.copy(imageUrl = store.imageUrl ?: defaultImageUrl) }
+            .map { store -> withDefaultImage(store) }
+
+    fun findByIds(storeIds: Collection<Long>): List<Store> =
+        storePersistenceAdapter
+            .findAllByIds(storeIds)
+            .map { store -> withDefaultImage(store) }
+
+    private fun withDefaultImage(store: Store): Store = store.copy(imageUrl = store.imageUrl ?: defaultImageUrl)
 
     companion object {
         private const val RADIUS_METERS = 3000.0

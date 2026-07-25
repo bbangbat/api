@@ -33,6 +33,8 @@ class StorePersistenceAdapter(
 
     fun save(store: Store): Store = storeRepository.save(StoreJpaEntity.from(store)).toDomain()
 
+    fun findAllByIds(ids: Collection<Long>): List<Store> = storeRepository.findAllById(ids).map { it.toDomain() }
+
     fun findAllByNameContaining(keyword: String): List<Store> =
         storeRepository.findAllByNameContainingIgnoreCase(keyword).map { it.toDomain() }
 }
