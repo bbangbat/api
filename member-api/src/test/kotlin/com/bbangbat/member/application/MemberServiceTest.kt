@@ -9,6 +9,7 @@ import com.bbangbat.member.domain.Gender
 import com.bbangbat.member.domain.Member
 import com.bbangbat.member.domain.Social
 import com.bbangbat.member.domain.SocialType
+import com.bbangbat.member.repository.FavoritePersistenceAdapter
 import com.bbangbat.member.repository.MemberPersistenceAdapter
 import com.bbangbat.member.repository.SocialPersistenceAdapter
 import org.assertj.core.api.Assertions.assertThat
@@ -34,11 +35,27 @@ class MemberServiceTest {
     @Mock
     private lateinit var socialPersistenceAdapter: SocialPersistenceAdapter
 
+    @Mock
+    private lateinit var favoritePersistenceAdapter: FavoritePersistenceAdapter
+
+    @Mock
+    private lateinit var reviewPort: ReviewPort
+
+    @Mock
+    private lateinit var livePort: LivePort
+
     private lateinit var memberService: MemberService
 
     @BeforeEach
     fun setUp() {
-        memberService = MemberService(memberPersistenceAdapter, socialPersistenceAdapter)
+        memberService =
+            MemberService(
+                memberPersistenceAdapter,
+                socialPersistenceAdapter,
+                favoritePersistenceAdapter,
+                reviewPort,
+                livePort,
+            )
     }
 
     @Test
@@ -258,5 +275,19 @@ class MemberServiceTest {
 
         assertThat(exception.errorCode).isEqualTo(SOCIAL_ALREADY_LINKED)
         then(socialPersistenceAdapter).should(never()).save(any())
+    }
+
+    @Test
+    fun `회원의 리뷰 즐겨찾기 톡 수를 집계한다`() {
+        val memberId = 1L
+        given(reviewPort.countByMemberId(memberId)).willReturn(3L)
+        given(favoritePersistenceAdapter.countByMemberId(memberId)).willReturn(5L)
+        given(livePort.countByMemberId(memberId)).willReturn(7L)
+
+        val result = memberService.getStats(memberId)
+
+        assertThat(result.reviewCount).isEqualTo(3L)
+        assertThat(result.favoriteCount).isEqualTo(5L)
+        assertThat(result.talkCount).isEqualTo(7L)
     }
 }

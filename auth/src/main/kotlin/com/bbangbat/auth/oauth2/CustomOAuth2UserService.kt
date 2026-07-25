@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class CustomOAuth2UserService(
-    private val oAuthMemberPort: OAuthMemberPort,
+    private val memberPort: MemberPort,
 ) : DefaultOAuth2UserService() {
     override fun loadUser(userRequest: OAuth2UserRequest): OAuth2User {
         val oAuth2User = super.loadUser(userRequest)
@@ -19,7 +19,7 @@ class CustomOAuth2UserService(
                 "KAKAO" -> KakaoOAuth2UserInfo(oAuth2User.attributes)
                 else -> throw IllegalArgumentException("지원하지 않는 소셜 로그인입니다.")
             }
-        val memberId = oAuthMemberPort.findByProviderAndProviderId(userInfo.provider, userInfo.providerId)
+        val memberId = memberPort.findByProviderAndProviderId(userInfo.provider, userInfo.providerId)
         val attributes =
             mutableMapOf<String, Any>(
                 "email" to userInfo.email,
@@ -33,7 +33,7 @@ class CustomOAuth2UserService(
         if (memberId != null) {
             attributes["memberId"] = memberId
         } else {
-            attributes["existingAccount"] = oAuthMemberPort.existsByEmail(userInfo.email)
+            attributes["existingAccount"] = memberPort.existsByEmail(userInfo.email)
         }
 
         return DefaultOAuth2User(

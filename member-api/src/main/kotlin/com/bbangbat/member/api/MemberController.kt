@@ -7,6 +7,7 @@ import com.bbangbat.auth.token.TempTokenProvider
 import com.bbangbat.auth.token.TokenService
 import com.bbangbat.member.api.dto.LinkRequest
 import com.bbangbat.member.api.dto.MemberResponse
+import com.bbangbat.member.api.dto.MemberStatsResponse
 import com.bbangbat.member.api.dto.SignupRequest
 import com.bbangbat.member.api.dto.SignupResponse
 import com.bbangbat.member.application.MemberService
@@ -133,4 +134,15 @@ class MemberController(
     fun getMe(
         @AuthMember memberId: Long,
     ): MemberResponse = MemberResponse.from(memberService.findById(memberId))
+
+    @Operation(summary = "내 활동 수 조회", description = "로그인한 회원의 리뷰, 즐겨찾기, 톡 작성 수를 조회합니다.")
+    @ApiResponses(
+        ApiResponse(responseCode = "200", description = "조회 성공"),
+        ApiResponse(responseCode = "401", description = "인증 필요"),
+    )
+    @GetMapping("/me/stats")
+    @ResponseStatus(OK)
+    fun getStats(
+        @AuthMember memberId: Long,
+    ): MemberStatsResponse = MemberStatsResponse.from(memberService.getStats(memberId))
 }

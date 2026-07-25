@@ -1,6 +1,6 @@
 package com.bbangbat.auth.oauth2
 
-interface OAuthMemberPort {
+interface MemberPort {
     fun findByProviderAndProviderId(
         provider: SocialProvider,
         providerId: String,

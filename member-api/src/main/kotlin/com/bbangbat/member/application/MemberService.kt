@@ -9,6 +9,7 @@ import com.bbangbat.member.domain.Gender
 import com.bbangbat.member.domain.Member
 import com.bbangbat.member.domain.Social
 import com.bbangbat.member.domain.SocialType
+import com.bbangbat.member.repository.FavoritePersistenceAdapter
 import com.bbangbat.member.repository.MemberPersistenceAdapter
 import com.bbangbat.member.repository.SocialPersistenceAdapter
 import org.springframework.stereotype.Service
@@ -19,6 +20,9 @@ import java.time.LocalDateTime
 class MemberService(
     private val memberPersistenceAdapter: MemberPersistenceAdapter,
     private val socialPersistenceAdapter: SocialPersistenceAdapter,
+    private val favoritePersistenceAdapter: FavoritePersistenceAdapter,
+    private val reviewPort: ReviewPort,
+    private val livePort: LivePort,
 ) {
     @Transactional
     fun signup(
@@ -88,4 +92,12 @@ class MemberService(
     fun existsByNickname(nickname: String): Boolean = memberPersistenceAdapter.existsByNickname(nickname)
 
     fun findByEmailOrNull(email: String): Member? = memberPersistenceAdapter.findByEmailOrNull(email)
+
+    @Transactional(readOnly = true)
+    fun getStats(memberId: Long): MemberStats =
+        MemberStats(
+            reviewCount = reviewPort.countByMemberId(memberId),
+            favoriteCount = favoritePersistenceAdapter.countByMemberId(memberId),
+            talkCount = livePort.countByMemberId(memberId),
+        )
 }
