@@ -26,8 +26,42 @@ class ReviewServiceTest {
     @Mock
     private lateinit var s3Service: S3Service
 
+    @Mock
+    private lateinit var storePort: StorePort
+
     @InjectMocks
     private lateinit var reviewService: ReviewService
+
+    @Test
+    fun `내 리뷰를 가게 정보와 함께 조회한다`() {
+        val memberId = 1L
+        val storeId = 2L
+        val review =
+            Review(
+                id = 3L,
+                memberId = memberId,
+                storeId = storeId,
+                rating = 5,
+                content = "정말 맛있는 빵집이라 추천합니다",
+                menus = listOf("소금빵"),
+                imageUrls = listOf("https://example.com/review.jpg"),
+            )
+        val store =
+            ReviewStore(
+                id = storeId,
+                name = "빵빵 베이커리",
+                imageUrl = "https://example.com/store.jpg",
+            )
+
+        whenever(reviewPersistenceAdapter.findAllByMemberId(memberId)).thenReturn(listOf(review))
+        whenever(storePort.findByIds(setOf(storeId))).thenReturn(mapOf(storeId to store))
+
+        val result = reviewService.getMyReviews(memberId)
+
+        assertEquals(1, result.size)
+        assertEquals(review, result[0].review)
+        assertEquals(store, result[0].store)
+    }
 
     @Test
     fun `리뷰 작성 시 이미지 키를 S3 URL로 변환하여 저장한다`() {

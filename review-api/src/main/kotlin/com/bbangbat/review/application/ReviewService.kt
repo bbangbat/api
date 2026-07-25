@@ -12,8 +12,23 @@ import org.springframework.transaction.annotation.Transactional
 class ReviewService(
     private val reviewPersistenceAdapter: ReviewPersistenceAdapter,
     private val s3Service: S3Service,
+    private val storePort: StorePort,
 ) {
     fun getReviews(storeId: Long): List<Review> = reviewPersistenceAdapter.findAllByStoreId(storeId)
+
+    fun getMyReviews(memberId: Long): List<MyReview> {
+        val reviews = reviewPersistenceAdapter.findAllByMemberId(memberId)
+
+        val storesById = storePort.findByIds(reviews.map { it.storeId }.toSet())
+
+        return reviews.map { review ->
+            val store =
+                checkNotNull(storesById[review.storeId]) {
+                    "리뷰에 연결된 가게를 찾을 수 없습니다. storeId=${review.storeId}"
+                }
+            MyReview(review = review, store = store)
+        }
+    }
 
     @Transactional
     fun create(

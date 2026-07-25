@@ -15,6 +15,7 @@ import jakarta.persistence.Table
 class ReviewImageJpaEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
     val id: Long = 0L,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "review_id", nullable = false)

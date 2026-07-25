@@ -15,6 +15,16 @@ class ReviewPersistenceAdapter(
     fun findAllByStoreId(storeId: Long): List<Review> {
         val entities = reviewRepository.findAllByStoreIdOrderByIdDesc(storeId)
 
+        return toDomains(entities)
+    }
+
+    fun findAllByMemberId(memberId: Long): List<Review> {
+        val entities = reviewRepository.findAllByMemberIdOrderByIdDesc(memberId)
+
+        return toDomains(entities)
+    }
+
+    private fun toDomains(entities: List<ReviewJpaEntity>): List<Review> {
         if (entities.isEmpty()) return emptyList()
 
         val images =
