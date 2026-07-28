@@ -20,7 +20,8 @@ dependencies {
 
     implementation(libs.spring.boot.starter.data.jpa)
     runtimeOnly(libs.mysql.connector)
-    implementation(libs.flyway.core)
+    // Boot 4는 flyway-core만으로 자동설정 안 됨 → starter로 FlywayAutoConfiguration 모듈까지 포함
+    implementation(libs.spring.boot.starter.flyway)
     implementation(libs.flyway.mysql)
 
     testImplementation(libs.spring.boot.starter.test)

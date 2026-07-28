@@ -8,7 +8,7 @@ testcontainers = "1.21.0"
 mockito-kotlin = "5.4.0"
 jjwt = "0.12.6"
 mysql = "9.2.0"
-flyway = "11.8.0"
+flyway = "11.14.1"
 ktlint-gradle = "12.1.2"
 tsid-creator = "5.2.6"
 springdoc-openapi = "3.0.3"
@@ -22,6 +22,7 @@ spring-boot-starter-data-redis = { module = "org.springframework.boot:spring-boo
 spring-boot-starter-oauth2-client = { module = "org.springframework.boot:spring-boot-starter-oauth2-client" }
 spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
 spring-boot-starter-log4j2 = { module = "org.springframework.boot:spring-boot-starter-log4j2" }
+spring-boot-starter-flyway = { module = "org.springframework.boot:spring-boot-starter-flyway" }
 slf4j-api = { module = "org.slf4j:slf4j-api" }
 tsid-creator = { module = "com.github.f4b6a3:tsid-creator", version.ref = "tsid-creator" }
 jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml" }

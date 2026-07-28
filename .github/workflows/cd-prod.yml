@@ -84,7 +84,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_PROD_SSH_KEY }}
           source: bbangbat-config/infra,bbangbat-config/config
-          target: ~/bbangbat
+          target: ~/bbangbat-prod
           strip_components: 1
 
       - name: Deploy to EC2
@@ -97,7 +97,7 @@ jobs:
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker pull ${{ env.IMAGE }}
 
-            cd ~/bbangbat/infra
+            cd ~/bbangbat-prod/infra
             docker compose -f docker-compose-prod.yml down
             docker compose -f docker-compose-prod.yml up -d
             docker image prune -f
