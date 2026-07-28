@@ -43,7 +43,7 @@ class TokenServiceTest {
             )
         jwtProvider = JwtProvider(properties)
         given(redisTemplate.opsForValue()).willReturn(valueOperations)
-        tokenService = TokenService(redisTemplate, jwtProvider, properties)
+        tokenService = TokenService(redisTemplate, jwtProvider, properties, keyPrefix = "")
     }
 
     @Test

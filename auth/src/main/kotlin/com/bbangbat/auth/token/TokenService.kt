@@ -4,6 +4,7 @@ import com.bbangbat.auth.jwt.JwtProperties
 import com.bbangbat.auth.jwt.JwtProvider
 import com.bbangbat.common.exception.BbangbatException
 import com.bbangbat.common.exception.ErrorCode.INVALID_TOKEN
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Service
 import java.time.Duration
@@ -13,13 +14,17 @@ class TokenService(
     private val redisTemplate: StringRedisTemplate,
     private val jwtProvider: JwtProvider,
     private val jwtProperties: JwtProperties,
+    // 단일 Redis(Upstash)를 dev/prod가 공유할 때 키 충돌 방지용 환경 프리픽스 (예: "dev:", "prod:")
+    @param:Value("\${app.redis.key-prefix:}") private val keyPrefix: String,
 ) {
+    private fun rtKey(memberId: Long): String = "${keyPrefix}RT:$memberId"
+
     fun saveRefreshToken(
         memberId: Long,
         refreshToken: String,
     ) {
         redisTemplate.opsForValue().set(
-            "RT:$memberId",
+            rtKey(memberId),
             refreshToken,
             Duration.ofMillis(jwtProperties.refreshTokenExpiry),
         )
@@ -29,7 +34,7 @@ class TokenService(
         if (!jwtProvider.validateToken(refreshToken)) throw BbangbatException(INVALID_TOKEN)
 
         val memberId = jwtProvider.getMemberId(refreshToken)
-        val stored = redisTemplate.opsForValue().get("RT:$memberId")
+        val stored = redisTemplate.opsForValue().get(rtKey(memberId))
 
         if (stored != refreshToken) throw BbangbatException(INVALID_TOKEN)
 
@@ -42,6 +47,6 @@ class TokenService(
     }
 
     fun deleteRefreshToken(memberId: Long) {
-        redisTemplate.delete("RT:$memberId")
+        redisTemplate.delete(rtKey(memberId))
     }
 }

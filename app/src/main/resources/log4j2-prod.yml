@@ -1,0 +1,52 @@
+Configuration:
+  status: warn
+
+  Properties:
+    Property:
+      name: LOG_PATH
+      value: logs
+
+  Appenders:
+    Console:
+      name: CONSOLE
+      target: SYSTEM_OUT
+      PatternLayout:
+        disableAnsi: "false"
+        pattern: "%d{HH:mm:ss.SSS} %highlight{%level}{FATAL=red blink, ERROR=red bold, WARN=yellow bold, INFO=green bold, DEBUG=cyan, TRACE=white} [%style{%t}{dim}] [%X{requestId}] %style{%c{1.}}{cyan} : %msg%n%throwable"
+
+    RollingFile:
+      name: FILE
+      fileName: "${LOG_PATH}/today.log"
+      filePattern: "${LOG_PATH}/%d{yyyy-MM-dd}-%i.log"
+      PatternLayout:
+        pattern: "%d{yyyy-MM-dd HH:mm:ss.SSS} %level [%t] [%X{requestId}] %c{1.} : %msg%n%throwable"
+      Policies:
+        TimeBasedTriggeringPolicy:
+          interval: 1
+          modulate: true
+        SizeBasedTriggeringPolicy:
+          size: 50MB
+      DefaultRolloverStrategy:
+        max: 10
+        Delete:
+          basePath: "${LOG_PATH}"
+          maxDepth: 1
+          IfFileName:
+            glob: "*.log"
+          IfLastModified:
+            age: P30D
+
+  Loggers:
+    # prod은 애플리케이션 로그를 INFO로 (dev는 DEBUG). SQL 로깅도 끔.
+    Logger:
+      - name: com.bbangbat
+        level: INFO
+        additivity: false
+        AppenderRef:
+          - ref: CONSOLE
+          - ref: FILE
+    Root:
+      level: WARN
+      AppenderRef:
+        - ref: CONSOLE
+        - ref: FILE
