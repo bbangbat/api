@@ -3,12 +3,14 @@ package com.bbangbat.live.application
 import com.bbangbat.live.client.SummaryResultMessage
 import com.bbangbat.live.domain.StoreTalkSummary
 import com.bbangbat.live.repository.TalkPersistenceAdapter
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import software.amazon.awssdk.services.sqs.SqsClient
 import software.amazon.awssdk.services.sqs.model.DeleteMessageRequest
+import software.amazon.awssdk.services.sqs.model.Message
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest
 import tools.jackson.databind.ObjectMapper
 
@@ -24,6 +26,8 @@ class TalkSummaryResultPoller(
     private val talkPersistenceAdapter: TalkPersistenceAdapter,
     @param:Value("\${cloud.aws.sqs.summary-result-queue-url}") private val resultQueueUrl: String,
 ) {
+    private val log = LoggerFactory.getLogger(javaClass)
+
     @Scheduled(fixedDelay = POLL_INTERVAL_MS)
     fun pollResults() {
         val response =
@@ -36,9 +40,22 @@ class TalkSummaryResultPoller(
                     .build(),
             )
 
-        response.messages().forEach { message ->
-            val result = objectMapper.readValue(message.body(), SummaryResultMessage::class.java)
+        response.messages().forEach { message -> handleMessage(message) }
+    }
 
+    private fun handleMessage(message: Message) {
+        val result =
+            try {
+                objectMapper.readValue(message.body(), SummaryResultMessage::class.java)
+            } catch (e: Exception) {
+                // 파싱 불가한 메시지(poison)는 큐에 남기면 무한 재시도되므로 로그 후 폐기
+                log.error("결과 큐 메시지 파싱 실패, 폐기함: body={}", message.body(), e)
+                deleteMessage(message)
+
+                return
+            }
+
+        try {
             talkPersistenceAdapter.upsertSummary(
                 StoreTalkSummary(
                     storeId = result.storeId,
@@ -46,15 +63,21 @@ class TalkSummaryResultPoller(
                     lastMessageId = result.lastMessageId,
                 ),
             )
-
-            sqsClient.deleteMessage(
-                DeleteMessageRequest
-                    .builder()
-                    .queueUrl(resultQueueUrl)
-                    .receiptHandle(message.receiptHandle())
-                    .build(),
-            )
+            deleteMessage(message)
+        } catch (e: Exception) {
+            // 저장 실패는 일시적일 수 있어 삭제하지 않고 visibility timeout 후 재시도되도록 둔다
+            log.error("요약 저장 실패, 재시도 위해 유지: storeId={}", result.storeId, e)
         }
+    }
+
+    private fun deleteMessage(message: Message) {
+        sqsClient.deleteMessage(
+            DeleteMessageRequest
+                .builder()
+                .queueUrl(resultQueueUrl)
+                .receiptHandle(message.receiptHandle())
+                .build(),
+        )
     }
 
     companion object {
