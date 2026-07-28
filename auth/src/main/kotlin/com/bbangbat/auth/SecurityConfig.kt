@@ -6,6 +6,7 @@ import com.bbangbat.auth.jwt.JwtProperties
 import com.bbangbat.auth.jwt.JwtProvider
 import com.bbangbat.auth.oauth2.CustomOAuth2UserService
 import com.bbangbat.auth.oauth2.OAuth2AuthenticationSuccessHandler
+import com.bbangbat.auth.oauth2.OAuth2RedirectUriCookieFilter
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
@@ -15,6 +16,7 @@ import org.springframework.http.HttpMethod.POST
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.web.cors.CorsConfiguration
@@ -31,7 +33,10 @@ class SecurityConfig(
     private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint,
 ) {
     @Bean
-    fun filterChain(http: HttpSecurity): SecurityFilterChain =
+    fun filterChain(
+        http: HttpSecurity,
+        @Value("\${app.frontend-allowed-origins:}") allowedOrigins: String,
+    ): SecurityFilterChain =
         http
             .csrf { it.disable() }
             .cors { }
@@ -55,7 +60,10 @@ class SecurityConfig(
                 it.successHandler(oAuth2AuthenticationSuccessHandler)
             }.exceptionHandling { it.authenticationEntryPoint(jwtAuthenticationEntryPoint) }
             .addFilterBefore(JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter::class.java)
-            .build()
+            .addFilterBefore(
+                OAuth2RedirectUriCookieFilter(allowedOrigins),
+                OAuth2AuthorizationRequestRedirectFilter::class.java,
+            ).build()
 
     @Bean
     fun corsConfigurationSource(
