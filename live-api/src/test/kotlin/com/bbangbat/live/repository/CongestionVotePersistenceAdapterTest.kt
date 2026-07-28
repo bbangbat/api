@@ -1,0 +1,114 @@
+package com.bbangbat.live.repository
+
+import com.bbangbat.auth.voter.VoterType
+import com.bbangbat.live.domain.CongestionLevel
+import com.bbangbat.live.domain.CongestionVote
+import com.bbangbat.live.support.AbstractContainerBaseTest
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager
+import org.springframework.context.annotation.Import
+import java.time.LocalDateTime
+
+@Import(CongestionVotePersistenceAdapter::class)
+class CongestionVotePersistenceAdapterTest
+    @Autowired
+    constructor(
+        private val congestionVotePersistenceAdapter: CongestionVotePersistenceAdapter,
+        private val em: TestEntityManager,
+    ) : AbstractContainerBaseTest() {
+        @Test
+        fun `투표자로 기존 투표를 조회한다`() {
+            // given
+            congestionVotePersistenceAdapter.save(vote(storeId = 1L, level = CongestionLevel.NORMAL, voterKey = "10"))
+            em.flush()
+            em.clear()
+
+            // when
+            val found = congestionVotePersistenceAdapter.findByVoter(1L, VoterType.MEMBER, "10")
+
+            // then
+            assertThat(found).isNotNull
+            assertThat(found!!.level).isEqualTo(CongestionLevel.NORMAL)
+        }
+
+        @Test
+        fun `updateVote는 더티체킹으로 level과 votedAt을 갱신한다`() {
+            // given
+            val saved = congestionVotePersistenceAdapter.save(vote(storeId = 1L, level = CongestionLevel.NORMAL, voterKey = "10"))
+            em.flush()
+            em.clear()
+            val newVotedAt = LocalDateTime.now()
+
+            // when
+            congestionVotePersistenceAdapter.updateVote(saved.id, CongestionLevel.CROWDED, newVotedAt)
+            em.flush()
+            em.clear()
+
+            // then
+            val updated = congestionVotePersistenceAdapter.findByVoter(1L, VoterType.MEMBER, "10")!!
+            assertThat(updated.level).isEqualTo(CongestionLevel.CROWDED)
+        }
+
+        @Test
+        fun `findRecentVotes는 윈도우 밖의 오래된 투표를 제외한다`() {
+            // given
+            val now = LocalDateTime.now()
+            congestionVotePersistenceAdapter.save(vote(storeId = 1L, level = CongestionLevel.CROWDED, voterKey = "recent", votedAt = now))
+            congestionVotePersistenceAdapter.save(
+                vote(storeId = 1L, level = CongestionLevel.UNCROWDED, voterKey = "old", votedAt = now.minusMinutes(30)),
+            )
+            em.flush()
+            em.clear()
+
+            // when
+            val recent = congestionVotePersistenceAdapter.findRecentVotes(1L, now.minusMinutes(15))
+
+            // then
+            assertThat(recent).hasSize(1)
+            assertThat(recent[0].level).isEqualTo(CongestionLevel.CROWDED)
+        }
+
+        @Test
+        fun `countRecentVotesByStores는 여러 가게의 최근 투표를 가게별 혼잡도별로 집계한다`() {
+            // given
+            val now = LocalDateTime.now()
+            congestionVotePersistenceAdapter.save(vote(storeId = 1L, level = CongestionLevel.CROWDED, voterKey = "a", votedAt = now))
+            congestionVotePersistenceAdapter.save(vote(storeId = 1L, level = CongestionLevel.CROWDED, voterKey = "b", votedAt = now))
+            congestionVotePersistenceAdapter.save(vote(storeId = 1L, level = CongestionLevel.NORMAL, voterKey = "c", votedAt = now))
+            congestionVotePersistenceAdapter.save(vote(storeId = 2L, level = CongestionLevel.UNCROWDED, voterKey = "d", votedAt = now))
+            // 윈도우 밖 투표는 제외되어야 한다
+            congestionVotePersistenceAdapter.save(
+                vote(storeId = 1L, level = CongestionLevel.UNCROWDED, voterKey = "old", votedAt = now.minusMinutes(30)),
+            )
+            em.flush()
+            em.clear()
+
+            // when
+            val counts = congestionVotePersistenceAdapter.countRecentVotesByStores(listOf(1L, 2L), now.minusMinutes(15))
+
+            // then
+            val store1 = counts.filter { it.storeId == 1L }.associate { it.level to it.count }
+            val store2 = counts.filter { it.storeId == 2L }.associate { it.level to it.count }
+
+            assertThat(store1[CongestionLevel.CROWDED]).isEqualTo(2)
+            assertThat(store1[CongestionLevel.NORMAL]).isEqualTo(1)
+            assertThat(store1[CongestionLevel.UNCROWDED]).isNull()
+            assertThat(store2[CongestionLevel.UNCROWDED]).isEqualTo(1)
+        }
+
+        private fun vote(
+            storeId: Long,
+            level: CongestionLevel,
+            voterKey: String,
+            votedAt: LocalDateTime = LocalDateTime.now(),
+        ): CongestionVote =
+            CongestionVote(
+                storeId = storeId,
+                level = level,
+                voterType = VoterType.MEMBER,
+                voterKey = voterKey,
+                votedAt = votedAt,
+            )
+    }

@@ -1,0 +1,3 @@
+[submodule "bbangbat-config"]
+	path = bbangbat-config
+	url = https://github.com/BBangBat/api-config.git

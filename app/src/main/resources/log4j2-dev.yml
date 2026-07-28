@@ -1,0 +1,57 @@
+Configuration:
+  status: warn
+
+  Properties:
+    Property:
+      name: LOG_PATH
+      value: logs
+
+  Appenders:
+    Console:
+      name: CONSOLE
+      target: SYSTEM_OUT
+      PatternLayout:
+        disableAnsi: "false"
+        pattern: "%d{HH:mm:ss.SSS} %highlight{%level}{FATAL=red blink, ERROR=red bold, WARN=yellow bold, INFO=green bold, DEBUG=cyan, TRACE=white} [%style{%t}{dim}] [%X{requestId}] %style{%c{1.}}{cyan} : %msg%n%throwable"
+
+    RollingFile:
+      name: FILE
+      fileName: "${LOG_PATH}/today.log"
+      filePattern: "${LOG_PATH}/%d{yyyy-MM-dd}-%i.log"
+      PatternLayout:
+        pattern: "%d{yyyy-MM-dd HH:mm:ss.SSS} %level [%t] [%X{requestId}] %c{1.} : %msg%n%throwable"
+      Policies:
+        TimeBasedTriggeringPolicy:
+          interval: 1
+          modulate: true
+        SizeBasedTriggeringPolicy:
+          size: 50MB
+      DefaultRolloverStrategy:
+        max: 10
+        Delete:
+          basePath: "${LOG_PATH}"
+          maxDepth: 1
+          IfFileName:
+            glob: "*.log"
+          IfLastModified:
+            age: P30D
+
+  Loggers:
+    Logger:
+      - name: com.bbangbat
+        level: DEBUG
+        additivity: false
+        AppenderRef:
+          - ref: CONSOLE
+          - ref: FILE
+      - name: org.hibernate.SQL
+        level: DEBUG
+        additivity: false
+        AppenderRef:
+          - ref: CONSOLE
+          - ref: FILE
+    Root:
+      level: INFO
+      AppenderRef:
+        - ref: CONSOLE
+        - ref: FILE
