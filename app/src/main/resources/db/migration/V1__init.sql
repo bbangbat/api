@@ -1,6 +1,8 @@
 -- 초기 스키마 (bbangbat)
 -- Hibernate ddl-auto로 생성된 현재 스키마를 Flyway baseline V1로 고정
 
+-- 프로젝트 규칙: DB 레벨 FK 미사용 (애플리케이션 레벨 정합성 관리). 연관 컬럼은 인덱스만 유지.
+
 CREATE TABLE `congestion_votes` (
   `created_at` datetime(6) NOT NULL,
   `id` bigint NOT NULL AUTO_INCREMENT,
@@ -60,8 +62,7 @@ CREATE TABLE `review_images` (
   `updated_at` datetime(6) NOT NULL,
   `image_url` varchar(500) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `FK3aayo5bjciyemf3bvvt987hkr` (`review_id`),
-  CONSTRAINT `FK3aayo5bjciyemf3bvvt987hkr` FOREIGN KEY (`review_id`) REFERENCES `reviews` (`id`)
+  KEY `idx_review_images_review_id` (`review_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 CREATE TABLE `review_menus` (
   `created_at` datetime(6) NOT NULL,
@@ -70,8 +71,7 @@ CREATE TABLE `review_menus` (
   `updated_at` datetime(6) NOT NULL,
   `menu_name` varchar(50) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `FK8xpnihyxakmqlo5lo6dhhx78f` (`review_id`),
-  CONSTRAINT `FK8xpnihyxakmqlo5lo6dhhx78f` FOREIGN KEY (`review_id`) REFERENCES `reviews` (`id`)
+  KEY `idx_review_menus_review_id` (`review_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 CREATE TABLE `reviews` (
   `rating` int NOT NULL,
