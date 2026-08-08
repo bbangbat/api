@@ -25,10 +25,10 @@ data class SignupRequest(
     val nickname: String,
     @field:Schema(description = "프로필 이미지 URL", example = "https://example.com/image.jpg")
     val profileImageKey: String? = null,
-    @field:Schema(description = "성별")
-    val gender: Gender,
-    @field:Schema(description = "연령대")
-    val ageGroup: AgeGroup,
+    @field:Schema(description = "성별 (미전달 시 소셜 제공값, 그것도 없으면 UNKNOWN)")
+    val gender: Gender? = null,
+    @field:Schema(description = "연령대 (미전달 시 소셜 제공값, 그것도 없으면 UNKNOWN)")
+    val ageGroup: AgeGroup? = null,
     @field:AssertTrue(message = "서비스 이용약관에 동의해야 합니다.")
     @field:Schema(description = "서비스 이용약관 동의")
     val termsAgreed: Boolean,

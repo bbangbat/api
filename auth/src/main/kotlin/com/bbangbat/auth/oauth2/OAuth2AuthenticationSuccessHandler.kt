@@ -60,8 +60,9 @@ class OAuth2AuthenticationSuccessHandler(
             val provider = oAuth2User.getAttribute<SocialProvider>("provider")!!
             val providerId = oAuth2User.getAttribute<String>("providerId")!!
             val ageGroup = oAuth2User.getAttribute<String?>("ageGroup")
+            val gender = oAuth2User.getAttribute<String?>("gender")
             val existingAccount = oAuth2User.getAttribute<Boolean>("existingAccount") ?: false
-            val tempToken = tempTokenProvider.createTempToken(email, name, provider, providerId, ageGroup)
+            val tempToken = tempTokenProvider.createTempToken(email, name, provider, providerId, ageGroup, gender)
 
             response.sendRedirect(
                 "$base/signup?temp_token=$tempToken&existing_account=$existingAccount",
@@ -116,7 +117,8 @@ class OAuth2AuthenticationSuccessHandler(
         val provider = oAuth2User.getAttribute<SocialProvider>("provider")!!
         val providerId = oAuth2User.getAttribute<String>("providerId")!!
         val ageGroup = oAuth2User.getAttribute<String?>("ageGroup")
-        val tempToken = tempTokenProvider.createTempToken(email, name, provider, providerId, ageGroup)
+        val gender = oAuth2User.getAttribute<String?>("gender")
+        val tempToken = tempTokenProvider.createTempToken(email, name, provider, providerId, ageGroup, gender)
 
         response.sendRedirect("$base/oauth2/link/callback?temp_token=$tempToken")
     }

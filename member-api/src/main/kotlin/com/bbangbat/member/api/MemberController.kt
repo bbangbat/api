@@ -16,6 +16,8 @@ import com.bbangbat.member.api.dto.SignupRequest
 import com.bbangbat.member.api.dto.SignupResponse
 import com.bbangbat.member.api.dto.UpdateProfileRequest
 import com.bbangbat.member.application.MemberService
+import com.bbangbat.member.domain.AgeGroup
+import com.bbangbat.member.domain.Gender
 import com.bbangbat.member.domain.NicknamePolicy
 import com.bbangbat.member.domain.SocialType
 import io.swagger.v3.oas.annotations.Operation
@@ -72,8 +74,8 @@ class MemberController(
                 name = claims.name,
                 nickname = request.nickname,
                 profileImageKey = request.profileImageKey,
-                gender = request.gender,
-                ageGroup = request.ageGroup,
+                gender = request.gender ?: claims.gender?.let { Gender.valueOf(it) },
+                ageGroup = request.ageGroup ?: claims.ageGroup?.let { AgeGroup.valueOf(it) },
                 termsAgreed = request.termsAgreed,
                 privacyAgreed = request.privacyAgreed,
                 provider = SocialType.valueOf(claims.provider.name),

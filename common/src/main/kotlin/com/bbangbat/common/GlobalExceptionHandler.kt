@@ -6,6 +6,7 @@ import com.bbangbat.common.exception.ErrorResponse
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.MissingRequestCookieException
 import org.springframework.web.bind.MissingServletRequestParameterException
@@ -65,6 +66,20 @@ class GlobalExceptionHandler {
         log.warn("검증 실패: {}", message)
 
         return ResponseEntity.badRequest().body(ErrorResponse(code = ErrorCode.INVALID_INPUT.name, message = message))
+    }
+
+    /** 요청 본문 역직렬화 실패 (필수 값 누락, 타입/형식 오류 등) */
+    @ExceptionHandler(HttpMessageNotReadableException::class)
+    fun handleHttpMessageNotReadableException(e: HttpMessageNotReadableException): ResponseEntity<ErrorResponse> {
+        log.warn("요청 본문 파싱 실패: {}", e.mostSpecificCause.message)
+
+        val error =
+            ErrorResponse(
+                code = ErrorCode.INVALID_INPUT.name,
+                message = "요청 형식이 올바르지 않습니다. 필수 값이 누락되었는지 확인해주세요.",
+            )
+
+        return ResponseEntity.badRequest().body(error)
     }
 
     /** 필수 쿠키 누락 (예: refresh_token 없이 재발급 요청) */

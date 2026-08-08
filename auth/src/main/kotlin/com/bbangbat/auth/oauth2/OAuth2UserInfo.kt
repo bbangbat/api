@@ -34,6 +34,9 @@ abstract class OAuth2UserInfo(
     abstract val provider: SocialProvider
     abstract val providerId: String
     abstract val ageGroup: String?
+
+    /** MALE / FEMALE. 동의하지 않았거나 제공하지 않으면 null */
+    abstract val gender: String?
 }
 
 class NaverOAuth2UserInfo(
@@ -50,7 +53,16 @@ class NaverOAuth2UserInfo(
                 "10-19" -> "TEENS"
                 "20-29" -> "TWENTIES"
                 "30-39" -> "THIRTIES"
-                "40-49", "50-59", "60-" -> "FORTIES"
+                "40-49" -> "FORTIES"
+                "50-59" -> "FIFTIES"
+                "60-" -> "SIXTIES_PLUS"
+                else -> null
+            }
+    override val gender: String?
+        get() =
+            when (response["gender"] as? String) {
+                "M" -> "MALE"
+                "F" -> "FEMALE"
                 else -> null
             }
 }
@@ -72,7 +84,16 @@ class KakaoOAuth2UserInfo(
                 "10-14", "15-19" -> "TEENS"
                 "20-29" -> "TWENTIES"
                 "30-39" -> "THIRTIES"
-                "40-49", "50-59", "60-69", "70-79", "80-89", "90-" -> "FORTIES"
+                "40-49" -> "FORTIES"
+                "50-59" -> "FIFTIES"
+                "60-69", "70-79", "80-89", "90-" -> "SIXTIES_PLUS"
+                else -> null
+            }
+    override val gender: String?
+        get() =
+            when (kakaoAccount["gender"] as? String) {
+                "male" -> "MALE"
+                "female" -> "FEMALE"
                 else -> null
             }
 }
