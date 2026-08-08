@@ -1,8 +1,7 @@
 name: CI
 
+# PR 검증 전용. develop/main 푸시 시에는 각 CD 워크플로가 빌드/테스트를 함께 수행한다.
 on:
-  push:
-    branches: [ develop ]
   pull_request:
     branches: [ develop, main ]
 

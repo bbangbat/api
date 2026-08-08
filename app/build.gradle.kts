@@ -3,6 +3,9 @@ plugins {
     alias(libs.plugins.spring.boot)
 }
 
+// 산출물은 bootJar 하나만 둔다 (plain jar 비활성화 → Docker COPY 패턴 모호성 제거)
+tasks.named<Jar>("jar") { enabled = false }
+
 dependencies {
     implementation(project(":common"))
     implementation(project(":auth"))
