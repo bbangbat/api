@@ -6,6 +6,8 @@ import com.bbangbat.auth.token.RefreshTokenCookieProvider
 import com.bbangbat.auth.token.TempTokenProvider
 import com.bbangbat.auth.token.TokenService
 import com.bbangbat.member.api.dto.LinkRequest
+import com.bbangbat.member.api.dto.LinkSocialRequest
+import com.bbangbat.member.api.dto.LinkedSocialResponse
 import com.bbangbat.member.api.dto.MemberResponse
 import com.bbangbat.member.api.dto.MemberStatsResponse
 import com.bbangbat.member.api.dto.ProfileImageUploadRequest
@@ -163,7 +165,7 @@ class MemberController(
         @RequestBody @Valid request: UpdateProfileRequest,
     ): MemberResponse =
         memberService
-            .updateProfile(memberId, request.nickname, request.profileImageKey)
+            .updateProfile(memberId, request.name, request.nickname, request.profileImageKey)
             .let { MemberResponse.from(it, memberService.profileImageUrlOf(it)) }
 
     @Operation(
@@ -180,6 +182,41 @@ class MemberController(
         @AuthMember memberId: Long,
         @RequestBody @Valid request: ProfileImageUploadRequest,
     ): ProfileImageUploadResponse = ProfileImageUploadResponse.from(memberService.generateProfileImageUpload(request.contentType!!))
+
+    @Operation(summary = "연동된 소셜 목록 조회", description = "현재 회원에 연동된 소셜 제공자 목록을 반환합니다.")
+    @ApiResponses(
+        ApiResponse(responseCode = "200", description = "조회 성공"),
+        ApiResponse(responseCode = "401", description = "인증 필요"),
+    )
+    @GetMapping("/me/socials")
+    @ResponseStatus(OK)
+    fun getLinkedSocials(
+        @AuthMember memberId: Long,
+    ): List<LinkedSocialResponse> = memberService.findLinkedProviders(memberId).map { LinkedSocialResponse.from(it) }
+
+    @Operation(
+        summary = "소셜 계정 연동",
+        description =
+            "로그인 상태에서 새 소셜 계정을 연동합니다. " +
+                "/oauth2/authorization/{provider}?purpose=link 로 소셜 인증 후 받은 임시 토큰이 필요합니다.",
+    )
+    @ApiResponses(
+        ApiResponse(responseCode = "200", description = "연동 성공"),
+        ApiResponse(responseCode = "401", description = "인증 필요 또는 임시 토큰 유효하지 않음"),
+        ApiResponse(responseCode = "409", description = "이미 연동된 소셜 계정이거나 해당 제공자가 이미 연동됨"),
+    )
+    @PostMapping("/me/socials")
+    @ResponseStatus(OK)
+    fun linkSocial(
+        @AuthMember memberId: Long,
+        @RequestBody @Valid request: LinkSocialRequest,
+    ): List<LinkedSocialResponse> {
+        val claims = tempTokenProvider.parse(request.tempToken)
+
+        memberService.linkSocialToMember(memberId, SocialType.valueOf(claims.provider.name), claims.providerId)
+
+        return memberService.findLinkedProviders(memberId).map { LinkedSocialResponse.from(it) }
+    }
 
     @Operation(
         summary = "소셜 연동 해제",

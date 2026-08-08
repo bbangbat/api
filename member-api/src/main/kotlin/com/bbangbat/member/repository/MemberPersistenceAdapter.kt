@@ -31,6 +31,7 @@ class MemberPersistenceAdapter(
      */
     fun updateProfile(
         id: Long,
+        name: String?,
         nickname: String?,
         profileImageKey: String?,
     ): Member =
@@ -38,6 +39,7 @@ class MemberPersistenceAdapter(
             .findById(id)
             .orElseThrow { BbangbatException(MEMBER_NOT_FOUND) }
             .also { entity ->
+                name?.let { entity.name = it }
                 nickname?.let { entity.nickname = it }
                 profileImageKey?.let { entity.profileImageKey = it }
             }.toDomain()

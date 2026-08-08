@@ -40,6 +40,7 @@ class MemberService(
     @Transactional
     fun updateProfile(
         memberId: Long,
+        name: String?,
         nickname: String?,
         profileImageKey: String?,
     ): Member {
@@ -49,11 +50,39 @@ class MemberService(
             throw BbangbatException(NICKNAME_ALREADY_EXISTS)
         }
 
-        // 도메인 규칙(닉네임 길이·키 형식) 검증
-        current.copy(nickname = nickname ?: current.nickname, profileImageKey = profileImageKey ?: current.profileImageKey)
+        // 도메인 규칙(이름/닉네임 길이, 이미지 키 형식) 검증
+        current.copy(
+            name = name ?: current.name,
+            nickname = nickname ?: current.nickname,
+            profileImageKey = profileImageKey ?: current.profileImageKey,
+        )
 
-        return memberPersistenceAdapter.updateProfile(memberId, nickname, profileImageKey)
+        return memberPersistenceAdapter.updateProfile(memberId, name, nickname, profileImageKey)
     }
+
+    /** 로그인한 회원에게 소셜 계정을 연동한다. (마이페이지 연동, 이메일과 무관하게 현재 회원에 연결) */
+    @Transactional
+    fun linkSocialToMember(
+        memberId: Long,
+        provider: SocialType,
+        providerId: String,
+    ): Member {
+        val member = memberPersistenceAdapter.findById(memberId)
+        val alreadyLinkedElsewhere = socialPersistenceAdapter.findByProviderAndProviderId(provider, providerId) != null
+        val alreadyHasProvider = socialPersistenceAdapter.findAllByMemberId(memberId).any { it.provider == provider }
+
+        if (alreadyLinkedElsewhere || alreadyHasProvider) {
+            throw BbangbatException(SOCIAL_ALREADY_LINKED)
+        }
+
+        socialPersistenceAdapter.save(Social(member = member, provider = provider, providerId = providerId))
+
+        return member
+    }
+
+    /** 연동된 소셜 제공자 목록 */
+    @Transactional(readOnly = true)
+    fun findLinkedProviders(memberId: Long): List<SocialType> = socialPersistenceAdapter.findAllByMemberId(memberId).map { it.provider }
 
     /**
      * 회원 탈퇴 (하드 삭제).

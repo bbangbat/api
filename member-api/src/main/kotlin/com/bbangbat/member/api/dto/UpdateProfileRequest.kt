@@ -1,5 +1,6 @@
 package com.bbangbat.member.api.dto
 
+import com.bbangbat.member.domain.NamePolicy
 import com.bbangbat.member.domain.NicknamePolicy
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Pattern
@@ -7,6 +8,13 @@ import jakarta.validation.constraints.Size
 
 @Schema(description = "프로필 수정 요청 (변경할 필드만 전달)")
 data class UpdateProfileRequest(
+    @field:Size(
+        min = NamePolicy.MIN_LENGTH,
+        max = NamePolicy.MAX_LENGTH,
+        message = NamePolicy.LENGTH_MESSAGE,
+    )
+    @field:Schema(description = "이름 (1~30자)", example = "홍길동")
+    val name: String? = null,
     @field:Size(
         min = NicknamePolicy.MIN_LENGTH,
         max = NicknamePolicy.MAX_LENGTH,

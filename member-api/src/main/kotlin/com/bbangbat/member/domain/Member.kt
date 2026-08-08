@@ -20,8 +20,8 @@ data class Member(
     init {
         require(email.isNotBlank()) { "이메일은 비어 있을 수 없습니다." }
         require(email.length <= 100) { "이메일은 100자를 초과할 수 없습니다." }
-        require(name.isNotBlank()) { "이름은 비어 있을 수 없습니다." }
-        require(name.length <= 30) { "이름은 30자를 초과할 수 없습니다." }
+        require(name.isNotBlank()) { NamePolicy.BLANK_MESSAGE }
+        require(name.length in NamePolicy.MIN_LENGTH..NamePolicy.MAX_LENGTH) { NamePolicy.LENGTH_MESSAGE }
         require(nickname.isNotBlank()) { "닉네임은 비어 있을 수 없습니다." }
         require(nickname.length in NicknamePolicy.MIN_LENGTH..NicknamePolicy.MAX_LENGTH) { NicknamePolicy.LENGTH_MESSAGE }
         require(NicknamePolicy.isValidFormat(nickname)) { NicknamePolicy.FORMAT_MESSAGE }

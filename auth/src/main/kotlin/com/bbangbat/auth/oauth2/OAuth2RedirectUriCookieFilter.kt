@@ -37,8 +37,10 @@ class OAuth2RedirectUriCookieFilter(
                 response.addHeader(HttpHeaders.SET_COOKIE, shortLivedCookie(REDIRECT_URI_COOKIE, redirectUri))
             }
 
-            if (request.getParameter("purpose") == PURPOSE_UNLINK) {
-                response.addHeader(HttpHeaders.SET_COOKIE, shortLivedCookie(PURPOSE_COOKIE, PURPOSE_UNLINK))
+            val purpose = request.getParameter("purpose")
+
+            if (purpose in KNOWN_PURPOSES) {
+                response.addHeader(HttpHeaders.SET_COOKIE, shortLivedCookie(PURPOSE_COOKIE, purpose!!))
             }
         }
 
@@ -66,7 +68,14 @@ class OAuth2RedirectUriCookieFilter(
     companion object {
         const val REDIRECT_URI_COOKIE = "oauth2_redirect_uri"
         const val PURPOSE_COOKIE = "oauth2_purpose"
+
+        /** 연동 해제/탈퇴용 재인증 (소셜 토큰을 잠시 보관) */
         const val PURPOSE_UNLINK = "unlink"
+
+        /** 로그인 상태에서 새 소셜 계정 연동 (로그인 처리 대신 임시 토큰 발급) */
+        const val PURPOSE_LINK = "link"
+
+        private val KNOWN_PURPOSES = setOf(PURPOSE_UNLINK, PURPOSE_LINK)
         private const val COOKIE_MAX_AGE = 180L
     }
 }
