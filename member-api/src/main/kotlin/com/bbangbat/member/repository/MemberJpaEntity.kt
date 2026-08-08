@@ -24,8 +24,8 @@ class MemberJpaEntity(
     var name: String,
     @Column(name = "nickname", nullable = false, length = 20)
     var nickname: String,
-    @Column(name = "profile_image_url", nullable = true, length = 500)
-    var profileImageUrl: String? = null,
+    @Column(name = "profile_image_key", nullable = true, length = 500)
+    var profileImageKey: String? = null,
     @Enumerated(EnumType.STRING)
     @Column(name = "gender", nullable = false, length = 10)
     var gender: Gender,
@@ -45,7 +45,7 @@ class MemberJpaEntity(
             email = email,
             name = name,
             nickname = nickname,
-            profileImageUrl = profileImageUrl,
+            profileImageKey = profileImageKey,
             gender = gender,
             ageGroup = ageGroup,
             termsAgreed = termsAgreed,
@@ -62,7 +62,7 @@ class MemberJpaEntity(
                 email = member.email,
                 name = member.name,
                 nickname = member.nickname,
-                profileImageUrl = member.profileImageUrl,
+                profileImageKey = member.profileImageKey,
                 gender = member.gender,
                 ageGroup = member.ageGroup,
                 termsAgreed = member.termsAgreed,

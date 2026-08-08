@@ -8,8 +8,11 @@ import com.bbangbat.auth.token.TokenService
 import com.bbangbat.member.api.dto.LinkRequest
 import com.bbangbat.member.api.dto.MemberResponse
 import com.bbangbat.member.api.dto.MemberStatsResponse
+import com.bbangbat.member.api.dto.ProfileImageUploadRequest
+import com.bbangbat.member.api.dto.ProfileImageUploadResponse
 import com.bbangbat.member.api.dto.SignupRequest
 import com.bbangbat.member.api.dto.SignupResponse
+import com.bbangbat.member.api.dto.UpdateProfileRequest
 import com.bbangbat.member.application.MemberService
 import com.bbangbat.member.domain.SocialType
 import io.swagger.v3.oas.annotations.Operation
@@ -24,6 +27,7 @@ import org.springframework.http.HttpStatus.CREATED
 import org.springframework.http.HttpStatus.OK
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -60,7 +64,7 @@ class MemberController(
                 email = claims.email,
                 name = claims.name,
                 nickname = request.nickname,
-                profileImageUrl = request.profileImageUrl,
+                profileImageKey = request.profileImageKey,
                 gender = request.gender,
                 ageGroup = request.ageGroup,
                 termsAgreed = request.termsAgreed,
@@ -133,7 +137,39 @@ class MemberController(
     @ResponseStatus(OK)
     fun getMe(
         @AuthMember memberId: Long,
-    ): MemberResponse = MemberResponse.from(memberService.findById(memberId))
+    ): MemberResponse = memberService.findById(memberId).let { MemberResponse.from(it, memberService.profileImageUrlOf(it)) }
+
+    @Operation(summary = "프로필 수정", description = "닉네임·프로필 이미지를 수정합니다. 전달한 필드만 변경됩니다.")
+    @ApiResponses(
+        ApiResponse(responseCode = "200", description = "수정 성공"),
+        ApiResponse(responseCode = "400", description = "잘못된 입력"),
+        ApiResponse(responseCode = "401", description = "인증 필요"),
+        ApiResponse(responseCode = "409", description = "닉네임 중복"),
+    )
+    @PatchMapping("/me")
+    @ResponseStatus(OK)
+    fun updateProfile(
+        @AuthMember memberId: Long,
+        @RequestBody @Valid request: UpdateProfileRequest,
+    ): MemberResponse =
+        memberService
+            .updateProfile(memberId, request.nickname, request.profileImageKey)
+            .let { MemberResponse.from(it, memberService.profileImageUrlOf(it)) }
+
+    @Operation(
+        summary = "프로필 이미지 업로드 URL 발급",
+        description = "발급된 presignedUrl로 5분 내 PUT 업로드 후, objectKey를 프로필 수정 API에 전달하세요.",
+    )
+    @ApiResponses(
+        ApiResponse(responseCode = "200", description = "발급 성공"),
+        ApiResponse(responseCode = "401", description = "인증 필요"),
+    )
+    @PostMapping("/me/profile-image/presigned-url")
+    @ResponseStatus(OK)
+    fun createProfileImageUploadUrl(
+        @AuthMember memberId: Long,
+        @RequestBody @Valid request: ProfileImageUploadRequest,
+    ): ProfileImageUploadResponse = ProfileImageUploadResponse.from(memberService.generateProfileImageUpload(request.contentType!!))
 
     @Operation(summary = "내 활동 수 조회", description = "로그인한 회원의 리뷰, 즐겨찾기, 톡 작성 수를 조회합니다.")
     @ApiResponses(

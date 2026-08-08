@@ -5,6 +5,7 @@ import com.bbangbat.auth.jwt.JwtAuthenticationFilter
 import com.bbangbat.auth.jwt.JwtProperties
 import com.bbangbat.auth.jwt.JwtProvider
 import com.bbangbat.auth.oauth2.CustomOAuth2UserService
+import com.bbangbat.auth.oauth2.OAuth2AuthenticationFailureHandler
 import com.bbangbat.auth.oauth2.OAuth2AuthenticationSuccessHandler
 import com.bbangbat.auth.oauth2.OAuth2RedirectUriCookieFilter
 import org.springframework.beans.factory.annotation.Value
@@ -29,6 +30,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 class SecurityConfig(
     private val customOAuth2UserService: CustomOAuth2UserService,
     private val oAuth2AuthenticationSuccessHandler: OAuth2AuthenticationSuccessHandler,
+    private val oAuth2AuthenticationFailureHandler: OAuth2AuthenticationFailureHandler,
     private val jwtProvider: JwtProvider,
     private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint,
 ) {
@@ -47,7 +49,7 @@ class SecurityConfig(
                 it.requestMatchers(POST, "/api/members/link").permitAll()
                 it.requestMatchers(GET, "/api/members/nickname/check").permitAll()
                 it.requestMatchers(GET, "/api/health").permitAll()
-                it.requestMatchers(GET, "/api/stores", "/api/stores/*").permitAll()
+                it.requestMatchers(GET, "/api/stores", "/api/stores/*", "/api/stores/bounds", "/api/stores/bulk").permitAll()
                 it.requestMatchers(GET, "/api/search").permitAll()
                 it.requestMatchers(GET, "/api/congestion", "/api/congestion/*").permitAll()
                 it.requestMatchers(POST, "/api/congestion").permitAll()
@@ -58,6 +60,7 @@ class SecurityConfig(
             }.oauth2Login {
                 it.userInfoEndpoint { endpoint -> endpoint.userService(customOAuth2UserService) }
                 it.successHandler(oAuth2AuthenticationSuccessHandler)
+                it.failureHandler(oAuth2AuthenticationFailureHandler)
             }.exceptionHandling { it.authenticationEntryPoint(jwtAuthenticationEntryPoint) }
             .addFilterBefore(JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter::class.java)
             .addFilterBefore(

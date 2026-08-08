@@ -17,7 +17,7 @@ data class SignupRequest(
     @field:Schema(description = "닉네임 (2~20자)", example = "빵괴물")
     val nickname: String,
     @field:Schema(description = "프로필 이미지 URL", example = "https://example.com/image.jpg")
-    val profileImageUrl: String? = null,
+    val profileImageKey: String? = null,
     @field:Schema(description = "성별")
     val gender: Gender,
     @field:Schema(description = "연령대")

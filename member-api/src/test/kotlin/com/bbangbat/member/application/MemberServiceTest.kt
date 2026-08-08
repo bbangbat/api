@@ -44,6 +44,9 @@ class MemberServiceTest {
     @Mock
     private lateinit var livePort: LivePort
 
+    @Mock
+    private lateinit var profileImageStoragePort: ProfileImageStoragePort
+
     private lateinit var memberService: MemberService
 
     @BeforeEach
@@ -55,6 +58,7 @@ class MemberServiceTest {
                 favoritePersistenceAdapter,
                 reviewPort,
                 livePort,
+                profileImageStoragePort,
             )
     }
 
@@ -67,7 +71,7 @@ class MemberServiceTest {
                 email = "test@test.com",
                 name = "홍길동",
                 nickname = "빵괴물",
-                profileImageUrl = null,
+                profileImageKey = null,
                 gender = Gender.MALE,
                 ageGroup = AgeGroup.TWENTIES,
                 termsAgreed = true,
@@ -82,7 +86,7 @@ class MemberServiceTest {
                 email = "test@test.com",
                 name = "홍길동",
                 nickname = "빵괴물",
-                profileImageUrl = null,
+                profileImageKey = null,
                 gender = Gender.MALE,
                 ageGroup = AgeGroup.TWENTIES,
                 termsAgreed = true,
@@ -109,7 +113,7 @@ class MemberServiceTest {
                 email = "test@test.com",
                 name = "홍길동",
                 nickname = "빵괴물",
-                profileImageUrl = null,
+                profileImageKey = null,
                 gender = Gender.MALE,
                 ageGroup = AgeGroup.TWENTIES,
                 termsAgreed = true,
@@ -124,7 +128,7 @@ class MemberServiceTest {
             email = "test@test.com",
             name = "홍길동",
             nickname = "빵괴물",
-            profileImageUrl = null,
+            profileImageKey = null,
             gender = Gender.MALE,
             ageGroup = AgeGroup.TWENTIES,
             termsAgreed = true,
@@ -171,7 +175,7 @@ class MemberServiceTest {
                 email = "test@test.com",
                 name = "기존회원",
                 nickname = "기존닉네임",
-                profileImageUrl = null,
+                profileImageKey = null,
                 gender = Gender.MALE,
                 ageGroup = AgeGroup.TWENTIES,
                 termsAgreed = true,
@@ -187,7 +191,7 @@ class MemberServiceTest {
                     email = "test@test.com",
                     name = "홍길동",
                     nickname = "빵괴물",
-                    profileImageUrl = null,
+                    profileImageKey = null,
                     gender = Gender.MALE,
                     ageGroup = AgeGroup.TWENTIES,
                     termsAgreed = true,
@@ -211,7 +215,7 @@ class MemberServiceTest {
                 email = "test@test.com",
                 name = "기존회원",
                 nickname = "기존닉네임",
-                profileImageUrl = null,
+                profileImageKey = null,
                 gender = Gender.MALE,
                 ageGroup = AgeGroup.TWENTIES,
                 termsAgreed = true,
@@ -256,7 +260,7 @@ class MemberServiceTest {
                 email = "test@test.com",
                 name = "기존회원",
                 nickname = "기존닉네임",
-                profileImageUrl = null,
+                profileImageKey = null,
                 gender = Gender.MALE,
                 ageGroup = AgeGroup.TWENTIES,
                 termsAgreed = true,

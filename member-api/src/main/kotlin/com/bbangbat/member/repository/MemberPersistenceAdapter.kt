@@ -26,6 +26,22 @@ class MemberPersistenceAdapter(
 
     fun existsByNickname(nickname: String): Boolean = memberRepository.existsByNickname(nickname)
 
+    /**
+     * 프로필 수정 (더티체킹). profileImageKey는 null이면 기존 값을 유지한다.
+     */
+    fun updateProfile(
+        id: Long,
+        nickname: String?,
+        profileImageKey: String?,
+    ): Member =
+        memberRepository
+            .findById(id)
+            .orElseThrow { BbangbatException(MEMBER_NOT_FOUND) }
+            .also { entity ->
+                nickname?.let { entity.nickname = it }
+                profileImageKey?.let { entity.profileImageKey = it }
+            }.toDomain()
+
     fun updateLastLoginAt(id: Long) {
         memberRepository
             .findById(id)

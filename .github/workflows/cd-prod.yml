@@ -100,7 +100,7 @@ jobs:
             cd ~/bbangbat-prod/infra
             docker compose -f docker-compose-prod.yml down
             docker compose -f docker-compose-prod.yml up -d
-            docker image prune -f
+            docker image prune -af --filter "until=168h"
 
       - name: Remove IP from Security Group
         if: always()

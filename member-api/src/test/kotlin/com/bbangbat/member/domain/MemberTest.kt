@@ -9,7 +9,7 @@ class MemberTest {
         email: String = "test@test.com",
         name: String = "홍길동",
         nickname: String = "빵괴물",
-        profileImageUrl: String? = null,
+        profileImageKey: String? = null,
         gender: Gender = Gender.MALE,
         ageGroup: AgeGroup = AgeGroup.TWENTIES,
         termsAgreed: Boolean = true,
@@ -18,7 +18,7 @@ class MemberTest {
         email = email,
         name = name,
         nickname = nickname,
-        profileImageUrl = profileImageUrl,
+        profileImageKey = profileImageKey,
         gender = gender,
         ageGroup = ageGroup,
         termsAgreed = termsAgreed,
@@ -39,19 +39,19 @@ class MemberTest {
         assertThat(member.email).isEqualTo("test@test.com")
         assertThat(member.name).isEqualTo("홍길동")
         assertThat(member.nickname).isEqualTo("빵괴물")
-        assertThat(member.profileImageUrl).isNull()
+        assertThat(member.profileImageKey).isNull()
     }
 
     @Test
-    fun `프로필 이미지 URL을 포함한 회원을 생성할 수 있다`() {
+    fun `프로필 이미지 키를 포함한 회원을 생성할 수 있다`() {
         // given
-        val profileImageUrl = "https://example.com/image.jpg"
+        val profileImageKey = "members/3f2a-image.jpg"
 
         // when
-        val member = validMember(profileImageUrl = profileImageUrl)
+        val member = validMember(profileImageKey = profileImageKey)
 
         // then
-        assertThat(member.profileImageUrl).isEqualTo("https://example.com/image.jpg")
+        assertThat(member.profileImageKey).isEqualTo("members/3f2a-image.jpg")
     }
 
     @Test
@@ -157,21 +157,21 @@ class MemberTest {
     }
 
     @Test
-    fun `프로필 이미지 URL이 https로 시작하지 않으면 예외가 발생한다`() {
+    fun `프로필 이미지 키가 허용된 접두사로 시작하지 않으면 예외가 발생한다`() {
         // given
-        val profileImageUrl = "http://example.com/image.jpg"
+        val profileImageKey = "reviews/image.jpg"
 
         // when & then
-        assertThrows<IllegalArgumentException> { validMember(profileImageUrl = profileImageUrl) }
+        assertThrows<IllegalArgumentException> { validMember(profileImageKey = profileImageKey) }
     }
 
     @Test
-    fun `프로필 이미지 URL이 500자를 초과하면 예외가 발생한다`() {
+    fun `프로필 이미지 키가 500자를 초과하면 예외가 발생한다`() {
         // given
-        val profileImageUrl = "https://" + "a".repeat(493)
+        val profileImageKey = "members/" + "a".repeat(493)
 
         // when & then
-        assertThrows<IllegalArgumentException> { validMember(profileImageUrl = profileImageUrl) }
+        assertThrows<IllegalArgumentException> { validMember(profileImageKey = profileImageKey) }
     }
 
     @Test

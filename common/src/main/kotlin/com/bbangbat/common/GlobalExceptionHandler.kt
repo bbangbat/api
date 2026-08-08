@@ -4,6 +4,7 @@ import com.bbangbat.common.exception.BbangbatException
 import com.bbangbat.common.exception.ErrorCode
 import com.bbangbat.common.exception.ErrorResponse
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.MissingServletRequestParameterException
@@ -19,9 +20,17 @@ class GlobalExceptionHandler {
     fun handleBbangbatException(e: BbangbatException): ResponseEntity<ErrorResponse> {
         log.warn("비즈니스 예외: {} - {}", e.errorCode.name, e.errorCode.message)
 
-        val error = ErrorResponse(code = e.errorCode.name, message = e.errorCode.message)
+        val error =
+            ErrorResponse(
+                code = e.errorCode.name,
+                message = e.errorCode.message,
+                retryAfterSeconds = e.retryAfterSeconds,
+            )
+        val response = ResponseEntity.status(e.errorCode.httpStatus)
 
-        return ResponseEntity.status(e.errorCode.httpStatus).body(error)
+        e.retryAfterSeconds?.let { response.header(HttpHeaders.RETRY_AFTER, it.toString()) }
+
+        return response.body(error)
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)

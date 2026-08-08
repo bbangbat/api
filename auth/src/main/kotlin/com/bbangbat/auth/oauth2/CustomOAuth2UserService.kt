@@ -3,6 +3,8 @@ package com.bbangbat.auth.oauth2
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException
+import org.springframework.security.oauth2.core.OAuth2Error
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User
 import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.stereotype.Service
@@ -17,7 +19,11 @@ class CustomOAuth2UserService(
             when (userRequest.clientRegistration.registrationId.uppercase()) {
                 "NAVER" -> NaverOAuth2UserInfo(oAuth2User.attributes)
                 "KAKAO" -> KakaoOAuth2UserInfo(oAuth2User.attributes)
-                else -> throw IllegalArgumentException("지원하지 않는 소셜 로그인입니다.")
+                else ->
+                    throw OAuth2AuthenticationException(
+                        OAuth2Error(UNSUPPORTED_PROVIDER_ERROR, "지원하지 않는 소셜 로그인입니다.", null),
+                        "지원하지 않는 소셜 로그인입니다.",
+                    )
             }
         val memberId = memberPort.findByProviderAndProviderId(userInfo.provider, userInfo.providerId)
         val attributes =
@@ -41,5 +47,9 @@ class CustomOAuth2UserService(
             attributes,
             "email",
         )
+    }
+
+    companion object {
+        private const val UNSUPPORTED_PROVIDER_ERROR = "unsupported_provider"
     }
 }

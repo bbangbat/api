@@ -18,6 +18,9 @@ dependencies {
     implementation(libs.jackson.module.kotlin)
     runtimeOnly(libs.jackson.dataformat.yaml)
 
+    // 프로필 이미지 presigned URL 발급 어댑터에서 사용
+    implementation(libs.aws.s3)
+
     implementation(libs.spring.boot.starter.data.jpa)
     runtimeOnly(libs.mysql.connector)
     // Boot 4는 flyway-core만으로 자동설정 안 됨 → starter로 FlywayAutoConfiguration 모듈까지 포함

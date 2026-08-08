@@ -2,7 +2,9 @@ package com.bbangbat.store.api
 
 import com.bbangbat.store.api.dto.StoreResponse
 import com.bbangbat.store.application.StoreService
+import com.bbangbat.store.domain.MapBounds
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -31,6 +33,43 @@ class StoreController(
         @RequestParam lat: Double,
         @RequestParam lng: Double,
     ): List<StoreResponse> = storeService.findStores(lat, lng).map { StoreResponse.from(it) }
+
+    @Operation(
+        summary = "지도 영역 내 가게 조회",
+        description =
+            "지도 사각 영역(남/북/서/동) 안의 가게를 조회합니다. " +
+                "요청 범위는 서비스 지역(대전) 경계로 잘라내며, 최대 300개까지 반환합니다.",
+    )
+    @ApiResponses(
+        ApiResponse(responseCode = "200", description = "조회 성공"),
+        ApiResponse(responseCode = "400", description = "잘못된 영역 (north<=south 또는 east<=west)"),
+    )
+    @GetMapping("/bounds")
+    @ResponseStatus(HttpStatus.OK)
+    fun getStoresInBounds(
+        @Parameter(description = "남쪽 위도", example = "36.30") @RequestParam south: Double,
+        @Parameter(description = "북쪽 위도", example = "36.40") @RequestParam north: Double,
+        @Parameter(description = "서쪽 경도", example = "127.30") @RequestParam west: Double,
+        @Parameter(description = "동쪽 경도", example = "127.45") @RequestParam east: Double,
+    ): List<StoreResponse> =
+        storeService
+            .findInBounds(MapBounds(south = south, north = north, west = west, east = east))
+            .map { StoreResponse.from(it) }
+
+    @Operation(
+        summary = "가게 일괄 조회",
+        description = "가게 ID 목록으로 여러 가게를 한 번에 조회합니다. 최대 100개까지 요청할 수 있습니다.",
+    )
+    @ApiResponses(
+        ApiResponse(responseCode = "200", description = "조회 성공"),
+        ApiResponse(responseCode = "400", description = "요청 개수 초과(100개 초과)"),
+    )
+    @GetMapping("/bulk")
+    @ResponseStatus(HttpStatus.OK)
+    fun getStoresByIds(
+        @Parameter(description = "조회할 가게 ID 목록 (쉼표 구분)", example = "1,2,3")
+        @RequestParam storeIds: List<Long>,
+    ): List<StoreResponse> = storeService.findByIds(storeIds).map { StoreResponse.from(it) }
 
     @Operation(summary = "가게 단건 조회", description = "가게 ID로 가게 상세 정보를 조회합니다.")
     @ApiResponses(

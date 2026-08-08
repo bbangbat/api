@@ -20,6 +20,7 @@ enum class ErrorCode(
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다."),
     EMAIL_ALREADY_REGISTERED(HttpStatus.CONFLICT, "이미 가입된 이메일입니다. 기존에 사용한 소셜 계정으로 로그인해주세요."),
     SOCIAL_ALREADY_LINKED(HttpStatus.CONFLICT, "이미 연동된 소셜 계정입니다."),
+    NICKNAME_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 사용 중인 닉네임입니다."),
     FAVORITE_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 즐겨찾기에 추가된 가게입니다."),
     FAVORITE_NOT_FOUND(HttpStatus.NOT_FOUND, "즐겨찾기에 없는 가게입니다."),
 
@@ -29,6 +30,8 @@ enum class ErrorCode(
 
     // Congestion
     OUT_OF_SERVICE_AREA(HttpStatus.FORBIDDEN, "대전 지역에서만 이용할 수 있습니다."),
+    CONGESTION_VOTE_TOO_FAR(HttpStatus.FORBIDDEN, "가게 근처에서만 혼잡도를 투표할 수 있습니다."),
+    CONGESTION_VOTE_COOLDOWN(HttpStatus.TOO_MANY_REQUESTS, "잠시 후 다시 투표할 수 있습니다."),
 
     // Review
     REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "리뷰를 찾을 수 없습니다."),
