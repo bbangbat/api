@@ -27,6 +27,11 @@ interface CongestionVoteRepository :
         voterKey: String,
     ): Optional<CongestionVoteJpaEntity>
 
+    fun deleteAllByVoterTypeAndVoterKey(
+        voterType: VoterType,
+        voterKey: String,
+    )
+
     fun findAllByStoreIdAndVotedAtGreaterThanEqual(
         storeId: Long,
         votedAt: LocalDateTime,

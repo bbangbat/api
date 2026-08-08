@@ -9,4 +9,8 @@ interface SocialRepository : JpaRepository<SocialJpaEntity, Long> {
         provider: SocialType,
         providerId: String,
     ): Optional<SocialJpaEntity>
+
+    fun findAllByMemberId(memberId: Long): List<SocialJpaEntity>
+
+    fun deleteAllByMemberId(memberId: Long)
 }

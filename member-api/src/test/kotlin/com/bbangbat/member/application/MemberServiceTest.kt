@@ -1,5 +1,7 @@
 package com.bbangbat.member.application
 
+import com.bbangbat.auth.oauth2.SocialUnlinkClient
+import com.bbangbat.auth.token.TokenService
 import com.bbangbat.common.exception.BbangbatException
 import com.bbangbat.common.exception.ErrorCode.EMAIL_ALREADY_REGISTERED
 import com.bbangbat.common.exception.ErrorCode.MEMBER_NOT_FOUND
@@ -47,6 +49,12 @@ class MemberServiceTest {
     @Mock
     private lateinit var profileImageStoragePort: ProfileImageStoragePort
 
+    @Mock
+    private lateinit var socialUnlinkClient: SocialUnlinkClient
+
+    @Mock
+    private lateinit var tokenService: TokenService
+
     private lateinit var memberService: MemberService
 
     @BeforeEach
@@ -59,6 +67,8 @@ class MemberServiceTest {
                 reviewPort,
                 livePort,
                 profileImageStoragePort,
+                socialUnlinkClient,
+                tokenService,
             )
     }
 

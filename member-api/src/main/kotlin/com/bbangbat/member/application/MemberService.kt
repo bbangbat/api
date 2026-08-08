@@ -1,10 +1,16 @@
 package com.bbangbat.member.application
 
+import com.bbangbat.auth.oauth2.SocialProvider
+import com.bbangbat.auth.oauth2.SocialUnlinkClient
+import com.bbangbat.auth.token.TokenService
 import com.bbangbat.common.exception.BbangbatException
 import com.bbangbat.common.exception.ErrorCode.EMAIL_ALREADY_REGISTERED
+import com.bbangbat.common.exception.ErrorCode.LAST_SOCIAL_CANNOT_UNLINK
 import com.bbangbat.common.exception.ErrorCode.MEMBER_NOT_FOUND
 import com.bbangbat.common.exception.ErrorCode.NICKNAME_ALREADY_EXISTS
 import com.bbangbat.common.exception.ErrorCode.SOCIAL_ALREADY_LINKED
+import com.bbangbat.common.exception.ErrorCode.SOCIAL_NOT_LINKED
+import com.bbangbat.common.exception.ErrorCode.SOCIAL_REAUTH_REQUIRED
 import com.bbangbat.member.domain.AgeGroup
 import com.bbangbat.member.domain.Gender
 import com.bbangbat.member.domain.Member
@@ -25,6 +31,8 @@ class MemberService(
     private val reviewPort: ReviewPort,
     private val livePort: LivePort,
     private val profileImageStoragePort: ProfileImageStoragePort,
+    private val socialUnlinkClient: SocialUnlinkClient,
+    private val tokenService: TokenService,
 ) {
     /**
      * 닉네임·프로필 이미지를 수정한다. null인 필드는 변경하지 않는다.
@@ -46,6 +54,64 @@ class MemberService(
 
         return memberPersistenceAdapter.updateProfile(memberId, nickname, profileImageKey)
     }
+
+    /**
+     * 회원 탈퇴 (하드 삭제).
+     * 소셜 연동을 해제하고 회원/소셜/즐겨찾기/혼잡도 투표와 리프레시 토큰을 제거한다.
+     * 작성 콘텐츠(리뷰·실시간 톡)는 서비스 데이터로 남긴다. 톡은 닉네임 스냅샷이라 표시에 문제가 없고,
+     * 리뷰는 회원 정보를 조회하지 않아 조회가 깨지지 않는다.
+     */
+    @Transactional
+    fun withdraw(memberId: Long) {
+        val member = memberPersistenceAdapter.findById(memberId)
+        val socials = socialPersistenceAdapter.findAllByMemberId(member.id)
+
+        // 재인증 없이 해제 가능한 건이 하나도 없으면, 프론트가 소셜 로그인을 다시 태우도록 유도한다.
+        if (socials.isNotEmpty() && socials.none { socialUnlinkClient.hasUsableToken(providerOf(it.provider), it.providerId) }) {
+            throw BbangbatException(SOCIAL_REAUTH_REQUIRED)
+        }
+
+        // 탈퇴는 반드시 완료돼야 하므로 개별 해제 실패는 로그만 남기고 진행한다.
+        socials.forEach { social -> socialUnlinkClient.unlink(providerOf(social.provider), social.providerId) }
+
+        livePort.deleteCongestionVotesByMemberId(member.id)
+        favoritePersistenceAdapter.deleteAllByMemberId(member.id)
+        socialPersistenceAdapter.deleteAllByMemberId(member.id)
+        memberPersistenceAdapter.deleteById(member.id)
+        tokenService.deleteRefreshToken(member.id)
+    }
+
+    /**
+     * 소셜 계정 연동 해제 (회원은 유지).
+     * 마지막 소셜 계정은 해제할 수 없다. 해제하면 로그인 수단이 사라지기 때문이다.
+     * 네이버처럼 access token이 필요한데 보관된 토큰이 없으면 재인증을 요구한다.
+     */
+    @Transactional
+    fun unlinkSocial(
+        memberId: Long,
+        provider: SocialType,
+    ) {
+        val socials = socialPersistenceAdapter.findAllByMemberId(memberId)
+        val target = socials.firstOrNull { it.provider == provider } ?: throw BbangbatException(SOCIAL_NOT_LINKED)
+
+        if (socials.size <= 1) {
+            throw BbangbatException(LAST_SOCIAL_CANNOT_UNLINK)
+        }
+
+        val socialProvider = providerOf(provider)
+
+        if (!socialUnlinkClient.hasUsableToken(socialProvider, target.providerId)) {
+            throw BbangbatException(SOCIAL_REAUTH_REQUIRED)
+        }
+
+        if (!socialUnlinkClient.unlink(socialProvider, target.providerId)) {
+            throw BbangbatException(SOCIAL_REAUTH_REQUIRED)
+        }
+
+        socialPersistenceAdapter.delete(target.id)
+    }
+
+    private fun providerOf(provider: SocialType): SocialProvider = SocialProvider.valueOf(provider.name)
 
     /** 프로필 이미지 업로드용 presigned URL 발급 */
     fun generateProfileImageUpload(contentType: String): ProfileImageUpload = profileImageStoragePort.generateUpload(contentType)

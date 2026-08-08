@@ -24,10 +24,13 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 import org.springframework.http.HttpStatus.CREATED
+import org.springframework.http.HttpStatus.NO_CONTENT
 import org.springframework.http.HttpStatus.OK
 import org.springframework.validation.annotation.Validated
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -170,6 +173,49 @@ class MemberController(
         @AuthMember memberId: Long,
         @RequestBody @Valid request: ProfileImageUploadRequest,
     ): ProfileImageUploadResponse = ProfileImageUploadResponse.from(memberService.generateProfileImageUpload(request.contentType!!))
+
+    @Operation(
+        summary = "소셜 연동 해제",
+        description =
+            "지정한 소셜 계정의 연동을 해제합니다. 마지막 소셜 계정은 해제할 수 없습니다. " +
+                "네이버는 해제에 소셜 access token이 필요해, 만료된 경우 409(SOCIAL_REAUTH_REQUIRED)를 반환합니다. " +
+                "이때 프론트는 해당 소셜 로그인을 다시 수행한 뒤 재시도하세요.",
+    )
+    @ApiResponses(
+        ApiResponse(responseCode = "204", description = "해제 성공"),
+        ApiResponse(responseCode = "401", description = "인증 필요"),
+        ApiResponse(responseCode = "404", description = "연동되지 않은 소셜 계정"),
+        ApiResponse(responseCode = "409", description = "마지막 소셜 계정이거나 소셜 재인증 필요"),
+    )
+    @DeleteMapping("/social/{provider}")
+    @ResponseStatus(NO_CONTENT)
+    fun unlinkSocial(
+        @AuthMember memberId: Long,
+        @PathVariable provider: SocialType,
+    ) {
+        memberService.unlinkSocial(memberId, provider)
+    }
+
+    @Operation(
+        summary = "회원 탈퇴",
+        description =
+            "회원 정보와 즐겨찾기, 혼잡도 투표를 삭제하고 소셜 연동을 해제합니다. " +
+                "작성한 리뷰와 실시간 톡은 서비스 데이터로 남습니다. (카카오만 서버에서 연동 해제 가능)",
+    )
+    @ApiResponses(
+        ApiResponse(responseCode = "204", description = "탈퇴 성공"),
+        ApiResponse(responseCode = "401", description = "인증 필요"),
+        ApiResponse(responseCode = "404", description = "회원 없음"),
+    )
+    @DeleteMapping("/me")
+    @ResponseStatus(NO_CONTENT)
+    fun withdraw(
+        @AuthMember memberId: Long,
+        response: HttpServletResponse,
+    ) {
+        memberService.withdraw(memberId)
+        refreshTokenCookieProvider.clearCookie(response)
+    }
 
     @Operation(summary = "내 활동 수 조회", description = "로그인한 회원의 리뷰, 즐겨찾기, 톡 작성 수를 조회합니다.")
     @ApiResponses(

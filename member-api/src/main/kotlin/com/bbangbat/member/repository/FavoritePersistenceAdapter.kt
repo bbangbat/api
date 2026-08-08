@@ -21,9 +21,12 @@ class FavoritePersistenceAdapter(
             .orElse(null)
             ?.toDomain()
 
-    fun findAllStoreIdsByMemberId(memberId: Long): List<Long> = favoriteRepository.findAllByMemberId(memberId).map { it.storeId }
+    fun findAllStoreIdsByMemberId(memberId: Long): List<Long> =
+        favoriteRepository.findAllByMemberIdOrderByIdDesc(memberId).map { it.storeId }
 
     fun countByMemberId(memberId: Long): Long = favoriteRepository.countByMemberId(memberId)
+
+    fun deleteAllByMemberId(memberId: Long) = favoriteRepository.deleteAllByMemberId(memberId)
 
     fun save(favorite: Favorite): Favorite = favoriteRepository.save(FavoriteJpaEntity.from(favorite)).toDomain()
 

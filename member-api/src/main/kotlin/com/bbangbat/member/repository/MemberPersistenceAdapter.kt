@@ -42,6 +42,8 @@ class MemberPersistenceAdapter(
                 profileImageKey?.let { entity.profileImageKey = it }
             }.toDomain()
 
+    fun deleteById(id: Long) = memberRepository.deleteById(id)
+
     fun updateLastLoginAt(id: Long) {
         memberRepository
             .findById(id)

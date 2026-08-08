@@ -35,6 +35,11 @@ class CongestionVotePersistenceAdapter(
             .orElse(null)
             ?.toDomain()
 
+    fun deleteAllByVoter(
+        voterType: VoterType,
+        voterKey: String,
+    ) = congestionVoteRepository.deleteAllByVoterTypeAndVoterKey(voterType, voterKey)
+
     fun save(vote: CongestionVote): CongestionVote = congestionVoteRepository.save(CongestionVoteJpaEntity.from(vote)).toDomain()
 
     fun updateVote(
