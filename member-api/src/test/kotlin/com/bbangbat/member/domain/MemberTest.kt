@@ -115,10 +115,10 @@ class MemberTest {
     }
 
     @Test
-    fun `닉네임은 2자 이상 20자 이하여야 한다`() {
+    fun `닉네임은 2자 이상 10자 이하여야 한다`() {
         // given
         val minNickname = "빵괴"
-        val maxNickname = "가".repeat(20)
+        val maxNickname = "가".repeat(10)
 
         // when
         val memberWithMin = validMember(nickname = minNickname)
@@ -126,7 +126,27 @@ class MemberTest {
 
         // then
         assertThat(memberWithMin.nickname.length).isEqualTo(2)
-        assertThat(memberWithMax.nickname.length).isEqualTo(20)
+        assertThat(memberWithMax.nickname.length).isEqualTo(10)
+    }
+
+    @Test
+    fun `닉네임에 자음이나 모음 단독이 들어가면 예외가 발생한다`() {
+        // given
+        val nicknames = listOf("ㅃㅏㅇ", "빵ㄱ", "ㅏㅏ")
+
+        // when & then
+        nicknames.forEach { nickname ->
+            assertThrows<IllegalArgumentException> { validMember(nickname = nickname) }
+        }
+    }
+
+    @Test
+    fun `닉네임에 공백이 들어가면 예외가 발생한다`() {
+        // given
+        val nickname = "빵 괴물"
+
+        // when & then
+        assertThrows<IllegalArgumentException> { validMember(nickname = nickname) }
     }
 
     @Test
@@ -148,9 +168,9 @@ class MemberTest {
     }
 
     @Test
-    fun `닉네임이 20자를 초과하면 예외가 발생한다`() {
+    fun `닉네임이 10자를 초과하면 예외가 발생한다`() {
         // given
-        val nickname = "가".repeat(21)
+        val nickname = "가".repeat(11)
 
         // when & then
         assertThrows<IllegalArgumentException> { validMember(nickname = nickname) }

@@ -23,7 +23,8 @@ data class Member(
         require(name.isNotBlank()) { "이름은 비어 있을 수 없습니다." }
         require(name.length <= 30) { "이름은 30자를 초과할 수 없습니다." }
         require(nickname.isNotBlank()) { "닉네임은 비어 있을 수 없습니다." }
-        require(nickname.length in 2..20) { "닉네임은 2자 이상 20자 이하여야 합니다." }
+        require(nickname.length in NicknamePolicy.MIN_LENGTH..NicknamePolicy.MAX_LENGTH) { NicknamePolicy.LENGTH_MESSAGE }
+        require(NicknamePolicy.isValidFormat(nickname)) { NicknamePolicy.FORMAT_MESSAGE }
         profileImageKey?.let {
             require(it.isNotBlank()) { "프로필 이미지 키는 비어 있을 수 없습니다." }
             require(it.length <= 500) { "프로필 이미지 키는 500자를 초과할 수 없습니다." }

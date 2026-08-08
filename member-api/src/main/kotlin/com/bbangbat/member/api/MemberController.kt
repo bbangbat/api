@@ -14,6 +14,7 @@ import com.bbangbat.member.api.dto.SignupRequest
 import com.bbangbat.member.api.dto.SignupResponse
 import com.bbangbat.member.api.dto.UpdateProfileRequest
 import com.bbangbat.member.application.MemberService
+import com.bbangbat.member.domain.NicknamePolicy
 import com.bbangbat.member.domain.SocialType
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -22,6 +23,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 import org.springframework.http.HttpStatus.CREATED
 import org.springframework.http.HttpStatus.NO_CONTENT
@@ -123,7 +125,12 @@ class MemberController(
     fun checkNickname(
         @RequestParam
         @NotBlank(message = "닉네임을 입력해주세요.")
-        @Size(min = 2, max = 20, message = "닉네임은 2자 이상 20자 이하여야 합니다.")
+        @Size(
+            min = NicknamePolicy.MIN_LENGTH,
+            max = NicknamePolicy.MAX_LENGTH,
+            message = NicknamePolicy.LENGTH_MESSAGE,
+        )
+        @Pattern(regexp = NicknamePolicy.REGEX, message = NicknamePolicy.FORMAT_MESSAGE)
         nickname: String,
     ): Map<String, Boolean> {
         val available = !memberService.existsByNickname(nickname)

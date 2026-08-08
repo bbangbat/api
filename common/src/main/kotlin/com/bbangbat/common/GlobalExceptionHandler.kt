@@ -7,9 +7,11 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
+import org.springframework.web.bind.MissingRequestCookieException
 import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.method.annotation.HandlerMethodValidationException
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 
 @RestControllerAdvice
@@ -53,6 +55,26 @@ class GlobalExceptionHandler {
         val error = ErrorResponse(code = ErrorCode.INVALID_INPUT.name, message = "${e.parameterName} 파라미터가 필요합니다.")
 
         return ResponseEntity.badRequest().body(error)
+    }
+
+    /** @Validated 컨트롤러의 파라미터 검증 실패 (@Size 등) */
+    @ExceptionHandler(HandlerMethodValidationException::class)
+    fun handleHandlerMethodValidationException(e: HandlerMethodValidationException): ResponseEntity<ErrorResponse> {
+        val message = e.allErrors.firstOrNull()?.defaultMessage ?: ErrorCode.INVALID_INPUT.message
+
+        log.warn("검증 실패: {}", message)
+
+        return ResponseEntity.badRequest().body(ErrorResponse(code = ErrorCode.INVALID_INPUT.name, message = message))
+    }
+
+    /** 필수 쿠키 누락 (예: refresh_token 없이 재발급 요청) */
+    @ExceptionHandler(MissingRequestCookieException::class)
+    fun handleMissingRequestCookieException(e: MissingRequestCookieException): ResponseEntity<ErrorResponse> {
+        log.warn("필수 쿠키 누락: {}", e.cookieName)
+
+        val error = ErrorResponse(code = ErrorCode.UNAUTHORIZED.name, message = ErrorCode.UNAUTHORIZED.message)
+
+        return ResponseEntity.status(ErrorCode.UNAUTHORIZED.httpStatus).body(error)
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException::class)

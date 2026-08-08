@@ -1,7 +1,6 @@
 package com.bbangbat.store.application
 
 import com.bbangbat.common.exception.BbangbatException
-import com.bbangbat.common.exception.ErrorCode.INVALID_INPUT
 import com.bbangbat.common.exception.ErrorCode.STORE_NOT_FOUND
 import com.bbangbat.store.domain.MapBounds
 import com.bbangbat.store.domain.Store
@@ -44,10 +43,6 @@ class StoreService(
             return emptyList()
         }
 
-        if (storeIds.size > MAX_BULK_SIZE) {
-            throw BbangbatException(INVALID_INPUT)
-        }
-
         return storePersistenceAdapter
             .findAllByIds(storeIds)
             .map { store -> withDefaultImage(store) }
@@ -57,7 +52,6 @@ class StoreService(
 
     companion object {
         private const val RADIUS_METERS = 3000.0
-        private const val MAX_BULK_SIZE = 100
         private const val MAX_BOUNDS_RESULTS = 300
     }
 }
