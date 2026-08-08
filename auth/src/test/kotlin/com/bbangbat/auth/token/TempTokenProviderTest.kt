@@ -35,6 +35,7 @@ class TempTokenProviderTest {
                 provider = SocialProvider.NAVER,
                 providerId = "naver_123",
                 ageGroup = "TWENTIES",
+                gender = "MALE",
             )
 
         // when
