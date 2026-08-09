@@ -38,8 +38,10 @@ class TokenService(
 
         if (stored != refreshToken) throw BbangbatException(INVALID_TOKEN)
 
-        val newAccessToken = jwtProvider.createAccessToken(memberId)
-        val newRefreshToken = jwtProvider.createRefreshToken(memberId)
+        // 재발급 시에도 로그인에 사용한 제공자를 유지한다.
+        val provider = jwtProvider.getProvider(refreshToken)
+        val newAccessToken = jwtProvider.createAccessToken(memberId, provider)
+        val newRefreshToken = jwtProvider.createRefreshToken(memberId, provider)
 
         saveRefreshToken(memberId, newRefreshToken)
 

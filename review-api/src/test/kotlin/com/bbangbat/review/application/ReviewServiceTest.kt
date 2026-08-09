@@ -29,6 +29,9 @@ class ReviewServiceTest {
     @Mock
     private lateinit var storePort: StorePort
 
+    @Mock
+    private lateinit var memberPort: MemberPort
+
     @InjectMocks
     private lateinit var reviewService: ReviewService
 
@@ -103,8 +106,8 @@ class ReviewServiceTest {
                 imageKeys = imageKeys,
             )
 
-        assertEquals(savedReview.id, result.id)
-        assertEquals(imageUrls, result.imageUrls)
+        assertEquals(savedReview.id, result.review.id)
+        assertEquals(imageUrls, result.review.imageUrls)
     }
 
     @Test
@@ -134,7 +137,7 @@ class ReviewServiceTest {
                 imageKeys = emptyList(),
             )
 
-        assertEquals(emptyList<String>(), result.imageUrls)
+        assertEquals(emptyList<String>(), result.review.imageUrls)
         verify(s3Service, never()).buildUrl(any())
     }
 

@@ -1,10 +1,10 @@
 package com.bbangbat.auth.oauth2
 
-import com.bbangbat.auth.jwt.JwtProvider
-import com.bbangbat.auth.token.RefreshTokenCookieProvider
+import com.bbangbat.auth.token.AuthCodePayload
+import com.bbangbat.auth.token.AuthCodeService
+import com.bbangbat.auth.token.AuthCodeType
 import com.bbangbat.auth.token.SocialTokenService
 import com.bbangbat.auth.token.TempTokenProvider
-import com.bbangbat.auth.token.TokenService
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpHeaders
@@ -16,11 +16,8 @@ import org.springframework.stereotype.Component
 
 @Component
 class OAuth2AuthenticationSuccessHandler(
-    private val memberPort: MemberPort,
-    private val jwtProvider: JwtProvider,
-    private val tokenService: TokenService,
-    private val refreshTokenCookieProvider: RefreshTokenCookieProvider,
     private val tempTokenProvider: TempTokenProvider,
+    private val authCodeService: AuthCodeService,
     private val redirectUriResolver: OAuth2RedirectUriResolver,
     private val socialTokenService: SocialTokenService,
 ) : AuthenticationSuccessHandler {
@@ -46,14 +43,13 @@ class OAuth2AuthenticationSuccessHandler(
         }
 
         if (memberId != null) {
-            val accessToken = jwtProvider.createAccessToken(memberId)
-            val refreshToken = jwtProvider.createRefreshToken(memberId)
+            val loginProvider = oAuth2User.getAttribute<SocialProvider>("provider")?.name
+            val code =
+                authCodeService.issue(
+                    AuthCodePayload(type = AuthCodeType.LOGIN, memberId = memberId, provider = loginProvider),
+                )
 
-            tokenService.saveRefreshToken(memberId, refreshToken)
-            refreshTokenCookieProvider.addCookie(response, refreshToken)
-            memberPort.updateLastLoginAt(memberId)
-
-            response.sendRedirect("$base/oauth2/callback?access_token=$accessToken")
+            response.sendRedirect("$base/oauth2/callback?code=$code")
         } else {
             val email = oAuth2User.getAttribute<String>("email")!!
             val name = oAuth2User.getAttribute<String>("name")!!
@@ -63,10 +59,16 @@ class OAuth2AuthenticationSuccessHandler(
             val gender = oAuth2User.getAttribute<String?>("gender")
             val existingAccount = oAuth2User.getAttribute<Boolean>("existingAccount") ?: false
             val tempToken = tempTokenProvider.createTempToken(email, name, provider, providerId, ageGroup, gender)
+            val code =
+                authCodeService.issue(
+                    AuthCodePayload(
+                        type = AuthCodeType.SIGNUP,
+                        tempToken = tempToken,
+                        existingAccount = existingAccount,
+                    ),
+                )
 
-            response.sendRedirect(
-                "$base/signup?temp_token=$tempToken&existing_account=$existingAccount",
-            )
+            response.sendRedirect("$base/signup?code=$code")
         }
     }
 
@@ -119,8 +121,9 @@ class OAuth2AuthenticationSuccessHandler(
         val ageGroup = oAuth2User.getAttribute<String?>("ageGroup")
         val gender = oAuth2User.getAttribute<String?>("gender")
         val tempToken = tempTokenProvider.createTempToken(email, name, provider, providerId, ageGroup, gender)
+        val code = authCodeService.issue(AuthCodePayload(type = AuthCodeType.LINK, tempToken = tempToken))
 
-        response.sendRedirect("$base/oauth2/link/callback?temp_token=$tempToken")
+        response.sendRedirect("$base/oauth2/link/callback?code=$code")
     }
 
     private fun clearPurposeCookie(response: HttpServletResponse) {

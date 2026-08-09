@@ -2,6 +2,7 @@ package com.bbangbat.member.api
 
 import com.bbangbat.auth.jwt.JwtProvider
 import com.bbangbat.auth.resolver.AuthMember
+import com.bbangbat.auth.resolver.AuthProvider
 import com.bbangbat.auth.token.RefreshTokenCookieProvider
 import com.bbangbat.auth.token.TempTokenProvider
 import com.bbangbat.auth.token.TokenService
@@ -81,8 +82,8 @@ class MemberController(
                 provider = SocialType.valueOf(claims.provider.name),
                 providerId = claims.providerId,
             )
-        val accessToken = jwtProvider.createAccessToken(member.id)
-        val refreshToken = jwtProvider.createRefreshToken(member.id)
+        val accessToken = jwtProvider.createAccessToken(member.id, claims.provider.name)
+        val refreshToken = jwtProvider.createRefreshToken(member.id, claims.provider.name)
 
         tokenService.saveRefreshToken(member.id, refreshToken)
         refreshTokenCookieProvider.addCookie(response, refreshToken)
@@ -110,8 +111,8 @@ class MemberController(
                 provider = SocialType.valueOf(claims.provider.name),
                 providerId = claims.providerId,
             )
-        val accessToken = jwtProvider.createAccessToken(member.id)
-        val refreshToken = jwtProvider.createRefreshToken(member.id)
+        val accessToken = jwtProvider.createAccessToken(member.id, claims.provider.name)
+        val refreshToken = jwtProvider.createRefreshToken(member.id, claims.provider.name)
 
         tokenService.saveRefreshToken(member.id, refreshToken)
         refreshTokenCookieProvider.addCookie(response, refreshToken)
@@ -194,7 +195,8 @@ class MemberController(
     @ResponseStatus(OK)
     fun getLinkedSocials(
         @AuthMember memberId: Long,
-    ): List<LinkedSocialResponse> = memberService.findLinkedProviders(memberId).map { LinkedSocialResponse.from(it) }
+        @AuthProvider currentProvider: String?,
+    ): List<LinkedSocialResponse> = memberService.findLinkedProviders(memberId).map { LinkedSocialResponse.from(it, currentProvider) }
 
     @Operation(
         summary = "소셜 계정 연동",
@@ -217,7 +219,7 @@ class MemberController(
 
         memberService.linkSocialToMember(memberId, SocialType.valueOf(claims.provider.name), claims.providerId)
 
-        return memberService.findLinkedProviders(memberId).map { LinkedSocialResponse.from(it) }
+        return memberService.findLinkedProviders(memberId).map { LinkedSocialResponse.from(it, null) }
     }
 
     @Operation(

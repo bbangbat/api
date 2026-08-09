@@ -22,6 +22,8 @@ class MemberPersistenceAdapter(
             .orElse(null)
             ?.toDomain()
 
+    fun findAllByIds(ids: Collection<Long>): List<Member> = memberRepository.findAllById(ids).map { it.toDomain() }
+
     fun save(member: Member): Member = memberRepository.save(MemberJpaEntity.from(member)).toDomain()
 
     fun existsByNickname(nickname: String): Boolean = memberRepository.existsByNickname(nickname)
