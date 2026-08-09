@@ -1,6 +1,9 @@
 package com.bbangbat.member.application
 
+import com.bbangbat.auth.oauth2.SocialUnlinkClient
+import com.bbangbat.auth.token.TokenService
 import com.bbangbat.common.exception.BbangbatException
+import com.bbangbat.common.exception.ErrorCode.CURRENT_SOCIAL_CANNOT_UNLINK
 import com.bbangbat.common.exception.ErrorCode.EMAIL_ALREADY_REGISTERED
 import com.bbangbat.common.exception.ErrorCode.MEMBER_NOT_FOUND
 import com.bbangbat.common.exception.ErrorCode.SOCIAL_ALREADY_LINKED
@@ -39,10 +42,16 @@ class MemberServiceTest {
     private lateinit var favoritePersistenceAdapter: FavoritePersistenceAdapter
 
     @Mock
-    private lateinit var reviewPort: ReviewPort
+    private lateinit var livePort: LivePort
 
     @Mock
-    private lateinit var livePort: LivePort
+    private lateinit var profileImageStoragePort: ProfileImageStoragePort
+
+    @Mock
+    private lateinit var socialUnlinkClient: SocialUnlinkClient
+
+    @Mock
+    private lateinit var tokenService: TokenService
 
     private lateinit var memberService: MemberService
 
@@ -53,8 +62,10 @@ class MemberServiceTest {
                 memberPersistenceAdapter,
                 socialPersistenceAdapter,
                 favoritePersistenceAdapter,
-                reviewPort,
                 livePort,
+                profileImageStoragePort,
+                socialUnlinkClient,
+                tokenService,
             )
     }
 
@@ -67,7 +78,7 @@ class MemberServiceTest {
                 email = "test@test.com",
                 name = "홍길동",
                 nickname = "빵괴물",
-                profileImageUrl = null,
+                profileImageKey = null,
                 gender = Gender.MALE,
                 ageGroup = AgeGroup.TWENTIES,
                 termsAgreed = true,
@@ -82,7 +93,7 @@ class MemberServiceTest {
                 email = "test@test.com",
                 name = "홍길동",
                 nickname = "빵괴물",
-                profileImageUrl = null,
+                profileImageKey = null,
                 gender = Gender.MALE,
                 ageGroup = AgeGroup.TWENTIES,
                 termsAgreed = true,
@@ -109,7 +120,7 @@ class MemberServiceTest {
                 email = "test@test.com",
                 name = "홍길동",
                 nickname = "빵괴물",
-                profileImageUrl = null,
+                profileImageKey = null,
                 gender = Gender.MALE,
                 ageGroup = AgeGroup.TWENTIES,
                 termsAgreed = true,
@@ -124,7 +135,7 @@ class MemberServiceTest {
             email = "test@test.com",
             name = "홍길동",
             nickname = "빵괴물",
-            profileImageUrl = null,
+            profileImageKey = null,
             gender = Gender.MALE,
             ageGroup = AgeGroup.TWENTIES,
             termsAgreed = true,
@@ -171,7 +182,7 @@ class MemberServiceTest {
                 email = "test@test.com",
                 name = "기존회원",
                 nickname = "기존닉네임",
-                profileImageUrl = null,
+                profileImageKey = null,
                 gender = Gender.MALE,
                 ageGroup = AgeGroup.TWENTIES,
                 termsAgreed = true,
@@ -187,7 +198,7 @@ class MemberServiceTest {
                     email = "test@test.com",
                     name = "홍길동",
                     nickname = "빵괴물",
-                    profileImageUrl = null,
+                    profileImageKey = null,
                     gender = Gender.MALE,
                     ageGroup = AgeGroup.TWENTIES,
                     termsAgreed = true,
@@ -211,7 +222,7 @@ class MemberServiceTest {
                 email = "test@test.com",
                 name = "기존회원",
                 nickname = "기존닉네임",
-                profileImageUrl = null,
+                profileImageKey = null,
                 gender = Gender.MALE,
                 ageGroup = AgeGroup.TWENTIES,
                 termsAgreed = true,
@@ -256,7 +267,7 @@ class MemberServiceTest {
                 email = "test@test.com",
                 name = "기존회원",
                 nickname = "기존닉네임",
-                profileImageUrl = null,
+                profileImageKey = null,
                 gender = Gender.MALE,
                 ageGroup = AgeGroup.TWENTIES,
                 termsAgreed = true,
@@ -278,16 +289,13 @@ class MemberServiceTest {
     }
 
     @Test
-    fun `회원의 리뷰 즐겨찾기 톡 수를 집계한다`() {
-        val memberId = 1L
-        given(reviewPort.countByMemberId(memberId)).willReturn(3L)
-        given(favoritePersistenceAdapter.countByMemberId(memberId)).willReturn(5L)
-        given(livePort.countByMemberId(memberId)).willReturn(7L)
+    fun `현재 로그인 중인 소셜은 연동 해제할 수 없다`() {
+        val exception =
+            assertThrows<BbangbatException> {
+                memberService.unlinkSocial(1L, SocialType.KAKAO, "KAKAO")
+            }
 
-        val result = memberService.getStats(memberId)
-
-        assertThat(result.reviewCount).isEqualTo(3L)
-        assertThat(result.favoriteCount).isEqualTo(5L)
-        assertThat(result.talkCount).isEqualTo(7L)
+        assertThat(exception.errorCode).isEqualTo(CURRENT_SOCIAL_CANNOT_UNLINK)
+        then(socialPersistenceAdapter).should(never()).findAllByMemberId(any())
     }
 }

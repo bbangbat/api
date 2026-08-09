@@ -4,11 +4,15 @@ import com.bbangbat.common.exception.BbangbatException
 import com.bbangbat.common.exception.ErrorCode
 import com.bbangbat.common.exception.ErrorResponse
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.MethodArgumentNotValidException
+import org.springframework.web.bind.MissingRequestCookieException
 import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.method.annotation.HandlerMethodValidationException
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 
 @RestControllerAdvice
@@ -19,9 +23,17 @@ class GlobalExceptionHandler {
     fun handleBbangbatException(e: BbangbatException): ResponseEntity<ErrorResponse> {
         log.warn("비즈니스 예외: {} - {}", e.errorCode.name, e.errorCode.message)
 
-        val error = ErrorResponse(code = e.errorCode.name, message = e.errorCode.message)
+        val error =
+            ErrorResponse(
+                code = e.errorCode.name,
+                message = e.errorCode.message,
+                retryAfterSeconds = e.retryAfterSeconds,
+            )
+        val response = ResponseEntity.status(e.errorCode.httpStatus)
 
-        return ResponseEntity.status(e.errorCode.httpStatus).body(error)
+        e.retryAfterSeconds?.let { response.header(HttpHeaders.RETRY_AFTER, it.toString()) }
+
+        return response.body(error)
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
@@ -44,6 +56,40 @@ class GlobalExceptionHandler {
         val error = ErrorResponse(code = ErrorCode.INVALID_INPUT.name, message = "${e.parameterName} 파라미터가 필요합니다.")
 
         return ResponseEntity.badRequest().body(error)
+    }
+
+    /** @Validated 컨트롤러의 파라미터 검증 실패 (@Size 등) */
+    @ExceptionHandler(HandlerMethodValidationException::class)
+    fun handleHandlerMethodValidationException(e: HandlerMethodValidationException): ResponseEntity<ErrorResponse> {
+        val message = e.allErrors.firstOrNull()?.defaultMessage ?: ErrorCode.INVALID_INPUT.message
+
+        log.warn("검증 실패: {}", message)
+
+        return ResponseEntity.badRequest().body(ErrorResponse(code = ErrorCode.INVALID_INPUT.name, message = message))
+    }
+
+    /** 요청 본문 역직렬화 실패 (필수 값 누락, 타입/형식 오류 등) */
+    @ExceptionHandler(HttpMessageNotReadableException::class)
+    fun handleHttpMessageNotReadableException(e: HttpMessageNotReadableException): ResponseEntity<ErrorResponse> {
+        log.warn("요청 본문 파싱 실패: {}", e.mostSpecificCause.message)
+
+        val error =
+            ErrorResponse(
+                code = ErrorCode.INVALID_INPUT.name,
+                message = "요청 형식이 올바르지 않습니다. 필수 값이 누락되었는지 확인해주세요.",
+            )
+
+        return ResponseEntity.badRequest().body(error)
+    }
+
+    /** 필수 쿠키 누락 (예: refresh_token 없이 재발급 요청) */
+    @ExceptionHandler(MissingRequestCookieException::class)
+    fun handleMissingRequestCookieException(e: MissingRequestCookieException): ResponseEntity<ErrorResponse> {
+        log.warn("필수 쿠키 누락: {}", e.cookieName)
+
+        val error = ErrorResponse(code = ErrorCode.UNAUTHORIZED.name, message = ErrorCode.UNAUTHORIZED.message)
+
+        return ResponseEntity.status(ErrorCode.UNAUTHORIZED.httpStatus).body(error)
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException::class)

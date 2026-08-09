@@ -3,6 +3,9 @@ plugins {
     alias(libs.plugins.spring.boot)
 }
 
+// 산출물은 bootJar 하나만 둔다 (plain jar 비활성화 → Docker COPY 패턴 모호성 제거)
+tasks.named<Jar>("jar") { enabled = false }
+
 dependencies {
     implementation(project(":common"))
     implementation(project(":auth"))
@@ -17,6 +20,9 @@ dependencies {
     implementation(libs.spring.boot.starter.log4j2)
     implementation(libs.jackson.module.kotlin)
     runtimeOnly(libs.jackson.dataformat.yaml)
+
+    // 프로필 이미지 presigned URL 발급 어댑터에서 사용
+    implementation(libs.aws.s3)
 
     implementation(libs.spring.boot.starter.data.jpa)
     runtimeOnly(libs.mysql.connector)

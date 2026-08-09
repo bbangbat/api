@@ -3,6 +3,7 @@ package com.bbangbat.live.application
 import com.bbangbat.auth.voter.Voter
 import com.bbangbat.auth.voter.VoterType
 import com.bbangbat.common.exception.BbangbatException
+import com.bbangbat.common.exception.ErrorCode
 import com.bbangbat.live.domain.CongestionLevel
 import com.bbangbat.live.domain.CongestionVote
 import com.bbangbat.live.repository.CongestionVotePersistenceAdapter
@@ -27,11 +28,15 @@ class CongestionServiceTest {
     @Mock
     private lateinit var congestionVotePersistenceAdapter: CongestionVotePersistenceAdapter
 
+    @Mock
+    private lateinit var storeLocationPort: StoreLocationPort
+
     private lateinit var congestionService: CongestionService
 
     @BeforeEach
     fun setUp() {
-        congestionService = CongestionService(congestionVotePersistenceAdapter)
+        congestionService =
+            CongestionService(congestionVotePersistenceAdapter, storeLocationPort, MAX_DISTANCE_METERS, COOLDOWN_MINUTES)
     }
 
     @Test
@@ -39,7 +44,8 @@ class CongestionServiceTest {
         // given
         val storeId = 1L
         val voter = Voter(VoterType.MEMBER, "1")
-        given(congestionVotePersistenceAdapter.findByVoter(storeId, VoterType.MEMBER, "1")).willReturn(null)
+        given(storeLocationPort.findCoordinates(storeId)).willReturn(StoreCoordinates(DAEJEON_LAT, DAEJEON_LNG))
+        given(congestionVotePersistenceAdapter.findByVoterForUpdate(storeId, VoterType.MEMBER, "1")).willReturn(null)
         given(congestionVotePersistenceAdapter.findRecentVotes(eq(storeId), any())).willReturn(
             listOf(recentVote(storeId, CongestionLevel.CROWDED, "1")),
         )
@@ -54,7 +60,7 @@ class CongestionServiceTest {
     }
 
     @Test
-    fun `기존 투표가 있으면 덮어쓴다`() {
+    fun `쿨다운이 지난 기존 투표는 덮어쓴다`() {
         // given
         val storeId = 1L
         val voter = Voter(VoterType.MEMBER, "1")
@@ -65,9 +71,10 @@ class CongestionServiceTest {
                 level = CongestionLevel.NORMAL,
                 voterType = VoterType.MEMBER,
                 voterKey = "1",
-                votedAt = LocalDateTime.now().minusMinutes(10),
+                votedAt = LocalDateTime.now().minusMinutes(20),
             )
-        given(congestionVotePersistenceAdapter.findByVoter(storeId, VoterType.MEMBER, "1")).willReturn(existing)
+        given(storeLocationPort.findCoordinates(storeId)).willReturn(StoreCoordinates(DAEJEON_LAT, DAEJEON_LNG))
+        given(congestionVotePersistenceAdapter.findByVoterForUpdate(storeId, VoterType.MEMBER, "1")).willReturn(existing)
         given(congestionVotePersistenceAdapter.findRecentVotes(eq(storeId), any())).willReturn(
             listOf(recentVote(storeId, CongestionLevel.CROWDED, "1")),
         )
@@ -157,8 +164,55 @@ class CongestionServiceTest {
             votedAt = LocalDateTime.now(),
         )
 
+    @Test
+    fun `가게에서 너무 멀면 투표할 수 없다`() {
+        // given (대전 안이지만 가게와 약 5km 떨어진 좌표)
+        val storeId = 1L
+        val voter = Voter(VoterType.MEMBER, "1")
+        given(storeLocationPort.findCoordinates(storeId)).willReturn(StoreCoordinates(DAEJEON_LAT + 0.045, DAEJEON_LNG))
+
+        // when & then
+        val exception =
+            assertThrows<BbangbatException> {
+                congestionService.vote(storeId, CongestionLevel.CROWDED, DAEJEON_LAT, DAEJEON_LNG, voter)
+            }
+
+        assertThat(exception.errorCode).isEqualTo(ErrorCode.CONGESTION_VOTE_TOO_FAR)
+        then(congestionVotePersistenceAdapter).should(never()).save(any())
+    }
+
+    @Test
+    fun `쿨다운 내 재투표는 남은 시간과 함께 거절된다`() {
+        // given (5분 전 투표, 쿨다운 15분)
+        val storeId = 1L
+        val voter = Voter(VoterType.MEMBER, "1")
+        val existing =
+            CongestionVote(
+                id = 5L,
+                storeId = storeId,
+                level = CongestionLevel.NORMAL,
+                voterType = VoterType.MEMBER,
+                voterKey = "1",
+                votedAt = LocalDateTime.now().minusMinutes(5),
+            )
+        given(storeLocationPort.findCoordinates(storeId)).willReturn(StoreCoordinates(DAEJEON_LAT, DAEJEON_LNG))
+        given(congestionVotePersistenceAdapter.findByVoterForUpdate(storeId, VoterType.MEMBER, "1")).willReturn(existing)
+
+        // when & then
+        val exception =
+            assertThrows<BbangbatException> {
+                congestionService.vote(storeId, CongestionLevel.CROWDED, DAEJEON_LAT, DAEJEON_LNG, voter)
+            }
+
+        assertThat(exception.errorCode).isEqualTo(ErrorCode.CONGESTION_VOTE_COOLDOWN)
+        assertThat(exception.retryAfterSeconds).isNotNull()
+        then(congestionVotePersistenceAdapter).should(never()).updateVote(any(), any(), any())
+    }
+
     companion object {
         private const val DAEJEON_LAT = 36.3504
         private const val DAEJEON_LNG = 127.3845
+        private const val MAX_DISTANCE_METERS = 300.0
+        private const val COOLDOWN_MINUTES = 15L
     }
 }

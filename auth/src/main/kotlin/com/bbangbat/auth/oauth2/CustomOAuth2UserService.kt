@@ -3,6 +3,8 @@ package com.bbangbat.auth.oauth2
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException
+import org.springframework.security.oauth2.core.OAuth2Error
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User
 import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.stereotype.Service
@@ -17,7 +19,11 @@ class CustomOAuth2UserService(
             when (userRequest.clientRegistration.registrationId.uppercase()) {
                 "NAVER" -> NaverOAuth2UserInfo(oAuth2User.attributes)
                 "KAKAO" -> KakaoOAuth2UserInfo(oAuth2User.attributes)
-                else -> throw IllegalArgumentException("지원하지 않는 소셜 로그인입니다.")
+                else ->
+                    throw OAuth2AuthenticationException(
+                        OAuth2Error(UNSUPPORTED_PROVIDER_ERROR, "지원하지 않는 소셜 로그인입니다.", null),
+                        "지원하지 않는 소셜 로그인입니다.",
+                    )
             }
         val memberId = memberPort.findByProviderAndProviderId(userInfo.provider, userInfo.providerId)
         val attributes =
@@ -26,9 +32,12 @@ class CustomOAuth2UserService(
                 "name" to userInfo.name,
                 "provider" to userInfo.provider,
                 "providerId" to userInfo.providerId,
+                // 연동 해제 재인증(purpose=unlink)일 때만 성공 핸들러가 이 토큰을 보관한다.
+                SOCIAL_ACCESS_TOKEN_ATTRIBUTE to userRequest.accessToken.tokenValue,
             )
 
         userInfo.ageGroup?.let { attributes["ageGroup"] = it }
+        userInfo.gender?.let { attributes["gender"] = it }
 
         if (memberId != null) {
             attributes["memberId"] = memberId
@@ -41,5 +50,10 @@ class CustomOAuth2UserService(
             attributes,
             "email",
         )
+    }
+
+    companion object {
+        const val SOCIAL_ACCESS_TOKEN_ATTRIBUTE = "socialAccessToken"
+        private const val UNSUPPORTED_PROVIDER_ERROR = "unsupported_provider"
     }
 }

@@ -13,8 +13,16 @@ class ReviewService(
     private val reviewPersistenceAdapter: ReviewPersistenceAdapter,
     private val s3Service: S3Service,
     private val storePort: StorePort,
+    private val memberPort: MemberPort,
 ) {
-    fun getReviews(storeId: Long): List<Review> = reviewPersistenceAdapter.findAllByStoreId(storeId)
+    fun getReviews(storeId: Long): List<AuthoredReview> = withAuthors(reviewPersistenceAdapter.findAllByStoreId(storeId))
+
+    /** 작성자 닉네임을 붙인다. 탈퇴 등으로 회원이 없으면 대체 표기를 사용한다. */
+    private fun withAuthors(reviews: List<Review>): List<AuthoredReview> {
+        val authors = memberPort.findAuthors(reviews.map { it.memberId }.toSet())
+
+        return reviews.map { review -> AuthoredReview.of(review, authors[review.memberId]) }
+    }
 
     fun getMyReviews(memberId: Long): List<MyReview> {
         val reviews = reviewPersistenceAdapter.findAllByMemberId(memberId)
@@ -41,7 +49,7 @@ class ReviewService(
         content: String,
         menus: List<String>,
         imageKeys: List<String>,
-    ): Review {
+    ): AuthoredReview {
         val review =
             Review(
                 memberId = memberId,
@@ -52,7 +60,9 @@ class ReviewService(
                 imageUrls = imageKeys.map { s3Service.buildUrl(it) },
             )
 
-        return reviewPersistenceAdapter.save(review)
+        val saved = reviewPersistenceAdapter.save(review)
+
+        return AuthoredReview.of(saved, memberPort.findAuthors(setOf(memberId))[memberId])
     }
 
     @Transactional

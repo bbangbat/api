@@ -32,7 +32,7 @@ class OAuth2UserInfoTest {
     }
 
     @Test
-    fun `네이버 연령대 40대 이상을 FORTIES로 파싱한다`() {
+    fun `네이버 연령대를 구간별로 파싱한다`() {
         // given
         val forties = naverUserInfo(age = "40-49")
         val fifties = naverUserInfo(age = "50-59")
@@ -40,8 +40,8 @@ class OAuth2UserInfoTest {
 
         // when & then
         assertThat(forties.ageGroup).isEqualTo("FORTIES")
-        assertThat(fifties.ageGroup).isEqualTo("FORTIES")
-        assertThat(sixties.ageGroup).isEqualTo("FORTIES")
+        assertThat(fifties.ageGroup).isEqualTo("FIFTIES")
+        assertThat(sixties.ageGroup).isEqualTo("SIXTIES_PLUS")
     }
 
     @Test
@@ -83,7 +83,7 @@ class OAuth2UserInfoTest {
     }
 
     @Test
-    fun `카카오 연령대 40대 이상을 FORTIES로 파싱한다`() {
+    fun `카카오 연령대를 구간별로 파싱한다`() {
         // given
         val forties = kakaoUserInfo(ageRange = "40-49")
         val fifties = kakaoUserInfo(ageRange = "50-59")
@@ -94,11 +94,11 @@ class OAuth2UserInfoTest {
 
         // when & then
         assertThat(forties.ageGroup).isEqualTo("FORTIES")
-        assertThat(fifties.ageGroup).isEqualTo("FORTIES")
-        assertThat(sixties.ageGroup).isEqualTo("FORTIES")
-        assertThat(seventies.ageGroup).isEqualTo("FORTIES")
-        assertThat(eighties.ageGroup).isEqualTo("FORTIES")
-        assertThat(ninetyPlus.ageGroup).isEqualTo("FORTIES")
+        assertThat(fifties.ageGroup).isEqualTo("FIFTIES")
+        assertThat(sixties.ageGroup).isEqualTo("SIXTIES_PLUS")
+        assertThat(seventies.ageGroup).isEqualTo("SIXTIES_PLUS")
+        assertThat(eighties.ageGroup).isEqualTo("SIXTIES_PLUS")
+        assertThat(ninetyPlus.ageGroup).isEqualTo("SIXTIES_PLUS")
     }
 
     @Test

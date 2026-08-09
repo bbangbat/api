@@ -22,6 +22,24 @@ class CongestionVotePersistenceAdapter(
             .orElse(null)
             ?.toDomain()
 
+    /**
+     * 쿨다운 검사와 갱신이 원자적으로 처리되도록 투표 행을 잠그고 조회한다.
+     */
+    fun findByVoterForUpdate(
+        storeId: Long,
+        voterType: VoterType,
+        voterKey: String,
+    ): CongestionVote? =
+        congestionVoteRepository
+            .findWithLockByStoreIdAndVoterTypeAndVoterKey(storeId, voterType, voterKey)
+            .orElse(null)
+            ?.toDomain()
+
+    fun deleteAllByVoter(
+        voterType: VoterType,
+        voterKey: String,
+    ) = congestionVoteRepository.deleteAllByVoterTypeAndVoterKey(voterType, voterKey)
+
     fun save(vote: CongestionVote): CongestionVote = congestionVoteRepository.save(CongestionVoteJpaEntity.from(vote)).toDomain()
 
     fun updateVote(

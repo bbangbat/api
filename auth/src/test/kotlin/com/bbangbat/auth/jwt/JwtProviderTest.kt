@@ -84,6 +84,7 @@ class JwtProviderTest {
                 provider = com.bbangbat.auth.oauth2.SocialProvider.NAVER,
                 providerId = "naver_123",
                 ageGroup = null,
+                gender = null,
             )
 
         // when & then

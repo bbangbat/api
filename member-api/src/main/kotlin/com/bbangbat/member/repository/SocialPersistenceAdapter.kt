@@ -18,6 +18,12 @@ class SocialPersistenceAdapter(
             .orElse(null)
             ?.toDomain()
 
+    fun findAllByMemberId(memberId: Long): List<Social> = socialRepository.findAllByMemberId(memberId).map { it.toDomain() }
+
+    fun deleteAllByMemberId(memberId: Long) = socialRepository.deleteAllByMemberId(memberId)
+
+    fun delete(id: Long) = socialRepository.deleteById(id)
+
     fun save(social: Social): Social {
         val memberRef = memberRepository.getReferenceById(social.member.id)
 

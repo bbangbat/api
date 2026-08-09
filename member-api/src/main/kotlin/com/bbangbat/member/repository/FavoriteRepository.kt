@@ -14,7 +14,10 @@ interface FavoriteRepository : JpaRepository<FavoriteJpaEntity, Long> {
         storeId: Long,
     ): Optional<FavoriteJpaEntity>
 
-    fun findAllByMemberId(memberId: Long): List<FavoriteJpaEntity>
+    /** 최근에 추가한 즐겨찾기부터 반환한다. */
+    fun findAllByMemberIdOrderByIdDesc(memberId: Long): List<FavoriteJpaEntity>
 
     fun countByMemberId(memberId: Long): Long
+
+    fun deleteAllByMemberId(memberId: Long)
 }
