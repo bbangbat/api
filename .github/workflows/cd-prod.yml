@@ -91,14 +91,25 @@ jobs:
           host: ${{ secrets.EC2_PROD_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_PROD_SSH_KEY }}
+          # 중간 명령이 실패해도 마지막 명령만 성공하면 스텝이 초록불이 되는 걸 막는다.
+          # (pull 실패를 못 잡아 옛 이미지로 재기동되던 문제)
+          script_stop: true
           script: |
+            set -euo pipefail
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # dev/prod가 한 인스턴스를 공유해 디스크가 빠듯하다. 받기 전에 먼저 비운다.
+            # (pull 뒤에 정리하면 정작 pull 할 공간이 없어 레이어 추출이 실패한다)
+            # 실행 중인 컨테이너가 참조하는 이미지는 제거되지 않는다.
+            docker image prune -af
+            docker builder prune -af
+            df -h /
+
             docker pull ${{ env.IMAGE }}
 
             cd ~/bbangbat-prod/infra
             docker compose -f docker-compose-prod.yml down
-            docker compose -f docker-compose-prod.yml up -d
-            docker image prune -af --filter "until=168h"
+            docker compose -f docker-compose-prod.yml up -d --pull always --force-recreate
 
       - name: Remove IP from Security Group
         if: always()
