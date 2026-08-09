@@ -18,5 +18,9 @@ data class OAuthExchangeResponse(
     @field:Schema(description = "type이 LOGIN일 때 반환") val accessToken: String? = null,
     @field:Schema(description = "type이 SIGNUP 또는 LINK일 때 반환") val tempToken: String? = null,
     @field:Schema(description = "type이 SIGNUP일 때, 이미 가입된 이메일인지 여부") val existingAccount: Boolean? = null,
+    @field:Schema(description = "type이 SIGNUP일 때, 소셜에서 받은 성별. 미제공이면 null", example = "FEMALE")
+    val gender: String? = null,
+    @field:Schema(description = "type이 SIGNUP일 때, 소셜에서 받은 연령대. 미제공이면 null", example = "TWENTIES")
+    val ageGroup: String? = null,
     @field:Schema(description = "type이 UNLINK일 때, 재인증한 소셜 제공자") val provider: String? = null,
 )

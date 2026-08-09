@@ -2,6 +2,8 @@ package com.bbangbat.member.repository
 
 import com.bbangbat.common.exception.BbangbatException
 import com.bbangbat.common.exception.ErrorCode.MEMBER_NOT_FOUND
+import com.bbangbat.member.domain.AgeGroup
+import com.bbangbat.member.domain.Gender
 import com.bbangbat.member.domain.Member
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
@@ -36,6 +38,8 @@ class MemberPersistenceAdapter(
         name: String?,
         nickname: String?,
         profileImageKey: String?,
+        gender: Gender?,
+        ageGroup: AgeGroup?,
     ): Member =
         memberRepository
             .findById(id)
@@ -44,6 +48,8 @@ class MemberPersistenceAdapter(
                 name?.let { entity.name = it }
                 nickname?.let { entity.nickname = it }
                 profileImageKey?.let { entity.profileImageKey = it }
+                gender?.let { entity.gender = it }
+                ageGroup?.let { entity.ageGroup = it }
             }.toDomain()
 
     fun deleteById(id: Long) = memberRepository.deleteById(id)
