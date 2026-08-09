@@ -31,8 +31,13 @@ class OAuth2AuthenticationSuccessHandler(
         val base = redirectUriResolver.resolveAndClear(request, response)
         val purpose = readAndClearPurpose(request, response)
 
+        // 연동 해제를 위한 재인증: 소셜 토큰만 확보하고 로그인 처리는 하지 않는다.
+        // (여기서 로그인시키면 기존 세션의 액세스/리프레시 토큰과 provider claim이 갈아엎어진다)
         if (purpose == OAuth2RedirectUriCookieFilter.PURPOSE_UNLINK) {
             keepSocialToken(oAuth2User)
+            redirectForUnlink(response, base, oAuth2User)
+
+            return
         }
 
         // 마이페이지 소셜 연동: 로그인 처리 대신 임시 토큰만 발급한다.
@@ -96,6 +101,21 @@ class OAuth2AuthenticationSuccessHandler(
         val accessToken = oAuth2User.getAttribute<String>(CustomOAuth2UserService.SOCIAL_ACCESS_TOKEN_ATTRIBUTE) ?: return
 
         socialTokenService.save(provider, providerId, accessToken)
+    }
+
+    /**
+     * 연동 해제 재인증 흐름의 리다이렉트.
+     * 빵밭 토큰은 건드리지 않고, 어느 제공자로 재인증했는지만 알려준다.
+     */
+    private fun redirectForUnlink(
+        response: HttpServletResponse,
+        base: String,
+        oAuth2User: DefaultOAuth2User,
+    ) {
+        val provider = oAuth2User.getAttribute<SocialProvider>("provider")?.name
+        val code = authCodeService.issue(AuthCodePayload(type = AuthCodeType.UNLINK, provider = provider))
+
+        response.sendRedirect("$base/oauth2/unlink/callback?code=$code")
     }
 
     /**

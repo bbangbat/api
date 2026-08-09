@@ -23,6 +23,7 @@ enum class ErrorCode(
     NICKNAME_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 사용 중인 닉네임입니다."),
     SOCIAL_NOT_LINKED(HttpStatus.NOT_FOUND, "연동되지 않은 소셜 계정입니다."),
     LAST_SOCIAL_CANNOT_UNLINK(HttpStatus.CONFLICT, "마지막 소셜 계정은 해제할 수 없습니다."),
+    CURRENT_SOCIAL_CANNOT_UNLINK(HttpStatus.CONFLICT, "현재 로그인 중인 소셜 계정은 해제할 수 없습니다. 다른 소셜 계정으로 로그인 후 시도해주세요."),
     SOCIAL_REAUTH_REQUIRED(HttpStatus.CONFLICT, "소셜 재인증이 필요합니다. 소셜 로그인 후 다시 시도해주세요."),
     FAVORITE_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 즐겨찾기에 추가된 가게입니다."),
     FAVORITE_NOT_FOUND(HttpStatus.NOT_FOUND, "즐겨찾기에 없는 가게입니다."),

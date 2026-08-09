@@ -3,6 +3,7 @@ package com.bbangbat.member.application
 import com.bbangbat.auth.oauth2.SocialUnlinkClient
 import com.bbangbat.auth.token.TokenService
 import com.bbangbat.common.exception.BbangbatException
+import com.bbangbat.common.exception.ErrorCode.CURRENT_SOCIAL_CANNOT_UNLINK
 import com.bbangbat.common.exception.ErrorCode.EMAIL_ALREADY_REGISTERED
 import com.bbangbat.common.exception.ErrorCode.MEMBER_NOT_FOUND
 import com.bbangbat.common.exception.ErrorCode.SOCIAL_ALREADY_LINKED
@@ -285,5 +286,16 @@ class MemberServiceTest {
 
         assertThat(exception.errorCode).isEqualTo(SOCIAL_ALREADY_LINKED)
         then(socialPersistenceAdapter).should(never()).save(any())
+    }
+
+    @Test
+    fun `현재 로그인 중인 소셜은 연동 해제할 수 없다`() {
+        val exception =
+            assertThrows<BbangbatException> {
+                memberService.unlinkSocial(1L, SocialType.KAKAO, "KAKAO")
+            }
+
+        assertThat(exception.errorCode).isEqualTo(CURRENT_SOCIAL_CANNOT_UNLINK)
+        then(socialPersistenceAdapter).should(never()).findAllByMemberId(any())
     }
 }

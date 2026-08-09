@@ -32,7 +32,8 @@ class OAuthExchangeController(
         description =
             "소셜 로그인 후 리다이렉트로 받은 1회용 code를 토큰으로 교환합니다. " +
                 "code는 60초 내 한 번만 사용할 수 있습니다. " +
-                "type이 LOGIN이면 accessToken과 refresh_token 쿠키가, SIGNUP/LINK면 tempToken이 반환됩니다.",
+                "type이 LOGIN이면 accessToken과 refresh_token 쿠키가, SIGNUP/LINK면 tempToken이 반환됩니다. " +
+                "type이 UNLINK면 재인증한 provider만 반환되고 기존 로그인 세션은 그대로 유지됩니다.",
     )
     @ApiResponses(
         ApiResponse(responseCode = "200", description = "교환 성공"),
@@ -55,6 +56,8 @@ class OAuthExchangeController(
                     existingAccount = payload.existingAccount,
                 )
             AuthCodeType.LINK -> OAuthExchangeResponse(type = payload.type, tempToken = payload.tempToken)
+            // 연동 해제 재인증은 소셜 토큰만 확보한 상태이므로 빵밭 토큰을 새로 발급하지 않는다.
+            AuthCodeType.UNLINK -> OAuthExchangeResponse(type = payload.type, provider = payload.provider)
         }
     }
 

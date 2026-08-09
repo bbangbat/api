@@ -4,6 +4,7 @@ import com.bbangbat.auth.oauth2.SocialProvider
 import com.bbangbat.auth.oauth2.SocialUnlinkClient
 import com.bbangbat.auth.token.TokenService
 import com.bbangbat.common.exception.BbangbatException
+import com.bbangbat.common.exception.ErrorCode.CURRENT_SOCIAL_CANNOT_UNLINK
 import com.bbangbat.common.exception.ErrorCode.EMAIL_ALREADY_REGISTERED
 import com.bbangbat.common.exception.ErrorCode.LAST_SOCIAL_CANNOT_UNLINK
 import com.bbangbat.common.exception.ErrorCode.MEMBER_NOT_FOUND
@@ -112,13 +113,19 @@ class MemberService(
     /**
      * 소셜 계정 연동 해제 (회원은 유지).
      * 마지막 소셜 계정은 해제할 수 없다. 해제하면 로그인 수단이 사라지기 때문이다.
+     * 현재 로그인에 사용 중인 소셜도 해제할 수 없다. 해제하면 지금 세션의 근거가 사라진다.
      * 네이버처럼 access token이 필요한데 보관된 토큰이 없으면 재인증을 요구한다.
      */
     @Transactional
     fun unlinkSocial(
         memberId: Long,
         provider: SocialType,
+        currentProvider: String?,
     ) {
+        if (provider.name == currentProvider) {
+            throw BbangbatException(CURRENT_SOCIAL_CANNOT_UNLINK)
+        }
+
         val socials = socialPersistenceAdapter.findAllByMemberId(memberId)
         val target = socials.firstOrNull { it.provider == provider } ?: throw BbangbatException(SOCIAL_NOT_LINKED)
 

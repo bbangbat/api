@@ -215,35 +215,40 @@ class MemberController(
     @ResponseStatus(OK)
     fun linkSocial(
         @AuthMember memberId: Long,
+        @AuthProvider currentProvider: String?,
         @RequestBody @Valid request: LinkSocialRequest,
     ): List<LinkedSocialResponse> {
         val claims = tempTokenProvider.parse(request.tempToken)
 
         memberService.linkSocialToMember(memberId, SocialType.valueOf(claims.provider.name), claims.providerId)
 
-        return memberService.findLinkedProviders(memberId).map { LinkedSocialResponse.from(it, null) }
+        return memberService.findLinkedProviders(memberId).map { LinkedSocialResponse.from(it, currentProvider) }
     }
 
     @Operation(
         summary = "소셜 연동 해제",
         description =
-            "지정한 소셜 계정의 연동을 해제합니다. 마지막 소셜 계정은 해제할 수 없습니다. " +
+            "지정한 소셜 계정의 연동을 해제합니다. 마지막 소셜 계정과 현재 로그인 중인 소셜 계정은 해제할 수 없습니다. " +
                 "네이버는 해제에 소셜 access token이 필요해, 만료된 경우 409(SOCIAL_REAUTH_REQUIRED)를 반환합니다. " +
-                "이때 프론트는 해당 소셜 로그인을 다시 수행한 뒤 재시도하세요.",
+                "이때 프론트는 /oauth2/authorization/{provider}?purpose=unlink 로 재인증(로그인 세션은 유지됨)한 뒤 재시도하세요.",
     )
     @ApiResponses(
         ApiResponse(responseCode = "204", description = "해제 성공"),
         ApiResponse(responseCode = "401", description = "인증 필요"),
         ApiResponse(responseCode = "404", description = "연동되지 않은 소셜 계정"),
-        ApiResponse(responseCode = "409", description = "마지막 소셜 계정이거나 소셜 재인증 필요"),
+        ApiResponse(
+            responseCode = "409",
+            description = "마지막 소셜 계정이거나 현재 로그인 중인 소셜 계정, 또는 소셜 재인증 필요",
+        ),
     )
     @DeleteMapping("/social/{provider}")
     @ResponseStatus(NO_CONTENT)
     fun unlinkSocial(
         @AuthMember memberId: Long,
+        @AuthProvider currentProvider: String?,
         @PathVariable provider: SocialType,
     ) {
-        memberService.unlinkSocial(memberId, provider)
+        memberService.unlinkSocial(memberId, provider, currentProvider)
     }
 
     @Operation(

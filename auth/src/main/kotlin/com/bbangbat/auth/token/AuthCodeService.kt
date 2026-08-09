@@ -7,7 +7,7 @@ import java.time.Duration
 import java.util.UUID
 
 /** OAuth 결과를 교환하기 위한 1회용 코드의 종류 */
-enum class AuthCodeType { LOGIN, SIGNUP, LINK }
+enum class AuthCodeType { LOGIN, SIGNUP, LINK, UNLINK }
 
 data class AuthCodePayload(
     val type: AuthCodeType,
