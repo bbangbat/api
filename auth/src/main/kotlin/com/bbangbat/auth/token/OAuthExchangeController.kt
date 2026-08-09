@@ -26,6 +26,7 @@ class OAuthExchangeController(
     private val tokenService: TokenService,
     private val refreshTokenCookieProvider: RefreshTokenCookieProvider,
     private val memberPort: MemberPort,
+    private val tempTokenProvider: TempTokenProvider,
 ) {
     @Operation(
         summary = "OAuth 결과 교환",
@@ -33,6 +34,7 @@ class OAuthExchangeController(
             "소셜 로그인 후 리다이렉트로 받은 1회용 code를 토큰으로 교환합니다. " +
                 "code는 60초 내 한 번만 사용할 수 있습니다. " +
                 "type이 LOGIN이면 accessToken과 refresh_token 쿠키가, SIGNUP/LINK면 tempToken이 반환됩니다. " +
+                "SIGNUP은 소셜에서 받은 gender/ageGroup도 함께 반환합니다. (미제공이면 null) " +
                 "type이 UNLINK면 재인증한 provider만 반환되고 기존 로그인 세션은 그대로 유지됩니다.",
     )
     @ApiResponses(
@@ -49,16 +51,27 @@ class OAuthExchangeController(
 
         return when (payload.type) {
             AuthCodeType.LOGIN -> completeLogin(payload, response)
-            AuthCodeType.SIGNUP ->
-                OAuthExchangeResponse(
-                    type = payload.type,
-                    tempToken = payload.tempToken,
-                    existingAccount = payload.existingAccount,
-                )
+            AuthCodeType.SIGNUP -> signupResponse(payload)
             AuthCodeType.LINK -> OAuthExchangeResponse(type = payload.type, tempToken = payload.tempToken)
             // 연동 해제 재인증은 소셜 토큰만 확보한 상태이므로 빵밭 토큰을 새로 발급하지 않는다.
             AuthCodeType.UNLINK -> OAuthExchangeResponse(type = payload.type, provider = payload.provider)
         }
+    }
+
+    /**
+     * 가입 화면이 성별/연령대를 미리 선택해 둘 수 있도록, 임시 토큰에 실린 소셜 제공 값을 함께 내려준다.
+     * (프론트가 임시 토큰을 직접 열어보지 않아도 되게)
+     */
+    private fun signupResponse(payload: AuthCodePayload): OAuthExchangeResponse {
+        val claims = payload.tempToken?.let { tempTokenProvider.parse(it) }
+
+        return OAuthExchangeResponse(
+            type = payload.type,
+            tempToken = payload.tempToken,
+            existingAccount = payload.existingAccount,
+            gender = claims?.gender,
+            ageGroup = claims?.ageGroup,
+        )
     }
 
     /** 실제 로그인 완료 시점(교환 시점)에 토큰을 발급하고 마지막 로그인 시각을 기록한다. */

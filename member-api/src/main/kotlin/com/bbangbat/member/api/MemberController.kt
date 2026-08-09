@@ -156,7 +156,10 @@ class MemberController(
         @AuthMember memberId: Long,
     ): MemberResponse = memberService.findById(memberId).let { MemberResponse.from(it, memberService.profileImageUrlOf(it)) }
 
-    @Operation(summary = "프로필 수정", description = "닉네임·프로필 이미지를 수정합니다. 전달한 필드만 변경됩니다.")
+    @Operation(
+        summary = "프로필 수정",
+        description = "이름/닉네임/프로필 이미지/성별/연령대를 수정합니다. 전달한 필드만 변경됩니다.",
+    )
     @ApiResponses(
         ApiResponse(responseCode = "200", description = "수정 성공"),
         ApiResponse(responseCode = "400", description = "잘못된 입력"),
@@ -170,8 +173,14 @@ class MemberController(
         @RequestBody @Valid request: UpdateProfileRequest,
     ): MemberResponse =
         memberService
-            .updateProfile(memberId, request.name, request.nickname, request.profileImageKey)
-            .let { MemberResponse.from(it, memberService.profileImageUrlOf(it)) }
+            .updateProfile(
+                memberId,
+                request.name,
+                request.nickname,
+                request.profileImageKey,
+                request.gender,
+                request.ageGroup,
+            ).let { MemberResponse.from(it, memberService.profileImageUrlOf(it)) }
 
     @Operation(
         summary = "프로필 이미지 업로드 URL 발급",

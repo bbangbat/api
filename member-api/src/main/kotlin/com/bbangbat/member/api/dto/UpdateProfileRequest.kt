@@ -1,5 +1,7 @@
 package com.bbangbat.member.api.dto
 
+import com.bbangbat.member.domain.AgeGroup
+import com.bbangbat.member.domain.Gender
 import com.bbangbat.member.domain.NamePolicy
 import com.bbangbat.member.domain.NicknamePolicy
 import io.swagger.v3.oas.annotations.media.Schema
@@ -26,4 +28,8 @@ data class UpdateProfileRequest(
     @field:Size(max = 500, message = "프로필 이미지 키는 500자를 초과할 수 없습니다.")
     @field:Schema(description = "presigned URL 발급 시 받은 오브젝트 key", example = "members/3f2a...")
     val profileImageKey: String? = null,
+    @field:Schema(description = "성별", example = "MALE")
+    val gender: Gender? = null,
+    @field:Schema(description = "연령대", example = "TWENTIES")
+    val ageGroup: AgeGroup? = null,
 )

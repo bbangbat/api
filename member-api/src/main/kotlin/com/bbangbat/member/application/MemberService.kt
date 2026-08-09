@@ -35,7 +35,7 @@ class MemberService(
     private val tokenService: TokenService,
 ) {
     /**
-     * 닉네임·프로필 이미지를 수정한다. null인 필드는 변경하지 않는다.
+     * 이름/닉네임/프로필 이미지/성별/연령대를 수정한다. null인 필드는 변경하지 않는다.
      */
     @Transactional
     fun updateProfile(
@@ -43,6 +43,8 @@ class MemberService(
         name: String?,
         nickname: String?,
         profileImageKey: String?,
+        gender: Gender?,
+        ageGroup: AgeGroup?,
     ): Member {
         val current = memberPersistenceAdapter.findById(memberId)
 
@@ -55,9 +57,11 @@ class MemberService(
             name = name ?: current.name,
             nickname = nickname ?: current.nickname,
             profileImageKey = profileImageKey ?: current.profileImageKey,
+            gender = gender ?: current.gender,
+            ageGroup = ageGroup ?: current.ageGroup,
         )
 
-        return memberPersistenceAdapter.updateProfile(memberId, name, nickname, profileImageKey)
+        return memberPersistenceAdapter.updateProfile(memberId, name, nickname, profileImageKey, gender, ageGroup)
     }
 
     /** 로그인한 회원에게 소셜 계정을 연동한다. (마이페이지 연동, 이메일과 무관하게 현재 회원에 연결) */
