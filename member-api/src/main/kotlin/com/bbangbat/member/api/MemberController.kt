@@ -17,6 +17,7 @@ import com.bbangbat.member.api.dto.SignupRequest
 import com.bbangbat.member.api.dto.SignupResponse
 import com.bbangbat.member.api.dto.UpdateProfileRequest
 import com.bbangbat.member.application.MemberService
+import com.bbangbat.member.application.MemberStatsService
 import com.bbangbat.member.domain.AgeGroup
 import com.bbangbat.member.domain.Gender
 import com.bbangbat.member.domain.NicknamePolicy
@@ -51,6 +52,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/members")
 class MemberController(
     private val memberService: MemberService,
+    private val memberStatsService: MemberStatsService,
     private val tempTokenProvider: TempTokenProvider,
     private val jwtProvider: JwtProvider,
     private val tokenService: TokenService,
@@ -274,5 +276,5 @@ class MemberController(
     @ResponseStatus(OK)
     fun getStats(
         @AuthMember memberId: Long,
-    ): MemberStatsResponse = MemberStatsResponse.from(memberService.getStats(memberId))
+    ): MemberStatsResponse = MemberStatsResponse.from(memberStatsService.getStats(memberId))
 }

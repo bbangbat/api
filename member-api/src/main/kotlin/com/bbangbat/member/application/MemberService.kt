@@ -28,7 +28,6 @@ class MemberService(
     private val memberPersistenceAdapter: MemberPersistenceAdapter,
     private val socialPersistenceAdapter: SocialPersistenceAdapter,
     private val favoritePersistenceAdapter: FavoritePersistenceAdapter,
-    private val reviewPort: ReviewPort,
     private val livePort: LivePort,
     private val profileImageStoragePort: ProfileImageStoragePort,
     private val socialUnlinkClient: SocialUnlinkClient,
@@ -217,11 +216,11 @@ class MemberService(
 
     fun findByEmailOrNull(email: String): Member? = memberPersistenceAdapter.findByEmailOrNull(email)
 
-    @Transactional(readOnly = true)
-    fun getStats(memberId: Long): MemberStats =
-        MemberStats(
-            reviewCount = reviewPort.countByMemberId(memberId),
-            favoriteCount = favoritePersistenceAdapter.countByMemberId(memberId),
-            talkCount = livePort.countByMemberId(memberId),
-        )
+    fun findByIds(ids: Collection<Long>): List<Member> = memberPersistenceAdapter.findAllByIds(ids)
+
+    /** 소셜 계정에 연동된 회원 ID. 연동된 회원이 없으면 null */
+    fun findMemberIdBySocial(
+        provider: SocialType,
+        providerId: String,
+    ): Long? = socialPersistenceAdapter.findByProviderAndProviderId(provider, providerId)?.member?.id
 }

@@ -41,9 +41,6 @@ class MemberServiceTest {
     private lateinit var favoritePersistenceAdapter: FavoritePersistenceAdapter
 
     @Mock
-    private lateinit var reviewPort: ReviewPort
-
-    @Mock
     private lateinit var livePort: LivePort
 
     @Mock
@@ -64,7 +61,6 @@ class MemberServiceTest {
                 memberPersistenceAdapter,
                 socialPersistenceAdapter,
                 favoritePersistenceAdapter,
-                reviewPort,
                 livePort,
                 profileImageStoragePort,
                 socialUnlinkClient,
@@ -289,19 +285,5 @@ class MemberServiceTest {
 
         assertThat(exception.errorCode).isEqualTo(SOCIAL_ALREADY_LINKED)
         then(socialPersistenceAdapter).should(never()).save(any())
-    }
-
-    @Test
-    fun `회원의 리뷰 즐겨찾기 톡 수를 집계한다`() {
-        val memberId = 1L
-        given(reviewPort.countByMemberId(memberId)).willReturn(3L)
-        given(favoritePersistenceAdapter.countByMemberId(memberId)).willReturn(5L)
-        given(livePort.countByMemberId(memberId)).willReturn(7L)
-
-        val result = memberService.getStats(memberId)
-
-        assertThat(result.reviewCount).isEqualTo(3L)
-        assertThat(result.favoriteCount).isEqualTo(5L)
-        assertThat(result.talkCount).isEqualTo(7L)
     }
 }

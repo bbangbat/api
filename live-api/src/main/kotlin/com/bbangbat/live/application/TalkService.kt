@@ -43,9 +43,6 @@ class TalkService(
         return talkPersistenceAdapter.findRecentMessages(storeId, from, afterId)
     }
 
-    @Transactional(readOnly = true)
-    fun countByAuthorId(authorId: Long): Long = talkPersistenceAdapter.countByAuthorId(authorId)
-
     /**
      * 활성 가게(최근 SUMMARY_WINDOW_MINUTES 내 톡 MIN_MESSAGES 이상) 중
      * 마지막 요약 이후 새 톡이 있는 가게만 AI 요약을 요청한다. 스케줄러가 주기적으로 호출.

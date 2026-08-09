@@ -1,6 +1,7 @@
 package com.bbangbat.live.application
 
 import com.bbangbat.auth.voter.Voter
+import com.bbangbat.auth.voter.VoterType
 import com.bbangbat.common.exception.BbangbatException
 import com.bbangbat.common.exception.ErrorCode.CONGESTION_VOTE_COOLDOWN
 import com.bbangbat.common.exception.ErrorCode.CONGESTION_VOTE_TOO_FAR
@@ -75,6 +76,12 @@ class CongestionService(
 
             Congestion.summarizeCounts(storeId, counts)
         }
+    }
+
+    /** 회원 탈퇴 시 해당 회원이 남긴 투표를 모두 제거한다. */
+    @Transactional
+    fun deleteVotesByMember(memberId: Long) {
+        congestionVotePersistenceAdapter.deleteAllByVoter(VoterType.MEMBER, memberId.toString())
     }
 
     /**

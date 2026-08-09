@@ -39,15 +39,6 @@ class TalkServiceTest {
     }
 
     @Test
-    fun `회원이 작성한 톡 수를 조회한다`() {
-        given(talkPersistenceAdapter.countByAuthorId(1L)).willReturn(4L)
-
-        val result = talkService.countByAuthorId(1L)
-
-        assertThat(result).isEqualTo(4L)
-    }
-
-    @Test
     fun `메시지 전송 시 작성자 닉네임을 스냅샷으로 저장한다`() {
         // given
         val storeId = 1L
