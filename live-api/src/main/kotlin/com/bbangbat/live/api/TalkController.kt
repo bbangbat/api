@@ -4,6 +4,7 @@ import com.bbangbat.auth.resolver.AuthMember
 import com.bbangbat.common.exception.ErrorResponse
 import com.bbangbat.live.api.dto.LiveTalkMessageRequest
 import com.bbangbat.live.api.dto.LiveTalkMessageResponse
+import com.bbangbat.live.api.dto.MyTalkMessageResponse
 import com.bbangbat.live.api.dto.StoreTalkSummaryResponse
 import com.bbangbat.live.application.TalkService
 import io.swagger.v3.oas.annotations.Operation
@@ -16,7 +17,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -84,6 +87,37 @@ class TalkController(
         @Parameter(description = "이 ID 이후 메시지만 조회 (최초 조회 시 생략)", example = "10")
         @RequestParam(required = false) afterId: Long?,
     ): List<LiveTalkMessageResponse> = talkService.getMessages(storeId, afterId).map { LiveTalkMessageResponse.from(it) }
+
+    @Operation(
+        summary = "내가 쓴 톡 조회",
+        description = "로그인한 회원이 작성한 톡을 최신순으로 조회합니다. 삭제한 톡은 제외됩니다. 가게명이 필요하면 storeId로 가게 일괄 조회를 함께 호출하세요.",
+    )
+    @ApiResponses(
+        ApiResponse(responseCode = "200", description = "조회 성공"),
+        ApiResponse(responseCode = "401", description = "인증 필요"),
+    )
+    @GetMapping("/me")
+    @ResponseStatus(HttpStatus.OK)
+    fun getMyMessages(
+        @AuthMember authorId: Long,
+    ): List<MyTalkMessageResponse> = talkService.getMyMessages(authorId).map { MyTalkMessageResponse.from(it) }
+
+    @Operation(
+        summary = "실시간 톡 삭제",
+        description = "작성자 본인 또는 운영자만 삭제할 수 있습니다. 소프트 삭제라 목록/집계/요약에서 모두 제외됩니다.",
+    )
+    @ApiResponses(
+        ApiResponse(responseCode = "204", description = "삭제 성공"),
+        ApiResponse(responseCode = "401", description = "인증 필요"),
+        ApiResponse(responseCode = "403", description = "본인 톡이 아니고 운영자도 아님"),
+        ApiResponse(responseCode = "404", description = "없거나 이미 삭제된 톡"),
+    )
+    @DeleteMapping("/{messageId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun deleteMessage(
+        @PathVariable messageId: Long,
+        @AuthMember memberId: Long,
+    ) = talkService.deleteMessage(messageId, memberId)
 
     @Operation(
         summary = "톡 요약 벌크 조회",

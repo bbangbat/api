@@ -1,5 +1,8 @@
 package com.bbangbat.live.application
 
+import com.bbangbat.common.exception.BbangbatException
+import com.bbangbat.common.exception.ErrorCode.TALK_FORBIDDEN
+import com.bbangbat.common.exception.ErrorCode.TALK_NOT_FOUND
 import com.bbangbat.live.client.TalkSummaryClient
 import com.bbangbat.live.domain.LiveTalkMessage
 import com.bbangbat.live.domain.StoreTalkSummary
@@ -13,6 +16,7 @@ class TalkService(
     private val talkPersistenceAdapter: TalkPersistenceAdapter,
     private val talkSummaryClient: TalkSummaryClient,
     private val memberPort: MemberPort,
+    private val storePort: StorePort,
 ) {
     @Transactional
     fun sendMessage(
@@ -41,6 +45,33 @@ class TalkService(
         val from = LocalDateTime.now().minusHours(MESSAGE_WINDOW_HOURS)
 
         return talkPersistenceAdapter.findRecentMessages(storeId, from, afterId)
+    }
+
+    /** 내가 쓴 톡 목록 (최신순). 삭제한 톡은 제외하고, 가게명은 일괄 조회로 붙인다. */
+    @Transactional(readOnly = true)
+    fun getMyMessages(authorId: Long): List<MyTalkMessage> {
+        val messages = talkPersistenceAdapter.findByAuthorId(authorId)
+        val storeNames = storePort.findNames(messages.map { it.storeId }.distinct())
+
+        return messages.map { MyTalkMessage.of(it, storeNames[it.storeId]) }
+    }
+
+    /**
+     * 톡을 소프트 삭제한다. 작성자 본인이거나 운영자만 가능하다.
+     * 삭제된 톡은 목록/집계/요약 대상에서 모두 빠지지만 행은 남는다. (신고 대응 이력 보존)
+     */
+    @Transactional
+    fun deleteMessage(
+        messageId: Long,
+        memberId: Long,
+    ) {
+        val message = talkPersistenceAdapter.findMessageById(messageId) ?: throw BbangbatException(TALK_NOT_FOUND)
+
+        if (message.authorId != memberId && !memberPort.isAdmin(memberId)) {
+            throw BbangbatException(TALK_FORBIDDEN)
+        }
+
+        talkPersistenceAdapter.softDeleteMessage(messageId, LocalDateTime.now())
     }
 
     /**

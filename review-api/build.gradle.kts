@@ -9,6 +9,9 @@ dependencies {
 
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.starter.validation)
+    implementation(libs.jdsl.jpql.dsl)
+    implementation(libs.jdsl.jpql.render)
+    implementation(libs.jdsl.spring.data.jpa.support)
     implementation(libs.aws.s3)
 
     compileOnly(libs.springdoc.openapi.webmvc.ui)

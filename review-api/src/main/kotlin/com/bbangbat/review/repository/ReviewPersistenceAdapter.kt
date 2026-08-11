@@ -26,6 +26,25 @@ class ReviewPersistenceAdapter(
 
     fun countByMemberId(memberId: Long): Long = reviewRepository.countByMemberId(memberId)
 
+    /** 가게별 빵명록 수를 IN + group by 단일 쿼리로 집계한다. (가게 목록 N+1 방지) */
+    fun countByStoreIds(storeIds: Collection<Long>): List<StoreReviewCount> {
+        val results: List<StoreReviewCount?> =
+            reviewRepository.findAll {
+                selectNew<StoreReviewCount>(
+                    path(ReviewJpaEntity::storeId),
+                    count(path(ReviewJpaEntity::id)),
+                ).from(
+                    entity(ReviewJpaEntity::class),
+                ).where(
+                    path(ReviewJpaEntity::storeId).`in`(storeIds.toList()),
+                ).groupBy(
+                    path(ReviewJpaEntity::storeId),
+                )
+            }
+
+        return results.filterNotNull()
+    }
+
     private fun toDomains(entities: List<ReviewJpaEntity>): List<Review> {
         if (entities.isEmpty()) return emptyList()
 

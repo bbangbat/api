@@ -29,14 +29,14 @@ class CongestionServiceTest {
     private lateinit var congestionVotePersistenceAdapter: CongestionVotePersistenceAdapter
 
     @Mock
-    private lateinit var storeLocationPort: StoreLocationPort
+    private lateinit var storePort: StorePort
 
     private lateinit var congestionService: CongestionService
 
     @BeforeEach
     fun setUp() {
         congestionService =
-            CongestionService(congestionVotePersistenceAdapter, storeLocationPort, MAX_DISTANCE_METERS, COOLDOWN_MINUTES)
+            CongestionService(congestionVotePersistenceAdapter, storePort, MAX_DISTANCE_METERS, COOLDOWN_MINUTES)
     }
 
     @Test
@@ -44,7 +44,7 @@ class CongestionServiceTest {
         // given
         val storeId = 1L
         val voter = Voter(VoterType.MEMBER, "1")
-        given(storeLocationPort.findCoordinates(storeId)).willReturn(StoreCoordinates(DAEJEON_LAT, DAEJEON_LNG))
+        given(storePort.findCoordinates(storeId)).willReturn(StoreCoordinates(DAEJEON_LAT, DAEJEON_LNG))
         given(congestionVotePersistenceAdapter.findByVoterForUpdate(storeId, VoterType.MEMBER, "1")).willReturn(null)
         given(congestionVotePersistenceAdapter.findRecentVotes(eq(storeId), any())).willReturn(
             listOf(recentVote(storeId, CongestionLevel.CROWDED, "1")),
@@ -73,7 +73,7 @@ class CongestionServiceTest {
                 voterKey = "1",
                 votedAt = LocalDateTime.now().minusMinutes(20),
             )
-        given(storeLocationPort.findCoordinates(storeId)).willReturn(StoreCoordinates(DAEJEON_LAT, DAEJEON_LNG))
+        given(storePort.findCoordinates(storeId)).willReturn(StoreCoordinates(DAEJEON_LAT, DAEJEON_LNG))
         given(congestionVotePersistenceAdapter.findByVoterForUpdate(storeId, VoterType.MEMBER, "1")).willReturn(existing)
         given(congestionVotePersistenceAdapter.findRecentVotes(eq(storeId), any())).willReturn(
             listOf(recentVote(storeId, CongestionLevel.CROWDED, "1")),
@@ -169,7 +169,7 @@ class CongestionServiceTest {
         // given (대전 안이지만 가게와 약 5km 떨어진 좌표)
         val storeId = 1L
         val voter = Voter(VoterType.MEMBER, "1")
-        given(storeLocationPort.findCoordinates(storeId)).willReturn(StoreCoordinates(DAEJEON_LAT + 0.045, DAEJEON_LNG))
+        given(storePort.findCoordinates(storeId)).willReturn(StoreCoordinates(DAEJEON_LAT + 0.045, DAEJEON_LNG))
 
         // when & then
         val exception =
@@ -195,7 +195,7 @@ class CongestionServiceTest {
                 voterKey = "1",
                 votedAt = LocalDateTime.now().minusMinutes(5),
             )
-        given(storeLocationPort.findCoordinates(storeId)).willReturn(StoreCoordinates(DAEJEON_LAT, DAEJEON_LNG))
+        given(storePort.findCoordinates(storeId)).willReturn(StoreCoordinates(DAEJEON_LAT, DAEJEON_LNG))
         given(congestionVotePersistenceAdapter.findByVoterForUpdate(storeId, VoterType.MEMBER, "1")).willReturn(existing)
 
         // when & then

@@ -11,6 +11,7 @@ data class Member(
     val profileImageKey: String? = null,
     val gender: Gender,
     val ageGroup: AgeGroup,
+    val role: MemberRole = MemberRole.USER,
     val termsAgreed: Boolean,
     val privacyAgreed: Boolean,
     val lastLoginAt: LocalDateTime? = null,

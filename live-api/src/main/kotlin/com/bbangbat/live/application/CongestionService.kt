@@ -23,7 +23,7 @@ import java.time.LocalDateTime
 @Service
 class CongestionService(
     private val congestionVotePersistenceAdapter: CongestionVotePersistenceAdapter,
-    private val storeLocationPort: StoreLocationPort,
+    private val storePort: StorePort,
     @param:Value("\${app.congestion.vote-max-distance-meters}") private val maxDistanceMeters: Double,
     @param:Value("\${app.congestion.vote-cooldown-minutes}") private val cooldownMinutes: Long,
 ) {
@@ -96,7 +96,7 @@ class CongestionService(
             throw BbangbatException(OUT_OF_SERVICE_AREA)
         }
 
-        val store = storeLocationPort.findCoordinates(storeId) ?: throw BbangbatException(STORE_NOT_FOUND)
+        val store = storePort.findCoordinates(storeId) ?: throw BbangbatException(STORE_NOT_FOUND)
         val distance = GeoDistance.meters(latitude, longitude, store.latitude, store.longitude)
 
         if (distance > maxDistanceMeters) {

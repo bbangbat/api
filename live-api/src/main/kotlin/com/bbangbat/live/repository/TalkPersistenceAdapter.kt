@@ -14,7 +14,27 @@ class TalkPersistenceAdapter(
     fun saveMessage(message: LiveTalkMessage): LiveTalkMessage =
         liveTalkMessageRepository.save(LiveTalkMessageJpaEntity.from(message)).toDomain()
 
-    fun countByAuthorId(authorId: Long): Long = liveTalkMessageRepository.countByAuthorId(authorId)
+    fun countByAuthorId(authorId: Long): Long = liveTalkMessageRepository.countByAuthorIdAndDeletedAtIsNull(authorId)
+
+    /** 내가 쓴 톡 목록 (최신순). 24시간 윈도우와 무관하게 전체를 돌려준다. */
+    fun findByAuthorId(authorId: Long): List<LiveTalkMessage> =
+        liveTalkMessageRepository.findAllByAuthorIdAndDeletedAtIsNullOrderByIdDesc(authorId).map { it.toDomain() }
+
+    fun findMessageById(id: Long): LiveTalkMessage? =
+        liveTalkMessageRepository
+            .findById(id)
+            .orElse(null)
+            ?.takeIf { it.deletedAt == null }
+            ?.toDomain()
+
+    /** 소프트 삭제. 더티체킹으로 deleted_at만 채운다. */
+    @Transactional
+    fun softDeleteMessage(
+        id: Long,
+        deletedAt: LocalDateTime,
+    ) {
+        liveTalkMessageRepository.findById(id).orElse(null)?.let { it.deletedAt = deletedAt }
+    }
 
     fun findRecentMessages(
         storeId: Long,
@@ -29,6 +49,7 @@ class TalkPersistenceAdapter(
                         and(
                             path(LiveTalkMessageJpaEntity::storeId).eq(value(storeId)),
                             path(LiveTalkMessageJpaEntity::createdAt).ge(value(from)),
+                            path(LiveTalkMessageJpaEntity::deletedAt).isNull(),
                             afterId?.let { path(LiveTalkMessageJpaEntity::id).gt(value(it)) },
                         ),
                     ).orderBy(path(LiveTalkMessageJpaEntity::id).asc())
@@ -53,7 +74,10 @@ class TalkPersistenceAdapter(
                 ).from(
                     entity(LiveTalkMessageJpaEntity::class),
                 ).where(
-                    path(LiveTalkMessageJpaEntity::createdAt).ge(value(from)),
+                    and(
+                        path(LiveTalkMessageJpaEntity::createdAt).ge(value(from)),
+                        path(LiveTalkMessageJpaEntity::deletedAt).isNull(),
+                    ),
                 ).groupBy(
                     path(LiveTalkMessageJpaEntity::storeId),
                 ).having(
