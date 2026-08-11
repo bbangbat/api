@@ -37,6 +37,10 @@ enum class ErrorCode(
     CONGESTION_VOTE_TOO_FAR(HttpStatus.FORBIDDEN, "가게 근처에서만 혼잡도를 투표할 수 있습니다."),
     CONGESTION_VOTE_COOLDOWN(HttpStatus.TOO_MANY_REQUESTS, "잠시 후 다시 투표할 수 있습니다."),
 
+    // Talk
+    TALK_NOT_FOUND(HttpStatus.NOT_FOUND, "실시간 톡을 찾을 수 없습니다."),
+    TALK_FORBIDDEN(HttpStatus.FORBIDDEN, "본인이 작성한 톡만 삭제할 수 있습니다."),
+
     // Review
     REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "리뷰를 찾을 수 없습니다."),
     REVIEW_FORBIDDEN(HttpStatus.FORBIDDEN, "본인의 리뷰만 삭제할 수 있습니다."),

@@ -41,6 +41,11 @@ class ReviewService(
     @Transactional(readOnly = true)
     fun countByMemberId(memberId: Long): Long = reviewPersistenceAdapter.countByMemberId(memberId)
 
+    /** 가게 ID → 빵명록 수. 빵명록이 없는 가게는 결과에서 빠진다. */
+    @Transactional(readOnly = true)
+    fun countByStoreIds(storeIds: Collection<Long>): Map<Long, Long> =
+        reviewPersistenceAdapter.countByStoreIds(storeIds).associate { it.storeId to it.count }
+
     @Transactional
     fun create(
         memberId: Long,

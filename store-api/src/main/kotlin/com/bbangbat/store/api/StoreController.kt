@@ -2,7 +2,9 @@ package com.bbangbat.store.api
 
 import com.bbangbat.store.api.dto.StoreResponse
 import com.bbangbat.store.application.StoreService
+import com.bbangbat.store.application.StoreStatsService
 import com.bbangbat.store.domain.MapBounds
+import com.bbangbat.store.domain.Store
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/stores")
 class StoreController(
     private val storeService: StoreService,
+    private val storeStatsService: StoreStatsService,
 ) {
     @Operation(summary = "반경 내 가게 리스트 조회", description = "지도 중심 좌표 기준 반경 3km 내 가게를 거리순으로 조회합니다.")
     @ApiResponses(
@@ -35,7 +38,7 @@ class StoreController(
     fun getStores(
         @RequestParam lat: Double,
         @RequestParam lng: Double,
-    ): List<StoreResponse> = storeService.findStores(lat, lng).map { StoreResponse.from(it) }
+    ): List<StoreResponse> = withReviewCounts(storeService.findStores(lat, lng))
 
     @Operation(
         summary = "지도 영역 내 가게 조회",
@@ -54,10 +57,7 @@ class StoreController(
         @Parameter(description = "북쪽 위도", example = "36.40") @RequestParam north: Double,
         @Parameter(description = "서쪽 경도", example = "127.30") @RequestParam west: Double,
         @Parameter(description = "동쪽 경도", example = "127.45") @RequestParam east: Double,
-    ): List<StoreResponse> =
-        storeService
-            .findInBounds(MapBounds(south = south, north = north, west = west, east = east))
-            .map { StoreResponse.from(it) }
+    ): List<StoreResponse> = withReviewCounts(storeService.findInBounds(MapBounds(south = south, north = north, west = west, east = east)))
 
     @Operation(
         summary = "가게 일괄 조회",
@@ -74,7 +74,7 @@ class StoreController(
         @RequestParam
         @Size(max = 100, message = "가게는 한 번에 100개까지 조회할 수 있습니다.")
         storeIds: List<Long>,
-    ): List<StoreResponse> = storeService.findByIds(storeIds).map { StoreResponse.from(it) }
+    ): List<StoreResponse> = withReviewCounts(storeService.findByIds(storeIds))
 
     @Operation(summary = "가게 단건 조회", description = "가게 ID로 가게 상세 정보를 조회합니다.")
     @ApiResponses(
@@ -85,5 +85,13 @@ class StoreController(
     @ResponseStatus(HttpStatus.OK)
     fun getStore(
         @PathVariable storeId: Long,
-    ): StoreResponse = StoreResponse.from(storeService.findById(storeId))
+    ): StoreResponse {
+        val store = storeService.findById(storeId)
+
+        return StoreResponse.from(store, storeStatsService.reviewCounts(listOf(storeId)).getValue(storeId))
+    }
+
+    /** 가게 목록에 빵명록 수를 한 번의 집계 조회로 붙인다. */
+    private fun withReviewCounts(stores: List<Store>): List<StoreResponse> =
+        StoreResponse.listOf(stores, storeStatsService.reviewCounts(stores.map { it.id }))
 }

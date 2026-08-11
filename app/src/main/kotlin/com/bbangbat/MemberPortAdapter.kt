@@ -2,6 +2,7 @@ package com.bbangbat
 
 import com.bbangbat.auth.oauth2.SocialProvider
 import com.bbangbat.member.application.MemberService
+import com.bbangbat.member.domain.MemberRole
 import com.bbangbat.member.domain.SocialType
 import com.bbangbat.review.application.ReviewAuthor
 import org.springframework.stereotype.Component
@@ -17,6 +18,8 @@ class MemberPortAdapter(
     LiveMemberPort,
     ReviewMemberPort {
     override fun getNickname(memberId: Long): String = memberService.findById(memberId).nickname
+
+    override fun isAdmin(memberId: Long): Boolean = memberService.findById(memberId).role == MemberRole.ADMIN
 
     override fun findByProviderAndProviderId(
         provider: SocialProvider,

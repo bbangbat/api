@@ -3,6 +3,7 @@ package com.bbangbat.member.repository
 import com.bbangbat.member.domain.AgeGroup
 import com.bbangbat.member.domain.Gender
 import com.bbangbat.member.domain.Member
+import com.bbangbat.member.domain.MemberRole
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -32,6 +33,9 @@ class MemberJpaEntity(
     @Enumerated(EnumType.STRING)
     @Column(name = "age_group", nullable = false, length = 20)
     var ageGroup: AgeGroup,
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false, length = 10)
+    var role: MemberRole = MemberRole.USER,
     @Column(name = "terms_agreed", nullable = false)
     var termsAgreed: Boolean,
     @Column(name = "privacy_agreed", nullable = false)
@@ -48,6 +52,7 @@ class MemberJpaEntity(
             profileImageKey = profileImageKey,
             gender = gender,
             ageGroup = ageGroup,
+            role = role,
             termsAgreed = termsAgreed,
             privacyAgreed = privacyAgreed,
             lastLoginAt = lastLoginAt,
@@ -65,6 +70,7 @@ class MemberJpaEntity(
                 profileImageKey = member.profileImageKey,
                 gender = member.gender,
                 ageGroup = member.ageGroup,
+                role = member.role,
                 termsAgreed = member.termsAgreed,
                 privacyAgreed = member.privacyAgreed,
                 lastLoginAt = member.lastLoginAt,

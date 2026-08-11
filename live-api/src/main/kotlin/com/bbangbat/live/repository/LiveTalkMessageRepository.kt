@@ -6,5 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 interface LiveTalkMessageRepository :
     JpaRepository<LiveTalkMessageJpaEntity, Long>,
     KotlinJdslJpqlExecutor {
-    fun countByAuthorId(authorId: Long): Long
+    fun countByAuthorIdAndDeletedAtIsNull(authorId: Long): Long
+
+    fun findAllByAuthorIdAndDeletedAtIsNullOrderByIdDesc(authorId: Long): List<LiveTalkMessageJpaEntity>
 }

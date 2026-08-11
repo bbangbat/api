@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Index
 import jakarta.persistence.Table
+import java.time.LocalDateTime
 
 @Entity
 @Table(
@@ -30,6 +31,9 @@ class LiveTalkMessageJpaEntity(
     var authorNickname: String,
     @Column(name = "content", nullable = false, length = 100)
     var content: String,
+    /** 소프트 삭제 시각. null이면 살아 있는 메시지. 조회는 모두 이 값이 null인 것만 대상으로 한다. */
+    @Column(name = "deleted_at", nullable = true)
+    var deletedAt: LocalDateTime? = null,
 ) : BaseEntity() {
     fun toDomain(): LiveTalkMessage =
         LiveTalkMessage(

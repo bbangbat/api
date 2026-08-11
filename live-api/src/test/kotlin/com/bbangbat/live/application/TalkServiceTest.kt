@@ -31,11 +31,14 @@ class TalkServiceTest {
     @Mock
     private lateinit var memberPort: MemberPort
 
+    @Mock
+    private lateinit var storePort: StorePort
+
     private lateinit var talkService: TalkService
 
     @BeforeEach
     fun setUp() {
-        talkService = TalkService(talkPersistenceAdapter, talkSummaryClient, memberPort)
+        talkService = TalkService(talkPersistenceAdapter, talkSummaryClient, memberPort, storePort)
     }
 
     @Test
