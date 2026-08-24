@@ -1,5 +1,6 @@
 package com.bbangbat.member.repository
 
+import com.bbangbat.common.id.Tsid
 import com.bbangbat.member.domain.Social
 import com.bbangbat.member.domain.SocialType
 import jakarta.persistence.Column

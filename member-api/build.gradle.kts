@@ -8,7 +8,6 @@ dependencies {
     implementation(project(":auth"))
 
     implementation(libs.spring.boot.starter.data.jpa)
-    implementation(libs.tsid.creator)
 //    implementation(libs.jdsl.jpql.dsl)
 //    implementation(libs.jdsl.jpql.render)
 //    implementation(libs.jdsl.spring.data.jpa.support)

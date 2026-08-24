@@ -1,10 +1,9 @@
 package com.bbangbat.review.repository
 
+import com.bbangbat.common.id.Tsid
 import com.bbangbat.review.domain.Review
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Index
 import jakarta.persistence.Table
@@ -19,9 +18,9 @@ import jakarta.persistence.Table
 )
 class ReviewJpaEntity(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Tsid
     @Column(name = "id", nullable = false)
-    val id: Long = 0L,
+    var id: Long = 0L,
     @Column(name = "member_id", nullable = false)
     val memberId: Long,
     @Column(name = "store_id", nullable = false)

@@ -1,10 +1,9 @@
 package com.bbangbat.member.repository
 
+import com.bbangbat.common.id.Tsid
 import com.bbangbat.member.domain.Favorite
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Index
 import jakarta.persistence.Table
@@ -18,7 +17,7 @@ import jakarta.persistence.UniqueConstraint
 )
 class FavoriteJpaEntity(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Tsid
     @Column(name = "id", nullable = false)
     var id: Long = 0L,
     @Column(name = "member_id", nullable = false)

@@ -1,5 +1,6 @@
 package com.bbangbat.member.repository
 
+import com.bbangbat.common.id.Tsid
 import com.bbangbat.member.domain.AgeGroup
 import com.bbangbat.member.domain.Gender
 import com.bbangbat.member.domain.Member

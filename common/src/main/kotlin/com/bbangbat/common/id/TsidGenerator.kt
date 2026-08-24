@@ -1,4 +1,4 @@
-package com.bbangbat.member.repository
+package com.bbangbat.common.id
 
 import com.github.f4b6a3.tsid.TsidCreator
 import org.hibernate.engine.spi.SharedSessionContractImplementor
