@@ -2,6 +2,7 @@ package com.bbangbat.store.application
 
 import com.bbangbat.common.exception.BbangbatException
 import com.bbangbat.common.exception.ErrorCode.STORE_NOT_FOUND
+import com.bbangbat.store.domain.MapBounds
 import com.bbangbat.store.domain.Store
 import com.bbangbat.store.repository.StorePersistenceAdapter
 import org.assertj.core.api.Assertions.assertThat
@@ -35,7 +36,7 @@ class StoreServiceTest {
                 Store(id = 1L, name = "가까운 베이커리", latitude = 37.5670, longitude = 126.9780, address = "서울시 중구"),
                 Store(id = 2L, name = "먼 베이커리", latitude = 37.5700, longitude = 126.9780, address = "서울시 중구"),
             )
-        given(storePersistenceAdapter.findWithinRadius(lat, lng, 3000.0)).willReturn(stores)
+        given(storePersistenceAdapter.findAllWithinBounds(MapBounds.around(lat, lng, 3000.0))).willReturn(stores)
 
         // when
         val result = storeService.findStores(lat, lng)
@@ -47,11 +48,31 @@ class StoreServiceTest {
     }
 
     @Test
+    fun `사각 영역 안이어도 반경 밖이면 제외한다`() {
+        // given (박스 모서리 쪽 가게는 중심에서 3km를 넘는다)
+        val lat = 37.5665
+        val lng = 126.9780
+        val stores =
+            listOf(
+                Store(id = 1L, name = "반경 안", latitude = 37.5670, longitude = 126.9780, address = "서울시 중구"),
+                Store(id = 2L, name = "박스 모서리", latitude = 37.5900, longitude = 127.0100, address = "서울시 중구"),
+            )
+        given(storePersistenceAdapter.findAllWithinBounds(MapBounds.around(lat, lng, 3000.0))).willReturn(stores)
+
+        // when
+        val result = storeService.findStores(lat, lng)
+
+        // then
+        assertThat(result).hasSize(1)
+        assertThat(result[0].name).isEqualTo("반경 안")
+    }
+
+    @Test
     fun `반경 내 가게가 없으면 빈 리스트를 반환한다`() {
         // given
         val lat = 37.5665
         val lng = 126.9780
-        given(storePersistenceAdapter.findWithinRadius(lat, lng, 3000.0)).willReturn(emptyList())
+        given(storePersistenceAdapter.findAllWithinBounds(MapBounds.around(lat, lng, 3000.0))).willReturn(emptyList())
 
         // when
         val result = storeService.findStores(lat, lng)
@@ -104,7 +125,7 @@ class StoreServiceTest {
                     imageUrl = null,
                 ),
             )
-        given(storePersistenceAdapter.findWithinRadius(lat, lng, 3000.0)).willReturn(stores)
+        given(storePersistenceAdapter.findAllWithinBounds(MapBounds.around(lat, lng, 3000.0))).willReturn(stores)
 
         // when
         val result = storeService.findStores(lat, lng)
@@ -130,7 +151,7 @@ class StoreServiceTest {
                     imageUrl = customUrl,
                 ),
             )
-        given(storePersistenceAdapter.findWithinRadius(lat, lng, 3000.0)).willReturn(stores)
+        given(storePersistenceAdapter.findAllWithinBounds(MapBounds.around(lat, lng, 3000.0))).willReturn(stores)
 
         // when
         val result = storeService.findStores(lat, lng)

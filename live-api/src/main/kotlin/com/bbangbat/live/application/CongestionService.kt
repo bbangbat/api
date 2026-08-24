@@ -7,10 +7,10 @@ import com.bbangbat.common.exception.ErrorCode.CONGESTION_VOTE_COOLDOWN
 import com.bbangbat.common.exception.ErrorCode.CONGESTION_VOTE_TOO_FAR
 import com.bbangbat.common.exception.ErrorCode.OUT_OF_SERVICE_AREA
 import com.bbangbat.common.exception.ErrorCode.STORE_NOT_FOUND
+import com.bbangbat.common.geo.GeoDistance
 import com.bbangbat.live.domain.Congestion
 import com.bbangbat.live.domain.CongestionLevel
 import com.bbangbat.live.domain.CongestionVote
-import com.bbangbat.live.domain.GeoDistance
 import com.bbangbat.live.domain.ServiceArea
 import com.bbangbat.live.repository.CongestionVotePersistenceAdapter
 import org.springframework.beans.factory.annotation.Value

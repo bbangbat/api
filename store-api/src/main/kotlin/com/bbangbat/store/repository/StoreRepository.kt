@@ -9,7 +9,13 @@ interface StoreRepository :
     KotlinJdslJpqlExecutor {
     fun findAllByNameContainingIgnoreCase(name: String): List<StoreJpaEntity>
 
-    /** 지도 사각 영역 내 가게 조회. 결과 수는 pageable로 제한한다. */
+    fun findAllByLatitudeBetweenAndLongitudeBetween(
+        south: Double,
+        north: Double,
+        west: Double,
+        east: Double,
+    ): List<StoreJpaEntity>
+
     fun findAllByLatitudeBetweenAndLongitudeBetween(
         south: Double,
         north: Double,

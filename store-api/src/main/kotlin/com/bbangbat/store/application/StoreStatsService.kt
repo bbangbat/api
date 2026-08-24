@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service
 class StoreStatsService(
     private val reviewPort: ReviewPort,
 ) {
-    /** 가게 ID → 빵명록 수. 빵명록이 없는 가게는 0으로 채운다. */
     fun reviewCounts(storeIds: Collection<Long>): Map<Long, Long> {
         if (storeIds.isEmpty()) {
             return emptyMap()
