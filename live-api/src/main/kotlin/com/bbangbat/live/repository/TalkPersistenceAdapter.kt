@@ -1,5 +1,8 @@
 package com.bbangbat.live.repository
 
+import com.bbangbat.common.exception.BbangbatException
+import com.bbangbat.common.exception.ErrorCode.NOT_FOUND
+import com.bbangbat.common.exception.ErrorCode.TALK_NOT_FOUND
 import com.bbangbat.live.domain.LiveTalkMessage
 import com.bbangbat.live.domain.StoreTalkSummary
 import org.springframework.stereotype.Repository
@@ -20,21 +23,23 @@ class TalkPersistenceAdapter(
     fun findByAuthorId(authorId: Long): List<LiveTalkMessage> =
         liveTalkMessageRepository.findAllByAuthorIdAndDeletedAtIsNullOrderByIdDesc(authorId).map { it.toDomain() }
 
+    /** 삭제된 메시지도 그대로 돌려준다. 삭제 여부 판단은 도메인(isDeleted)의 몫이다. */
     fun findMessageById(id: Long): LiveTalkMessage? =
         liveTalkMessageRepository
             .findById(id)
             .orElse(null)
-            ?.takeIf { it.deletedAt == null }
             ?.toDomain()
 
-    /** 소프트 삭제. 더티체킹으로 deleted_at만 채운다. */
+    /**
+     * 변경된 도메인 상태를 영속 엔티티에 반영한다. (더티체킹)
+     */
     @Transactional
-    fun softDeleteMessage(
-        id: Long,
-        deletedAt: LocalDateTime,
-    ) {
-        liveTalkMessageRepository.findById(id).orElse(null)?.let { it.deletedAt = deletedAt }
-    }
+    fun updateMessage(message: LiveTalkMessage): LiveTalkMessage =
+        liveTalkMessageRepository
+            .findById(message.id)
+            .orElseThrow { BbangbatException(TALK_NOT_FOUND) }
+            .also { it.applyFrom(message) }
+            .toDomain()
 
     fun findRecentMessages(
         storeId: Long,
@@ -88,19 +93,19 @@ class TalkPersistenceAdapter(
         return results.filterNotNull()
     }
 
+    fun saveSummary(summary: StoreTalkSummary): StoreTalkSummary =
+        storeTalkSummaryRepository.save(StoreTalkSummaryJpaEntity.from(summary)).toDomain()
+
+    /**
+     * 변경된 도메인 상태를 영속 엔티티에 반영한다. (더티체킹)
+     */
     @Transactional
-    fun upsertSummary(summary: StoreTalkSummary): StoreTalkSummary {
-        val existing = storeTalkSummaryRepository.findByStoreId(summary.storeId).orElse(null)
-
-        if (existing != null) {
-            existing.summary = summary.summary
-            existing.lastMessageId = summary.lastMessageId
-
-            return existing.toDomain()
-        }
-
-        return storeTalkSummaryRepository.save(StoreTalkSummaryJpaEntity.from(summary)).toDomain()
-    }
+    fun updateSummary(summary: StoreTalkSummary): StoreTalkSummary =
+        storeTalkSummaryRepository
+            .findById(summary.id)
+            .orElseThrow { BbangbatException(NOT_FOUND) }
+            .also { it.applyFrom(summary) }
+            .toDomain()
 
     fun findSummaryByStoreId(storeId: Long): StoreTalkSummary? = storeTalkSummaryRepository.findByStoreId(storeId).orElse(null)?.toDomain()
 

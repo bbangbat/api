@@ -3,6 +3,7 @@ package com.bbangbat.member.domain
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import java.time.LocalDateTime
 
 class MemberTest {
     private fun validMember(
@@ -204,5 +205,72 @@ class MemberTest {
     fun `개인정보처리방침에 동의하지 않으면 예외가 발생한다`() {
         // given & when & then
         assertThrows<IllegalArgumentException> { validMember(privacyAgreed = false) }
+    }
+
+    @Test
+    fun `updateProfile은 null인 필드를 기존 값으로 유지한다`() {
+        // given
+        val member = validMember(name = "홍길동", nickname = "빵괴물")
+
+        // when
+        val updated = member.updateProfile(nickname = "빵덕후")
+
+        // then
+        assertThat(updated.name).isEqualTo("홍길동")
+        assertThat(updated.nickname).isEqualTo("빵덕후")
+        assertThat(updated.gender).isEqualTo(member.gender)
+        assertThat(updated.ageGroup).isEqualTo(member.ageGroup)
+    }
+
+    @Test
+    fun `updateProfile은 원본을 변경하지 않는다`() {
+        // given
+        val member = validMember(nickname = "빵괴물")
+
+        // when
+        member.updateProfile(nickname = "빵덕후")
+
+        // then
+        assertThat(member.nickname).isEqualTo("빵괴물")
+    }
+
+    @Test
+    fun `updateProfile은 수정 시점에도 닉네임 형식을 검증한다`() {
+        // given
+        val member = validMember()
+
+        // when & then
+        assertThrows<IllegalArgumentException> { member.updateProfile(nickname = "빵!!") }
+    }
+
+    @Test
+    fun `updateProfile은 수정 시점에도 이름 길이를 검증한다`() {
+        // given
+        val member = validMember()
+
+        // when & then
+        assertThrows<IllegalArgumentException> { member.updateProfile(name = "가".repeat(31)) }
+    }
+
+    @Test
+    fun `updateProfile은 수정 시점에도 프로필 이미지 키 형식을 검증한다`() {
+        // given
+        val member = validMember()
+
+        // when & then
+        assertThrows<IllegalArgumentException> { member.updateProfile(profileImageKey = "reviews/abc") }
+    }
+
+    @Test
+    fun `login은 마지막 로그인 시각을 갱신한다`() {
+        // given
+        val member = validMember()
+        val now = LocalDateTime.now()
+
+        // when
+        val loggedIn = member.login(now)
+
+        // then
+        assertThat(loggedIn.lastLoginAt).isEqualTo(now)
     }
 }

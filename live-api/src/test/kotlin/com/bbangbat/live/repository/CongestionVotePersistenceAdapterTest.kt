@@ -5,6 +5,7 @@ import com.bbangbat.live.domain.CongestionLevel
 import com.bbangbat.live.domain.CongestionVote
 import com.bbangbat.live.support.AbstractContainerBaseTest
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager
@@ -34,7 +35,7 @@ class CongestionVotePersistenceAdapterTest
         }
 
         @Test
-        fun `updateVote는 더티체킹으로 level과 votedAt을 갱신한다`() {
+        fun `update는 도메인이 만든 재투표 상태를 더티체킹으로 반영한다`() {
             // given
             val saved = congestionVotePersistenceAdapter.save(vote(storeId = 1L, level = CongestionLevel.NORMAL, voterKey = "10"))
             em.flush()
@@ -42,13 +43,15 @@ class CongestionVotePersistenceAdapterTest
             val newVotedAt = LocalDateTime.now()
 
             // when
-            congestionVotePersistenceAdapter.updateVote(saved.id, CongestionLevel.CROWDED, newVotedAt)
+            congestionVotePersistenceAdapter.update(saved.revote(CongestionLevel.CROWDED, newVotedAt))
             em.flush()
             em.clear()
 
             // then
             val updated = congestionVotePersistenceAdapter.findByVoter(1L, VoterType.MEMBER, "10")!!
+
             assertThat(updated.level).isEqualTo(CongestionLevel.CROWDED)
+            assertThat(updated.votedAt).isCloseTo(newVotedAt, within(1, java.time.temporal.ChronoUnit.SECONDS))
         }
 
         @Test

@@ -52,16 +52,10 @@ class MemberService(
             throw BbangbatException(NICKNAME_ALREADY_EXISTS)
         }
 
-        // 도메인 규칙(이름/닉네임 길이, 이미지 키 형식) 검증
-        current.copy(
-            name = name ?: current.name,
-            nickname = nickname ?: current.nickname,
-            profileImageKey = profileImageKey ?: current.profileImageKey,
-            gender = gender ?: current.gender,
-            ageGroup = ageGroup ?: current.ageGroup,
-        )
+        // 병합 규칙과 검증(이름/닉네임 길이·형식, 이미지 키 형식)은 도메인이 책임진다.
+        val updated = current.updateProfile(name, nickname, profileImageKey, gender, ageGroup)
 
-        return memberPersistenceAdapter.updateProfile(memberId, name, nickname, profileImageKey, gender, ageGroup)
+        return memberPersistenceAdapter.update(updated)
     }
 
     /** 로그인한 회원에게 소셜 계정을 연동한다. (마이페이지 연동, 이메일과 무관하게 현재 회원에 연결) */
@@ -213,13 +207,16 @@ class MemberService(
         }
 
         socialPersistenceAdapter.save(Social(member = member, provider = provider, providerId = providerId))
-        memberPersistenceAdapter.updateLastLoginAt(member.id)
 
-        return member
+        return memberPersistenceAdapter.update(member.login(LocalDateTime.now()))
     }
 
     @Transactional
-    fun updateLastLoginAt(id: Long) = memberPersistenceAdapter.updateLastLoginAt(id)
+    fun updateLastLoginAt(id: Long) {
+        val member = memberPersistenceAdapter.findById(id)
+
+        memberPersistenceAdapter.update(member.login(LocalDateTime.now()))
+    }
 
     fun findById(id: Long): Member = memberPersistenceAdapter.findById(id)
 

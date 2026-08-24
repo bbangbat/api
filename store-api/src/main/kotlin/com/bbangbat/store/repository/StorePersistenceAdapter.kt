@@ -9,29 +9,14 @@ import org.springframework.stereotype.Repository
 class StorePersistenceAdapter(
     private val storeRepository: StoreRepository,
 ) {
-    fun findWithinRadius(
-        lat: Double,
-        lng: Double,
-        radiusMeters: Double,
-    ): List<Store> {
-        val entities: List<StoreJpaEntity?> =
-            storeRepository.findAll {
-                val distanceFn =
-                    function(
-                        Double::class,
-                        "ST_Distance_Sphere",
-                        function(Any::class, "POINT", path(StoreJpaEntity::longitude), path(StoreJpaEntity::latitude)),
-                        function(Any::class, "POINT", value(lng), value(lat)),
-                    )
-
-                select(entity(StoreJpaEntity::class))
-                    .from(entity(StoreJpaEntity::class))
-                    .where(distanceFn.le(value(radiusMeters)))
-                    .orderBy(distanceFn.asc())
-            }
-
-        return entities.filterNotNull().map { it.toDomain() }
-    }
+    fun findAllWithinBounds(bounds: MapBounds): List<Store> =
+        storeRepository
+            .findAllByLatitudeBetweenAndLongitudeBetween(
+                bounds.south,
+                bounds.north,
+                bounds.west,
+                bounds.east,
+            ).map { it.toDomain() }
 
     fun findWithinBounds(
         bounds: MapBounds,

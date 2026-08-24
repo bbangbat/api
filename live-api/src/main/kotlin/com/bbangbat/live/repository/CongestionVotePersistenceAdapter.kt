@@ -3,7 +3,6 @@ package com.bbangbat.live.repository
 import com.bbangbat.auth.voter.VoterType
 import com.bbangbat.common.exception.BbangbatException
 import com.bbangbat.common.exception.ErrorCode.NOT_FOUND
-import com.bbangbat.live.domain.CongestionLevel
 import com.bbangbat.live.domain.CongestionVote
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
@@ -42,19 +41,15 @@ class CongestionVotePersistenceAdapter(
 
     fun save(vote: CongestionVote): CongestionVote = congestionVoteRepository.save(CongestionVoteJpaEntity.from(vote)).toDomain()
 
-    fun updateVote(
-        id: Long,
-        level: CongestionLevel,
-        votedAt: LocalDateTime,
-    ) {
+    /**
+     * 변경된 도메인 상태를 영속 엔티티에 반영한다. (더티체킹)
+     */
+    fun update(vote: CongestionVote): CongestionVote =
         congestionVoteRepository
-            .findById(id)
+            .findById(vote.id)
             .orElseThrow { BbangbatException(NOT_FOUND) }
-            .also {
-                it.level = level
-                it.votedAt = votedAt
-            }
-    }
+            .also { it.applyFrom(vote) }
+            .toDomain()
 
     fun findRecentVotes(
         storeId: Long,

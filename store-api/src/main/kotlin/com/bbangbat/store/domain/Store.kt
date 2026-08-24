@@ -15,4 +15,9 @@ data class Store(
         require(longitude in -180.0..180.0) { "경도는 -180 ~ 180 사이여야 합니다." }
         require(address.isNotBlank()) { "주소는 비어 있을 수 없습니다." }
     }
+
+    companion object {
+        /** 내 주변 가게 조회 반경 */
+        const val SEARCH_RADIUS_METERS = 3000.0
+    }
 }

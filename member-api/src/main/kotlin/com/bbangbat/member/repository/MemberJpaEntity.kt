@@ -1,9 +1,12 @@
 package com.bbangbat.member.repository
 
+import com.bbangbat.common.id.Tsid
 import com.bbangbat.member.domain.AgeGroup
 import com.bbangbat.member.domain.Gender
 import com.bbangbat.member.domain.Member
 import com.bbangbat.member.domain.MemberRole
+import com.bbangbat.member.domain.NamePolicy
+import com.bbangbat.member.domain.NicknamePolicy
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -21,9 +24,9 @@ class MemberJpaEntity(
     var id: Long = 0L,
     @Column(name = "email", nullable = false, unique = true, length = 100)
     var email: String,
-    @Column(name = "name", nullable = false, length = 30)
+    @Column(name = "name", nullable = false, length = NamePolicy.MAX_LENGTH)
     var name: String,
-    @Column(name = "nickname", nullable = false, length = 20)
+    @Column(name = "nickname", nullable = false, length = NicknamePolicy.MAX_LENGTH)
     var nickname: String,
     @Column(name = "profile_image_key", nullable = true, length = 500)
     var profileImageKey: String? = null,
@@ -43,6 +46,23 @@ class MemberJpaEntity(
     @Column(name = "last_login_at", nullable = true)
     var lastLoginAt: LocalDateTime? = null,
 ) : BaseEntity() {
+    /**
+     * 도메인 상태를 영속 엔티티에 반영한다. (더티체킹)
+     * 식별자와 감사 컬럼(createdAt/updatedAt)은 영속성 계층이 관리하므로 건드리지 않는다.
+     */
+    fun applyFrom(member: Member) {
+        email = member.email
+        name = member.name
+        nickname = member.nickname
+        profileImageKey = member.profileImageKey
+        gender = member.gender
+        ageGroup = member.ageGroup
+        role = member.role
+        termsAgreed = member.termsAgreed
+        privacyAgreed = member.privacyAgreed
+        lastLoginAt = member.lastLoginAt
+    }
+
     fun toDomain(): Member =
         Member(
             id = id,

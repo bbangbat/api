@@ -2,11 +2,8 @@ package com.bbangbat.member.repository
 
 import com.bbangbat.common.exception.BbangbatException
 import com.bbangbat.common.exception.ErrorCode.MEMBER_NOT_FOUND
-import com.bbangbat.member.domain.AgeGroup
-import com.bbangbat.member.domain.Gender
 import com.bbangbat.member.domain.Member
 import org.springframework.stereotype.Repository
-import java.time.LocalDateTime
 
 @Repository
 class MemberPersistenceAdapter(
@@ -31,33 +28,15 @@ class MemberPersistenceAdapter(
     fun existsByNickname(nickname: String): Boolean = memberRepository.existsByNickname(nickname)
 
     /**
-     * 프로필 수정 (더티체킹). profileImageKey는 null이면 기존 값을 유지한다.
+     * 변경된 도메인 상태를 영속 엔티티에 반영한다. (더티체킹)
+     * 무엇을 어떻게 바꿀지는 도메인이 결정하고, 여기서는 그 결과를 옮겨 담기만 한다.
      */
-    fun updateProfile(
-        id: Long,
-        name: String?,
-        nickname: String?,
-        profileImageKey: String?,
-        gender: Gender?,
-        ageGroup: AgeGroup?,
-    ): Member =
+    fun update(member: Member): Member =
         memberRepository
-            .findById(id)
+            .findById(member.id)
             .orElseThrow { BbangbatException(MEMBER_NOT_FOUND) }
-            .also { entity ->
-                name?.let { entity.name = it }
-                nickname?.let { entity.nickname = it }
-                profileImageKey?.let { entity.profileImageKey = it }
-                gender?.let { entity.gender = it }
-                ageGroup?.let { entity.ageGroup = it }
-            }.toDomain()
+            .also { it.applyFrom(member) }
+            .toDomain()
 
     fun deleteById(id: Long) = memberRepository.deleteById(id)
-
-    fun updateLastLoginAt(id: Long) {
-        memberRepository
-            .findById(id)
-            .orElseThrow { BbangbatException(MEMBER_NOT_FOUND) }
-            .also { it.lastLoginAt = LocalDateTime.now() }
-    }
 }

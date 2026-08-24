@@ -16,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.given
 import org.mockito.kotlin.never
@@ -55,7 +56,7 @@ class CongestionServiceTest {
 
         // then
         then(congestionVotePersistenceAdapter).should().save(any())
-        then(congestionVotePersistenceAdapter).should(never()).updateVote(any(), any(), any())
+        then(congestionVotePersistenceAdapter).should(never()).update(any())
         assertThat(result.current).isEqualTo(CongestionLevel.CROWDED)
     }
 
@@ -83,7 +84,9 @@ class CongestionServiceTest {
         congestionService.vote(storeId, CongestionLevel.CROWDED, DAEJEON_LAT, DAEJEON_LNG, voter)
 
         // then
-        then(congestionVotePersistenceAdapter).should().updateVote(eq(5L), eq(CongestionLevel.CROWDED), any())
+        then(congestionVotePersistenceAdapter).should().update(
+            argThat { id == 5L && level == CongestionLevel.CROWDED && votedAt.isAfter(existing.votedAt) },
+        )
         then(congestionVotePersistenceAdapter).should(never()).save(any())
     }
 
@@ -206,7 +209,7 @@ class CongestionServiceTest {
 
         assertThat(exception.errorCode).isEqualTo(ErrorCode.CONGESTION_VOTE_COOLDOWN)
         assertThat(exception.retryAfterSeconds).isNotNull()
-        then(congestionVotePersistenceAdapter).should(never()).updateVote(any(), any(), any())
+        then(congestionVotePersistenceAdapter).should(never()).update(any())
     }
 
     companion object {

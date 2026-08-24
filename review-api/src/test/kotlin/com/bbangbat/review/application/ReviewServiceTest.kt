@@ -4,7 +4,6 @@ import com.bbangbat.common.exception.BbangbatException
 import com.bbangbat.common.exception.ErrorCode.REVIEW_FORBIDDEN
 import com.bbangbat.common.exception.ErrorCode.REVIEW_NOT_FOUND
 import com.bbangbat.review.domain.Review
-import com.bbangbat.review.repository.ReviewJpaEntity
 import com.bbangbat.review.repository.ReviewPersistenceAdapter
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -155,9 +154,9 @@ class ReviewServiceTest {
 
     @Test
     fun `다른 회원의 리뷰 삭제 시 예외가 발생한다`() {
-        val entity = ReviewJpaEntity(id = 1L, memberId = 1L, storeId = 2L, rating = 5, content = "맛있어요테스트용입니다")
+        val review = review(memberId = 1L)
 
-        whenever(reviewPersistenceAdapter.findByIdOrNull(1L)).thenReturn(entity)
+        whenever(reviewPersistenceAdapter.findByIdOrNull(1L)).thenReturn(review)
 
         val exception =
             assertThrows(BbangbatException::class.java) {
@@ -170,19 +169,18 @@ class ReviewServiceTest {
     @Test
     fun `리뷰 삭제 시 S3 이미지도 함께 삭제된다`() {
         val memberId = 1L
-        val entity = ReviewJpaEntity(id = 1L, memberId = memberId, storeId = 2L, rating = 5, content = "맛있어요테스트용입니다")
         val imageUrls =
             listOf(
                 "https://bucket.s3.ap-northeast-2.amazonaws.com/reviews/uuid1",
                 "https://bucket.s3.ap-northeast-2.amazonaws.com/reviews/uuid2",
             )
+        val review = review(memberId = memberId, imageUrls = imageUrls)
 
-        whenever(reviewPersistenceAdapter.findByIdOrNull(1L)).thenReturn(entity)
-        whenever(reviewPersistenceAdapter.getImageUrls(entity)).thenReturn(imageUrls)
+        whenever(reviewPersistenceAdapter.findByIdOrNull(1L)).thenReturn(review)
 
         reviewService.delete(memberId = memberId, reviewId = 1L)
 
-        verify(reviewPersistenceAdapter).delete(entity)
+        verify(reviewPersistenceAdapter).delete(review)
         verify(s3Service).delete("reviews/uuid1")
         verify(s3Service).delete("reviews/uuid2")
     }
@@ -190,14 +188,27 @@ class ReviewServiceTest {
     @Test
     fun `이미지 없는 리뷰 삭제 시 S3 삭제를 호출하지 않는다`() {
         val memberId = 1L
-        val entity = ReviewJpaEntity(id = 1L, memberId = memberId, storeId = 2L, rating = 5, content = "맛있어요테스트용입니다")
+        val review = review(memberId = memberId)
 
-        whenever(reviewPersistenceAdapter.findByIdOrNull(1L)).thenReturn(entity)
-        whenever(reviewPersistenceAdapter.getImageUrls(entity)).thenReturn(emptyList())
+        whenever(reviewPersistenceAdapter.findByIdOrNull(1L)).thenReturn(review)
 
         reviewService.delete(memberId = memberId, reviewId = 1L)
 
-        verify(reviewPersistenceAdapter).delete(entity)
+        verify(reviewPersistenceAdapter).delete(review)
         verify(s3Service, never()).delete(any())
     }
+
+    private fun review(
+        memberId: Long,
+        imageUrls: List<String> = emptyList(),
+    ): Review =
+        Review(
+            id = 1L,
+            memberId = memberId,
+            storeId = 2L,
+            rating = 5,
+            content = "맛있어요테스트용입니다",
+            menus = listOf("소금빵"),
+            imageUrls = imageUrls,
+        )
 }

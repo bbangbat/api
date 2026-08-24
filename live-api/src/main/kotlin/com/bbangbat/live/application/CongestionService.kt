@@ -7,10 +7,10 @@ import com.bbangbat.common.exception.ErrorCode.CONGESTION_VOTE_COOLDOWN
 import com.bbangbat.common.exception.ErrorCode.CONGESTION_VOTE_TOO_FAR
 import com.bbangbat.common.exception.ErrorCode.OUT_OF_SERVICE_AREA
 import com.bbangbat.common.exception.ErrorCode.STORE_NOT_FOUND
+import com.bbangbat.common.geo.GeoDistance
 import com.bbangbat.live.domain.Congestion
 import com.bbangbat.live.domain.CongestionLevel
 import com.bbangbat.live.domain.CongestionVote
-import com.bbangbat.live.domain.GeoDistance
 import com.bbangbat.live.domain.ServiceArea
 import com.bbangbat.live.repository.CongestionVotePersistenceAdapter
 import org.springframework.beans.factory.annotation.Value
@@ -43,7 +43,7 @@ class CongestionService(
 
         if (existing != null) {
             verifyCooldown(existing.votedAt, now)
-            congestionVotePersistenceAdapter.updateVote(existing.id, level, now)
+            congestionVotePersistenceAdapter.update(existing.revote(level, now))
         } else {
             saveFirstVote(storeId, level, voter, now)
         }
@@ -53,7 +53,7 @@ class CongestionService(
 
     @Transactional(readOnly = true)
     fun getCongestion(storeId: Long): Congestion {
-        val from = LocalDateTime.now().minusMinutes(WINDOW_MINUTES)
+        val from = Congestion.windowStart(LocalDateTime.now())
         val votes = congestionVotePersistenceAdapter.findRecentVotes(storeId, from)
 
         return Congestion.summarizeVotes(storeId, votes)
@@ -65,7 +65,7 @@ class CongestionService(
             return emptyMap()
         }
 
-        val from = LocalDateTime.now().minusMinutes(WINDOW_MINUTES)
+        val from = Congestion.windowStart(LocalDateTime.now())
         val countsByStore =
             congestionVotePersistenceAdapter
                 .countRecentVotesByStores(storeIds, from)
@@ -142,9 +142,5 @@ class CongestionService(
         } catch (e: DataIntegrityViolationException) {
             throw BbangbatException(CONGESTION_VOTE_COOLDOWN, Duration.ofMinutes(cooldownMinutes).seconds)
         }
-    }
-
-    companion object {
-        private const val WINDOW_MINUTES = 15L
     }
 }

@@ -1,8 +1,6 @@
 package com.bbangbat.live.application
 
 import com.bbangbat.live.client.SummaryResultMessage
-import com.bbangbat.live.domain.StoreTalkSummary
-import com.bbangbat.live.repository.TalkPersistenceAdapter
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
@@ -23,7 +21,7 @@ import tools.jackson.databind.ObjectMapper
 class TalkSummaryResultPoller(
     private val sqsClient: SqsClient,
     private val objectMapper: ObjectMapper,
-    private val talkPersistenceAdapter: TalkPersistenceAdapter,
+    private val talkService: TalkService,
     @param:Value("\${cloud.aws.sqs.summary-result-queue-url}") private val resultQueueUrl: String,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
@@ -56,13 +54,7 @@ class TalkSummaryResultPoller(
             }
 
         try {
-            talkPersistenceAdapter.upsertSummary(
-                StoreTalkSummary(
-                    storeId = result.storeId,
-                    summary = result.summary,
-                    lastMessageId = result.lastMessageId,
-                ),
-            )
+            talkService.saveSummary(result.storeId, result.summary, result.lastMessageId)
             deleteMessage(message)
         } catch (e: Exception) {
             // 저장 실패는 일시적일 수 있어 삭제하지 않고 visibility timeout 후 재시도되도록 둔다
