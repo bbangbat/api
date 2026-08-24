@@ -67,9 +67,9 @@ class TalkPersistenceAdapterTest
         // ===== 요약 =====
 
         @Test
-        fun `upsertSummary는 신규 요약을 저장한다`() {
+        fun `saveSummary는 신규 요약을 저장한다`() {
             // when
-            talkPersistenceAdapter.upsertSummary(summary(storeId = 1L, text = "요약", lastMessageId = 10L))
+            talkPersistenceAdapter.saveSummary(summary(storeId = 1L, text = "요약", lastMessageId = 10L))
             em.flush()
             em.clear()
 
@@ -81,28 +81,49 @@ class TalkPersistenceAdapterTest
         }
 
         @Test
-        fun `upsertSummary는 같은 가게의 기존 요약을 갱신한다`() {
+        fun `updateSummary는 도메인이 만든 새 요약을 더티체킹으로 반영한다`() {
             // given
-            talkPersistenceAdapter.upsertSummary(summary(storeId = 1L, text = "이전 요약", lastMessageId = 10L))
+            val saved = talkPersistenceAdapter.saveSummary(summary(storeId = 1L, text = "이전 요약", lastMessageId = 10L))
             em.flush()
             em.clear()
 
             // when
-            talkPersistenceAdapter.upsertSummary(summary(storeId = 1L, text = "최신 요약", lastMessageId = 20L))
+            talkPersistenceAdapter.updateSummary(saved.update("최신 요약", 20L))
             em.flush()
             em.clear()
 
             // then
             val found = talkPersistenceAdapter.findSummaryByStoreId(1L)!!
+
             assertThat(found.summary).isEqualTo("최신 요약")
             assertThat(found.lastMessageId).isEqualTo(20L)
         }
 
         @Test
+        fun `updateMessage는 도메인이 만든 소프트 삭제 상태를 더티체킹으로 반영한다`() {
+            // given
+            val saved = talkPersistenceAdapter.saveMessage(message(storeId = 1L))
+            em.flush()
+            em.clear()
+            val deletedAt = LocalDateTime.now()
+
+            // when
+            talkPersistenceAdapter.updateMessage(saved.delete(deletedAt))
+            em.flush()
+            em.clear()
+
+            // then
+            val found = talkPersistenceAdapter.findMessageById(saved.id)!!
+
+            assertThat(found.isDeleted).isTrue()
+            assertThat(talkPersistenceAdapter.findRecentMessages(1L, deletedAt.minusHours(1), null)).isEmpty()
+        }
+
+        @Test
         fun `findSummariesByStoreIds는 요약이 있는 가게만 벌크로 반환한다`() {
             // given (가게 1,2만 요약 있음)
-            talkPersistenceAdapter.upsertSummary(summary(storeId = 1L, text = "요약1", lastMessageId = 1L))
-            talkPersistenceAdapter.upsertSummary(summary(storeId = 2L, text = "요약2", lastMessageId = 2L))
+            talkPersistenceAdapter.saveSummary(summary(storeId = 1L, text = "요약1", lastMessageId = 1L))
+            talkPersistenceAdapter.saveSummary(summary(storeId = 2L, text = "요약2", lastMessageId = 2L))
             em.flush()
             em.clear()
 

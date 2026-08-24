@@ -27,14 +27,26 @@ class LiveTalkMessageJpaEntity(
     var storeId: Long,
     @Column(name = "author_id", nullable = false)
     var authorId: Long,
-    @Column(name = "author_nickname", nullable = false, length = 20)
+    @Column(name = "author_nickname", nullable = false, length = LiveTalkMessage.MAX_AUTHOR_NICKNAME_LENGTH)
     var authorNickname: String,
-    @Column(name = "content", nullable = false, length = 100)
+    @Column(name = "content", nullable = false, length = LiveTalkMessage.MAX_CONTENT_LENGTH)
     var content: String,
     /** 소프트 삭제 시각. null이면 살아 있는 메시지. 조회는 모두 이 값이 null인 것만 대상으로 한다. */
     @Column(name = "deleted_at", nullable = true)
     var deletedAt: LocalDateTime? = null,
 ) : BaseEntity() {
+    /**
+     * 도메인 상태를 영속 엔티티에 반영한다. (더티체킹)
+     * 어떤 필드가 바뀔 수 있는지는 도메인이 결정하므로 여기서는 상태를 그대로 옮겨 담는다.
+     */
+    fun applyFrom(message: LiveTalkMessage) {
+        storeId = message.storeId
+        authorId = message.authorId
+        authorNickname = message.authorNickname
+        content = message.content
+        deletedAt = message.deletedAt
+    }
+
     fun toDomain(): LiveTalkMessage =
         LiveTalkMessage(
             id = id,
@@ -43,6 +55,7 @@ class LiveTalkMessageJpaEntity(
             authorNickname = authorNickname,
             content = content,
             createdAt = requireNotNull(createdAt) { "영속화되지 않은 엔티티입니다." },
+            deletedAt = deletedAt,
         )
 
     companion object {
@@ -52,6 +65,7 @@ class LiveTalkMessageJpaEntity(
                 authorId = message.authorId,
                 authorNickname = message.authorNickname,
                 content = message.content,
+                deletedAt = message.deletedAt,
             )
     }
 }

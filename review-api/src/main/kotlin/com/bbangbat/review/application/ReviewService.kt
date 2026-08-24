@@ -75,17 +75,15 @@ class ReviewService(
         memberId: Long,
         reviewId: Long,
     ) {
-        val entity =
+        val review =
             reviewPersistenceAdapter.findByIdOrNull(reviewId)
                 ?: throw BbangbatException(REVIEW_NOT_FOUND)
 
-        if (entity.memberId != memberId) throw BbangbatException(REVIEW_FORBIDDEN)
+        if (!review.canBeDeletedBy(memberId)) throw BbangbatException(REVIEW_FORBIDDEN)
 
-        val imageUrls = reviewPersistenceAdapter.getImageUrls(entity)
+        reviewPersistenceAdapter.delete(review)
 
-        reviewPersistenceAdapter.delete(entity)
-
-        imageUrls.forEach { url ->
+        review.imageUrls.forEach { url ->
             val objectKey = url.substringAfter(".amazonaws.com/")
             s3Service.delete(objectKey)
         }

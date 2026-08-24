@@ -18,7 +18,7 @@ class StoreService(
         lng: Double,
     ): List<Store> =
         storePersistenceAdapter
-            .findWithinRadius(lat, lng, RADIUS_METERS)
+            .findWithinRadius(lat, lng, Store.SEARCH_RADIUS_METERS)
             .map { store -> withDefaultImage(store) }
 
     fun findById(storeId: Long): Store {
@@ -34,7 +34,7 @@ class StoreService(
         val clamped = bounds.clampToServiceArea() ?: return emptyList()
 
         return storePersistenceAdapter
-            .findWithinBounds(clamped, MAX_BOUNDS_RESULTS)
+            .findWithinBounds(clamped, MapBounds.MAX_RESULTS)
             .map { store -> withDefaultImage(store) }
     }
 
@@ -49,9 +49,4 @@ class StoreService(
     }
 
     private fun withDefaultImage(store: Store): Store = store.copy(imageUrl = store.imageUrl ?: defaultImageUrl)
-
-    companion object {
-        private const val RADIUS_METERS = 3000.0
-        private const val MAX_BOUNDS_RESULTS = 300
-    }
 }

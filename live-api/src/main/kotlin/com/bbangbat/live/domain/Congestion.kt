@@ -1,5 +1,7 @@
 package com.bbangbat.live.domain
 
+import java.time.LocalDateTime
+
 data class Congestion(
     val storeId: Long,
     val counts: Map<CongestionLevel, Int>,
@@ -15,6 +17,12 @@ data class Congestion(
             ?: CongestionLevel.UNCROWDED
 
     companion object {
+        /** 집계 윈도우. 이 시간 내에 들어온 투표만 현재 혼잡도로 집계한다. */
+        const val WINDOW_MINUTES = 15L
+
+        /** 집계 대상이 되는 가장 이른 투표 시각 */
+        fun windowStart(now: LocalDateTime): LocalDateTime = now.minusMinutes(WINDOW_MINUTES)
+
         fun summarizeVotes(
             storeId: Long,
             votes: List<CongestionVote>,

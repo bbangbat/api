@@ -43,6 +43,15 @@ class CongestionVoteJpaEntity(
     @Column(name = "voted_at", nullable = false)
     var votedAt: LocalDateTime,
 ) : BaseEntity() {
+    /** 도메인 상태를 영속 엔티티에 반영한다. (더티체킹) */
+    fun applyFrom(vote: CongestionVote) {
+        storeId = vote.storeId
+        level = vote.level
+        voterType = vote.voterType
+        voterKey = vote.voterKey
+        votedAt = vote.votedAt
+    }
+
     fun toDomain(): CongestionVote =
         CongestionVote(
             id = id,

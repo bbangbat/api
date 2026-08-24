@@ -22,6 +22,13 @@ class StoreTalkSummaryJpaEntity(
     @Column(name = "last_message_id", nullable = false)
     var lastMessageId: Long,
 ) : BaseEntity() {
+    /** 도메인 상태를 영속 엔티티에 반영한다. (더티체킹) */
+    fun applyFrom(summary: StoreTalkSummary) {
+        storeId = summary.storeId
+        this.summary = summary.summary
+        lastMessageId = summary.lastMessageId
+    }
+
     fun toDomain(): StoreTalkSummary =
         StoreTalkSummary(
             id = id,

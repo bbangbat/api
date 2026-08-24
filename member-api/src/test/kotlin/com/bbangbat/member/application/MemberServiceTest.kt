@@ -227,10 +227,11 @@ class MemberServiceTest {
                 ageGroup = AgeGroup.TWENTIES,
                 termsAgreed = true,
                 privacyAgreed = true,
-                lastLoginAt = LocalDateTime.now(),
+                lastLoginAt = LocalDateTime.now().minusDays(1),
             )
         given(memberPersistenceAdapter.findByEmailOrNull("test@test.com")).willReturn(existing)
         given(socialPersistenceAdapter.findByProviderAndProviderId(SocialType.NAVER, "naver-123")).willReturn(null)
+        given(memberPersistenceAdapter.update(any())).willAnswer { it.getArgument<Member>(0) }
 
         // when
         val result = memberService.link("test@test.com", SocialType.NAVER, "naver-123")
@@ -240,7 +241,12 @@ class MemberServiceTest {
         then(socialPersistenceAdapter).should().save(
             Social(member = existing, provider = SocialType.NAVER, providerId = "naver-123"),
         )
-        then(memberPersistenceAdapter).should().updateLastLoginAt(1L)
+
+        val captor = argumentCaptor<Member>()
+
+        verify(memberPersistenceAdapter).update(captor.capture())
+        assertThat(captor.firstValue.id).isEqualTo(1L)
+        assertThat(captor.firstValue.lastLoginAt).isAfter(existing.lastLoginAt)
     }
 
     @Test
@@ -297,5 +303,74 @@ class MemberServiceTest {
 
         assertThat(exception.errorCode).isEqualTo(CURRENT_SOCIAL_CANNOT_UNLINK)
         then(socialPersistenceAdapter).should(never()).findAllByMemberId(any())
+    }
+
+    @Test
+    fun `프로필 수정은 도메인이 병합한 결과를 어댑터에 넘긴다`() {
+        // given
+        val current =
+            Member(
+                id = 1L,
+                email = "test@test.com",
+                name = "기존회원",
+                nickname = "기존닉네임",
+                profileImageKey = null,
+                gender = Gender.MALE,
+                ageGroup = AgeGroup.TWENTIES,
+                termsAgreed = true,
+                privacyAgreed = true,
+            )
+        given(memberPersistenceAdapter.findById(1L)).willReturn(current)
+        given(memberPersistenceAdapter.existsByNickname("새닉네임")).willReturn(false)
+        given(memberPersistenceAdapter.update(any())).willAnswer { it.getArgument<Member>(0) }
+
+        // when
+        val result =
+            memberService.updateProfile(
+                memberId = 1L,
+                name = null,
+                nickname = "새닉네임",
+                profileImageKey = null,
+                gender = null,
+                ageGroup = AgeGroup.THIRTIES,
+            )
+
+        // then (null인 필드는 기존 값 유지)
+        assertThat(result.name).isEqualTo("기존회원")
+        assertThat(result.nickname).isEqualTo("새닉네임")
+        assertThat(result.gender).isEqualTo(Gender.MALE)
+        assertThat(result.ageGroup).isEqualTo(AgeGroup.THIRTIES)
+    }
+
+    @Test
+    fun `프로필 수정 시에도 도메인 규칙 위반은 걸러진다`() {
+        // given
+        val current =
+            Member(
+                id = 1L,
+                email = "test@test.com",
+                name = "기존회원",
+                nickname = "기존닉네임",
+                profileImageKey = null,
+                gender = Gender.MALE,
+                ageGroup = AgeGroup.TWENTIES,
+                termsAgreed = true,
+                privacyAgreed = true,
+            )
+        given(memberPersistenceAdapter.findById(1L)).willReturn(current)
+
+        // when & then (생성 때만이 아니라 수정 때도 형식 검증이 돈다)
+        assertThrows<IllegalArgumentException> {
+            memberService.updateProfile(
+                memberId = 1L,
+                name = null,
+                nickname = null,
+                profileImageKey = "reviews/abc",
+                gender = null,
+                ageGroup = null,
+            )
+        }
+
+        then(memberPersistenceAdapter).should(never()).update(any())
     }
 }

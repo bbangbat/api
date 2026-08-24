@@ -29,6 +29,9 @@ data class MapBounds(
     }
 
     companion object {
+        /** 영역 조회 결과 수 상한. 경계 clamp와 함께 과도하게 넓은 조회를 막는다. */
+        const val MAX_RESULTS = 300
+
         // 대전 지역 경계
         private const val LAT_MIN = 36.19
         private const val LAT_MAX = 36.49

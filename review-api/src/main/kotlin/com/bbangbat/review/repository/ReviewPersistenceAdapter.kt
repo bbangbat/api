@@ -1,5 +1,7 @@
 package com.bbangbat.review.repository
 
+import com.bbangbat.common.exception.BbangbatException
+import com.bbangbat.common.exception.ErrorCode.REVIEW_NOT_FOUND
 import com.bbangbat.review.domain.Review
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
@@ -10,7 +12,11 @@ class ReviewPersistenceAdapter(
     private val reviewImageRepository: ReviewImageRepository,
     private val reviewMenuRepository: ReviewMenuRepository,
 ) {
-    fun findByIdOrNull(id: Long): ReviewJpaEntity? = reviewRepository.findById(id).orElse(null)
+    fun findByIdOrNull(id: Long): Review? {
+        val entity = reviewRepository.findById(id).orElse(null) ?: return null
+
+        return toDomains(listOf(entity)).firstOrNull()
+    }
 
     fun findAllByStoreId(storeId: Long): List<Review> {
         val entities = reviewRepository.findAllByStoreIdOrderByIdDesc(storeId)
@@ -87,14 +93,11 @@ class ReviewPersistenceAdapter(
     }
 
     @Transactional
-    fun delete(entity: ReviewJpaEntity) {
+    fun delete(review: Review) {
+        val entity = reviewRepository.findById(review.id).orElseThrow { BbangbatException(REVIEW_NOT_FOUND) }
+
         reviewMenuRepository.deleteAllByReview(entity)
         reviewImageRepository.deleteAllByReview(entity)
         reviewRepository.delete(entity)
     }
-
-    fun getImageUrls(entity: ReviewJpaEntity): List<String> =
-        reviewImageRepository
-            .findAllByReviewInOrderByDisplayOrder(listOf(entity))
-            .map { it.imageUrl }
 }
