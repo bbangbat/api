@@ -17,6 +17,11 @@ abstract class AbstractContainerBaseTest {
         @Container
         @ServiceConnection
         @JvmField
-        val mysql: MySQLContainer<*> = MySQLContainer("mysql:8.4")
+        val mysql: MySQLContainer<*> =
+            MySQLContainer("mysql:8.4")
+                // WSL2 등 느린 디스크 환경에서 init이 지연되어 기동 실패하는 것을 방지 (데이터 디렉터리를 RAM tmpfs로)
+                .withTmpFs(mapOf("/var/lib/mysql" to "rw"))
+                .withUrlParam("allowPublicKeyRetrieval", "true")
+                .withUrlParam("useSSL", "false")
     }
 }
