@@ -38,7 +38,7 @@ class CongestionService(
         verifyLocation(storeId, latitude, longitude)
 
         val now = LocalDateTime.now()
-        // 쿨다운 검사와 갱신 사이에 동시 요청이 끼어들지 못하도록 잠그고 조회한다.
+
         val existing = congestionVotePersistenceAdapter.findByVoterForUpdate(storeId, voter.type, voter.key)
 
         if (existing != null) {
@@ -78,15 +78,11 @@ class CongestionService(
         }
     }
 
-    /** 회원 탈퇴 시 해당 회원이 남긴 투표를 모두 제거한다. */
     @Transactional
     fun deleteVotesByMember(memberId: Long) {
         congestionVotePersistenceAdapter.deleteAllByVoter(VoterType.MEMBER, memberId.toString())
     }
 
-    /**
-     * 서비스 지역(대전) 안인지 확인하고, 가게와의 실제 거리가 허용 범위 내인지 검증한다.
-     */
     private fun verifyLocation(
         storeId: Long,
         latitude: Double,
@@ -104,9 +100,6 @@ class CongestionService(
         }
     }
 
-    /**
-     * 마지막 투표로부터 쿨다운이 지나지 않았으면 남은 시간을 담아 거절한다.
-     */
     private fun verifyCooldown(
         lastVotedAt: LocalDateTime,
         now: LocalDateTime,
@@ -120,9 +113,6 @@ class CongestionService(
         }
     }
 
-    /**
-     * 첫 투표 저장. 동시 요청이 unique 제약에 걸리면 이미 방금 투표된 것이므로 쿨다운으로 처리한다.
-     */
     private fun saveFirstVote(
         storeId: Long,
         level: CongestionLevel,

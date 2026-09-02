@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component
 import com.bbangbat.live.application.StorePort as LiveStorePort
 import com.bbangbat.review.application.StorePort as ReviewStorePort
 
-/** 다른 모듈이 가게 정보를 필요로 할 때 쓰는 포트들의 구현 */
 @Component
 class StorePortAdapter(
     private val storeService: StoreService,

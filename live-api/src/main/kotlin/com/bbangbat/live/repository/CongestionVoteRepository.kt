@@ -17,9 +17,6 @@ interface CongestionVoteRepository :
         voterKey: String,
     ): Optional<CongestionVoteJpaEntity>
 
-    /**
-     * 동시 투표 요청이 쿨다운 검사를 우회하지 못하도록 투표 행을 잠그고 조회한다.
-     */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     fun findWithLockByStoreIdAndVoterTypeAndVoterKey(
         storeId: Long,
